@@ -587,3 +587,23 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 18px;
     }
 }
+
+/* ===== ФИКС ПОДЗАГОЛОВКА НА INDEX ТОЛЬКО ДЛЯ ТЕЛЕФОНА ===== */
+@media (max-width: 768px) {
+    .index-actions {
+        flex-shrink: 0;
+    }
+    
+    .fill-header {
+        flex-wrap: wrap;
+    }
+    
+    .fill-header__title {
+        width: 100%;
+    }
+    
+    .fill-header__title .sub {
+        white-space: normal;
+        word-break: break-word;
+    }
+}
