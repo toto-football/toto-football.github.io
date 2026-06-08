@@ -715,16 +715,32 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 }
 
-/* ===== ФИНАЛЬНЫЙ ФИКС СКРОЛЛА ДЛЯ BATTLE ===== */
-.battle-container .standings-table-wrapper {
-    max-height: none !important;
-    height: auto !important;
-    overflow: visible !important;
-}
-
-.battle-container .table-wrapper {
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    max-height: 55vh !important;
-    min-height: 200px !important;
+/* ===== BATTLE КАК INDEX НА ТЕЛЕФОНЕ ===== */
+@media (max-width: 768px) {
+    .battle-container {
+        height: auto !important;
+        min-height: auto !important;
+        overflow-y: visible !important;
+        padding: 20px !important;
+    }
+    
+    .standings-table-wrapper {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        max-height: none !important;
+        min-height: auto !important;
+        flex: none !important;
+    }
+    
+    .standings-table {
+        min-width: 550px !important;
+        width: auto !important;
+    }
+    
+    /* Отключаем все лишние высоты */
+    .battle-container .table-wrapper,
+    .battle-container .standings-table-wrapper {
+        height: auto !important;
+        max-height: none !important;
+    }
 }
