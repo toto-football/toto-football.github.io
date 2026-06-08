@@ -510,7 +510,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
         border-radius: 20px !important;
-        margin: 0 4px !important;
     }
     
     .standings-table {
