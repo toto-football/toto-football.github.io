@@ -534,3 +534,20 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 18px;
     }
 }
+
+/* ===== УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ ===== */
+@media (max-width: 768px) {
+    .standings-table td:nth-child(2) > div {
+        min-height: 28px !important;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        padding: 3px 3px 3px 6px !important;
+        font-size: 12px !important;
+    }
+    
+    .standings-table th,
+    .standings-table td {
+        padding: 4px 3px !important;
+    }
+}
