@@ -605,3 +605,17 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         margin-top: 10px !important;
     }
 }
+
+/* ===== УБРАТЬ ОТСТУП У ПОДЗАГОЛОВКА НА INDEX ===== */
+@media (max-width: 768px) {
+    .fill-header__title {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+    
+    .fill-header__title .sub {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        text-align: left !important;
+    }
+}
