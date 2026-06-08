@@ -581,7 +581,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 18px;
     }
     
-    /* Подзаголовок на index — чтобы не переносился */
+    /* Подзаголовок на index — только запрет переноса, без изменения шрифта */
     .index-actions {
         width: 100%;
     }
@@ -589,6 +589,5 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .fill-header__title .sub {
         white-space: nowrap;
         overflow-x: auto;
-        font-size: 9px;
     }
 }
