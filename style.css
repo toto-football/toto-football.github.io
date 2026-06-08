@@ -519,53 +519,74 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 /* ===== BATTLE — МАКСИМАЛЬНОЕ СЖАТИЕ КОЛОНОК ТОЛЬКО ДЛЯ ТЕЛЕФОНА ===== */
 @media (max-width: 768px) {
+    .standings-table-wrapper {
+        overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
     .standings-table {
-        min-width: 450px !important;
-        width: 450px !important;
+        min-width: 380px !important;
+        width: 380px !important;
+        table-layout: fixed !important;
     }
     
     .standings-table th,
     .standings-table td {
-        padding: 4px 2px !important;
-        font-size: 11px !important;
-    }
-    
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 28px !important;
         padding: 4px 1px !important;
-    }
-    
-    .standings-table th:nth-child(2),
-    .standings-table td:nth-child(2) {
-        width: auto !important;
-        min-width: 70px !important;
-    }
-    
-    .standings-table td:nth-child(2) > div {
-        min-height: 26px !important;
-    }
-    
-    .standings-table td:nth-child(2) span {
-        padding: 2px 2px 2px 4px !important;
         font-size: 10px !important;
     }
     
+    /* Место */
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 22px !important;
+        padding: 4px 0 !important;
+        text-align: center !important;
+    }
+    
+    /* Участник — максимально сжато */
+    .standings-table th:nth-child(2),
+    .standings-table td:nth-child(2) {
+        width: 85px !important;
+        min-width: 85px !important;
+        max-width: 85px !important;
+        padding: 0 !important;
+    }
+    
+    .standings-table td:nth-child(2) > div {
+        min-height: 24px !important;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        padding: 2px 2px 2px 2px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: block !important;
+    }
+    
+    /* Прогноз */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 38px !important;
-        padding: 4px 1px !important;
+        width: 32px !important;
+        padding: 4px 0 !important;
+        text-align: center !important;
     }
     
+    /* Ошибка */
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 32px !important;
-        padding: 4px 1px !important;
+        width: 28px !important;
+        padding: 4px 0 !important;
+        text-align: center !important;
     }
     
+    /* Сумма ошибок */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 38px !important;
-        padding: 4px 1px !important;
+        width: 32px !important;
+        padding: 4px 0 !important;
+        text-align: center !important;
     }
 }
