@@ -244,8 +244,10 @@ h1 {
     max-width: 700px;
     margin: 0 auto;
     padding: 12px;
-    height: auto;
-    min-height: auto;
+    height: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .standings-table-wrapper {
@@ -257,13 +259,14 @@ h1 {
     padding: 8px;
     margin-bottom: 8px;
     -webkit-overflow-scrolling: touch;
-    max-height: 70vh;
+    flex: 1;
+    min-height: 0;
 }
 
 .standings-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 500px;
+    min-width: 550px;
 }
 
 .standings-table th,
@@ -517,8 +520,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .battle-container {
         padding: 20px !important;
-        height: auto;
-        overflow-y: visible;
+        height: auto !important;
+        min-height: 100vh !important;
+        max-height: none !important;
+        overflow-y: auto !important;
     }
     
     .fill-header {
@@ -568,13 +573,18 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table-wrapper {
-        max-height: 55vh;
-        overflow-y: auto;
+        overflow-x: scroll !important;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        max-height: 55vh !important;
+        min-height: 250px !important;
+        flex: none !important;
     }
     
     .standings-table {
         font-size: 12px;
-        min-width: 500px;
+        min-width: 550px !important;
+        width: max-content !important;
     }
     
     .standings-table th,
@@ -659,7 +669,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 @media (max-width: 480px) {
     .standings-table {
         font-size: 11px;
-        min-width: 480px;
+        min-width: 520px !important;
     }
     
     .standings-table th:nth-child(1),
@@ -690,6 +700,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 11px;
     }
     
+    .standings-table-wrapper {
+        max-height: 50vh !important;
+    }
+    
     .nav-btn {
         font-size: 13px;
         padding: 8px 0;
@@ -697,32 +711,5 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .fill-header__title h1 {
         font-size: 16px;
-    }
-}
-
-/* ===== ФИКС СКРОЛЛА BATTLE ===== */
-@media (max-width: 768px) {
-    body.battle-page,
-    .battle-container {
-        height: 100% !important;
-        min-height: 100vh !important;
-    }
-    
-    .battle-container {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    
-    .standings-table-wrapper {
-        flex: 1 1 auto !important;
-        overflow-x: auto !important;
-        overflow-y: auto !important;
-        min-height: 200px !important;
-    }
-    
-    .standings-table {
-        display: table !important;
-        min-width: 550px !important;
-        width: max-content !important;
     }
 }
