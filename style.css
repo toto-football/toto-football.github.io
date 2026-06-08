@@ -493,7 +493,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН ===== */
+/* ===== ТЕЛЕФОН — ТОЛЬКО ДЛЯ BATTLE ===== */
 @media (max-width: 768px) {
     .btn-back {
         padding: 4px 10px !important;
@@ -509,103 +509,31 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table-wrapper {
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .standings-table {
-        min-width: 550px !important;
-        width: 550px !important;
-    }
-}
-
-/* ===== BATTLE — ДЛЯ ТЕЛЕФОНА ===== */
-@media (max-width: 768px) {
-    .standings-table-wrapper {
-        overflow-x: scroll !important;
-        -webkit-overflow-scrolling: touch !important;
         border-radius: 20px !important;
+        margin: 0 4px !important;
     }
     
     .standings-table {
         min-width: 360px !important;
         width: 360px !important;
-        table-layout: fixed !important;
-        border-collapse: collapse !important;
-        border-spacing: 0 !important;
     }
     
-    .standings-table th,
-    .standings-table td {
-        padding: 0 !important;
-        font-size: 11px !important;
-    }
-    
-    /* Место */
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 22px !important;
-        text-align: center !important;
-    }
-    
-    /* Участник — уже (60px) */
+    /* Участник — ширина 45px */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 60px !important;
-        min-width: 60px !important;
-        max-width: 60px !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    
-    .standings-table td:nth-child(2) > div {
-        min-height: 36px !important;
-        margin: 0 !important;
-        position: relative !important;
+        width: 45px !important;
+        min-width: 45px !important;
+        max-width: 45px !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 4px 0 4px 2px !important;
-        font-size: 10px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        display: block !important;
-        width: 100% !important;
+        font-size: 9px !important;
+        padding: 4px 2px !important;
     }
     
-    /* Прогноз — вплотную */
-    .standings-table th:nth-child(3),
-    .standings-table td:nth-child(3) {
-        width: 32px !important;
-        text-align: center !important;
-    }
-    
-    /* Ошибка */
-    .standings-table th:nth-child(4),
-    .standings-table td:nth-child(4) {
-        width: 26px !important;
-        text-align: center !important;
-    }
-    
-    /* Сумма ошибок — увеличен отступ слева (расстояние от Ошибки) */
+    /* Расстояние между Ошибка и Сумма ошибок — увеличить */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 38px !important;
-        text-align: center !important;
-        padding-left: 6px !important;
-    }
-    
-    /* Высота строк */
-    .standings-table tr {
-        height: 36px !important;
-    }
-    
-    .standings-table td {
-        vertical-align: middle !important;
-    }
-    
-    /* Чтобы таблица НЕ обрезалась — добавляем отступ справа для последнего заголовка */
-    .standings-table th:last-child,
-    .standings-table td:last-child {
-        padding-right: 8px !important;
+        padding-left: 8px !important;
     }
 }
