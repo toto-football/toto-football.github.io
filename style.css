@@ -517,7 +517,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 }
 
-/* ===== BATTLE — СВЕРХСЖАТИЕ ДЛЯ ТЕЛЕФОНА ===== */
+/* ===== BATTLE — ДЛЯ ТЕЛЕФОНА ===== */
 @media (max-width: 768px) {
     .standings-table-wrapper {
         overflow-x: scroll !important;
@@ -526,74 +526,76 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table {
-        min-width: 260px !important;
-        width: 260px !important;
+        min-width: 320px !important;
+        width: 320px !important;
         table-layout: fixed !important;
         border-collapse: collapse !important;
+        border-spacing: 0 !important;
     }
     
     .standings-table th,
     .standings-table td {
         padding: 0 !important;
-        font-size: 10px !important;
-        line-height: 1.2 !important;
+        font-size: 11px !important;
     }
     
     /* Место */
     .standings-table th:nth-child(1),
     .standings-table td:nth-child(1) {
-        width: 16px !important;
+        width: 22px !important;
         text-align: center !important;
     }
     
     /* Участник */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 50px !important;
-        min-width: 50px !important;
-        max-width: 50px !important;
+        width: 70px !important;
+        min-width: 70px !important;
+        max-width: 70px !important;
         padding: 0 !important;
         margin: 0 !important;
     }
     
     .standings-table td:nth-child(2) > div {
-        min-height: 20px !important;
+        min-height: 36px !important;
         margin: 0 !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 2px 0 2px 2px !important;
-        font-size: 9px !important;
+        padding: 4px 0 4px 4px !important;
+        font-size: 11px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         display: block !important;
     }
     
-    /* Прогноз — вплотную к участнику */
+    /* Прогноз — УБРАНО ВСЁ РАССТОЯНИЕ до Участника */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 26px !important;
+        width: 32px !important;
         text-align: center !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
     }
     
     /* Ошибка */
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 20px !important;
+        width: 26px !important;
         text-align: center !important;
     }
     
     /* Сумма ошибок */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 26px !important;
+        width: 32px !important;
         text-align: center !important;
     }
     
-    /* Увеличиваем высоту строк для читаемости */
+    /* Высота строк */
     .standings-table tr {
-        height: 28px !important;
+        height: 36px !important;
     }
     
     .standings-table td {
