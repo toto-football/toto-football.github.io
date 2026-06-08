@@ -733,3 +733,88 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         overflow-y: auto !important;
     }
 }
+/* ===== ТОЛЬКО ДЛЯ ТЕЛЕФОНОВ (ширина экрана меньше 768px) ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #fef9e8 !important;
+    }
+    
+    .battle-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 15px !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    .standings-table-wrapper {
+        margin: 0 !important;
+        border-radius: 16px !important;
+    }
+    
+    /* Увеличиваем шрифты для читаемости */
+    .standings-table {
+        font-size: 14px !important;
+    }
+    
+    .standings-table th,
+    .standings-table td {
+        padding: 12px 6px !important;
+    }
+    
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 50px !important;
+        font-size: 14px !important;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 70px !important;
+        font-size: 14px !important;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 60px !important;
+        font-size: 14px !important;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 70px !important;
+        font-size: 14px !important;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        font-size: 13px !important;
+        padding: 8px 6px !important;
+    }
+    
+    .battle-container .match-selector select {
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+    
+    .battle-container .match-info {
+        font-size: 15px !important;
+        padding: 10px !important;
+    }
+    
+    .nav-btn {
+        font-size: 15px !important;
+        padding: 12px 0 !important;
+    }
+    
+    .btn-back {
+        font-size: 14px !important;
+        padding: 8px 14px !important;
+    }
+    
+    .fill-header__title h1 {
+        font-size: 20px !important;
+    }
+}
