@@ -493,7 +493,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН — МАКСИМАЛЬНОЕ СЖАТИЕ ===== */
+/* ===== ТЕЛЕФОН — ЕДИНЫЙ БЛОК ===== */
 @media (max-width: 768px) {
     body {
         padding: 20px;
@@ -527,14 +527,13 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 480px !important;
     }
     
-    /* МАКСИМАЛЬНОЕ СЖАТИЕ КОЛОНОК */
+    /* Сжатие колонок */
     .standings-table th,
     .standings-table td {
         padding: 3px 1px !important;
         font-size: 11px !important;
     }
     
-    /* Место */
     .standings-table th:nth-child(1),
     .standings-table td:nth-child(1) {
         width: 25px !important;
@@ -542,14 +541,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 10px !important;
     }
     
-    /* Участник */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
         width: auto !important;
         min-width: 80px;
     }
     
-    /* Прогноз */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
         width: 40px !important;
@@ -557,7 +554,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 10px !important;
     }
     
-    /* Ошибка */
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
         width: 30px !important;
@@ -565,7 +561,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 10px !important;
     }
     
-    /* Сумма ошибок */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
         width: 40px !important;
@@ -573,7 +568,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 10px !important;
     }
     
-    /* Высота строк */
     .standings-table td:nth-child(2) > div {
         min-height: 22px !important;
     }
@@ -586,36 +580,15 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .fill-header__title h1 {
         font-size: 18px;
     }
-}
-
-/* ===== ЖЕСТКИЙ ФИКС ПОДЗАГОЛОВКА ===== */
-@media (max-width: 768px) {
-    .fill-header {
-        display: block !important;
-    }
     
-    .fill-header__title .sub {
-        white-space: nowrap !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding-bottom: 5px !important;
-    }
-    
+    /* Подзаголовок на index — чтобы не переносился */
     .index-actions {
-        margin-top: 10px !important;
-    }
-}
-
-/* ===== УБРАТЬ ОТСТУП У ПОДЗАГОЛОВКА НА INDEX ===== */
-@media (max-width: 768px) {
-    .fill-header__title {
-        margin-left: 0 !important;
-        padding-left: 0 !important;
+        width: 100%;
     }
     
     .fill-header__title .sub {
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        text-align: left !important;
+        white-space: nowrap;
+        overflow-x: auto;
+        font-size: 9px;
     }
 }
