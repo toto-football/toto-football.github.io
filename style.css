@@ -261,6 +261,7 @@ h1 {
     border: 1px solid #cfd9b7;
     padding: 8px;
     margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .standings-table {
@@ -505,6 +506,13 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     display: none;
 }
 
+/* ===== ВЕРТИКАЛЬНЫЕ РАЗДЕЛИТЕЛИ МЕЖДУ УЧАСТНИКАМИ ===== */
+/* Начиная с 8-й колонки (индекс 7) добавляем левую границу */
+#table-wrapper table td:nth-child(n+8),
+#table-wrapper table th:nth-child(n+8) {
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+}
+
 /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
 @media (max-width: 768px) {
     body {
@@ -640,9 +648,61 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 105px;
     }
     
+    /* ===== АДАПТАЦИЯ СТРАНИЦЫ BATTLE ДЛЯ ТЕЛЕФОНА ===== */
+    .battle-container {
+        padding: 8px !important;
+    }
+    
+    .standings-table {
+        font-size: 11px;
+        min-width: auto;
+    }
+    
     .standings-table th,
     .standings-table td {
-        padding: 4px 6px;
+        padding: 6px 4px;
+    }
+    
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 35px;
+        font-size: 10px;
+        padding: 4px 2px;
+    }
+    
+    .standings-table th:nth-child(2) {
+        text-align: left;
+        font-size: 10px;
+    }
+    
+    .standings-table td:nth-child(2) {
+        padding: 0 !important;
+    }
+    
+    .standings-table td:nth-child(2) > div {
+        min-height: 36px !important;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        padding: 5px 4px 5px 6px !important;
+        font-size: 10px !important;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 50px;
+        font-size: 10px;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 45px;
+        font-size: 10px;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 50px;
         font-size: 10px;
     }
 }
@@ -686,154 +746,135 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .battle-container .match-selector select {
-        width: 180px;
-    }
-}
-
-/* ===== ВЕРТИКАЛЬНЫЕ РАЗДЕЛИТЕЛИ МЕЖДУ УЧАСТНИКАМИ ===== */
-/* Начиная с 8-й колонки (индекс 7) добавляем левую границу */
-#table-wrapper table td:nth-child(n+8),
-#table-wrapper table th:nth-child(n+8) {
-    border-left: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-/* ===== ДОПОЛНИТЕЛЬНАЯ АДАПТАЦИЯ ДЛЯ СТРАНИЦЫ ХОД БОРЬБЫ ===== */
-@media (max-width: 768px) {
-    .battle-container {
-        padding: 8px !important;
-    }
-    
-    /* Увеличиваем шрифт в таблице standings */
-    .standings-table {
-        font-size: 14px;
-    }
-    
-    .standings-table th,
-    .standings-table td {
-        padding: 8px 4px;
-    }
-    
-    /* Уменьшаем ширину колонок для лучшего отображения */
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 45px;
+        width: 100%;
         font-size: 12px;
-    }
-    
-    .standings-table th:nth-child(2),
-    .standings-table td:nth-child(2) {
-        font-size: 13px;
-        padding-left: 4px;
-    }
-    
-    .standings-table th:nth-child(3),
-    .standings-table td:nth-child(3) {
-        width: 60px;
-        font-size: 11px;
-    }
-    
-    .standings-table th:nth-child(4),
-    .standings-table td:nth-child(4) {
-        width: 50px;
-        font-size: 11px;
-    }
-    
-    .standings-table th:nth-child(5),
-    .standings-table td:nth-child(5) {
-        width: 55px;
-        font-size: 11px;
-    }
-    
-    /* Прогресс-бар в ячейке имени */
-    .standings-row td:nth-child(2) {
-        padding: 0 !important;
-    }
-    
-    .standings-row td:nth-child(2) > div {
-        min-height: 38px !important;
-    }
-    
-    .standings-row td:nth-child(2) span {
-        padding: 6px 6px 6px 8px !important;
-        font-size: 12px !important;
-    }
-    
-    /* Селектор матчей */
-    .match-selector select {
-        font-size: 14px !important;
-        padding: 8px 10px !important;
-        width: 100% !important;
+        padding: 6px 8px;
     }
     
     .match-info {
-        font-size: 14px !important;
-        padding: 6px 12px !important;
+        font-size: 11px;
+        padding: 4px 8px;
     }
     
-    /* Кнопки навигации */
-    .nav-btn {
-        padding: 8px 16px !important;
-        font-size: 14px !important;
-        min-width: 100px !important;
-    }
-    
-    /* Заголовок */
-    .fill-header__title h1 {
-        font-size: 18px !important;
-    }
-    
-    .fill-header__title .sub {
-        font-size: 12px !important;
-    }
-}
-
-@media (max-width: 480px) {
+    /* ===== УСИЛЕННАЯ АДАПТАЦИЯ BATTLE ДЛЯ МАЛЕНЬКИХ ТЕЛЕФОНОВ ===== */
     .standings-table {
-        font-size: 12px;
-    }
-    
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 35px;
         font-size: 10px;
     }
     
-    .standings-table th:nth-child(2),
-    .standings-table td:nth-child(2) span {
-        font-size: 10px !important;
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 28px;
+        font-size: 9px;
+        padding: 3px 1px;
     }
     
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 50px;
+        width: 42px;
         font-size: 9px;
+        padding: 3px 2px;
     }
     
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 40px;
+        width: 38px;
         font-size: 9px;
+        padding: 3px 2px;
     }
     
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 45px;
+        width: 42px;
         font-size: 9px;
+        padding: 3px 2px;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        font-size: 9px !important;
+        padding: 4px 3px 4px 5px !important;
+    }
+    
+    .standings-table td:nth-child(2) > div {
+        min-height: 30px !important;
+    }
+    
+    .progress-bar-bg {
+        height: 6px;
+    }
+    
+    .nav-buttons {
+        gap: 6px;
     }
     
     .nav-btn {
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-        min-width: 80px !important;
+        padding: 6px 0 !important;
+        font-size: 10px !important;
+        min-width: 0 !important;
+        flex: 1;
+        text-align: center;
+    }
+    
+    .animate-all-btn {
+        flex: 1.2;
+    }
+    
+    .fill-header__title h1 {
+        font-size: 14px !important;
+    }
+    
+    .btn-back {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+}
+
+/* ===== ДОПОЛНИТЕЛЬНАЯ АДАПТАЦИЯ ДЛЯ ОЧЕНЬ УЗКИХ ЭКРАНОВ (до 360px) ===== */
+@media (max-width: 360px) {
+    .standings-table {
+        font-size: 9px;
+    }
+    
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 24px;
+        font-size: 8px;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 38px;
+        font-size: 8px;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 34px;
+        font-size: 8px;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 38px;
+        font-size: 8px;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        font-size: 8px !important;
+        padding: 3px 2px 3px 4px !important;
     }
     
     .match-selector select {
-        font-size: 12px !important;
-        padding: 6px 8px !important;
+        font-size: 11px;
+        padding: 5px 6px;
     }
     
     .match-info {
-        font-size: 12px !important;
-        padding: 4px 10px !important;
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+    
+    .nav-btn {
+        font-size: 9px !important;
+        padding: 5px 0 !important;
     }
 }
