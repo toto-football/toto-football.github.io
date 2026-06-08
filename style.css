@@ -255,7 +255,6 @@ h1 {
 .standings-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 650px;
 }
 
 .standings-table th,
@@ -494,7 +493,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН ===== */
+/* ===== ТЕЛЕФОН — КАК INDEX ===== */
 @media (max-width: 768px) {
     body {
         padding: 20px;
@@ -502,11 +501,18 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .standings-table-wrapper {
         overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     
     .standings-table {
         min-width: 650px !important;
         width: 650px !important;
+    }
+    
+    .standings-table th,
+    .standings-table td {
+        font-size: 14px !important;
+        padding: 10px 8px !important;
     }
     
     .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random {
