@@ -697,3 +697,143 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+/* ===== ДОПОЛНИТЕЛЬНАЯ АДАПТАЦИЯ ДЛЯ СТРАНИЦЫ ХОД БОРЬБЫ ===== */
+@media (max-width: 768px) {
+    .battle-container {
+        padding: 8px !important;
+    }
+    
+    /* Увеличиваем шрифт в таблице standings */
+    .standings-table {
+        font-size: 14px;
+    }
+    
+    .standings-table th,
+    .standings-table td {
+        padding: 8px 4px;
+    }
+    
+    /* Уменьшаем ширину колонок для лучшего отображения */
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 45px;
+        font-size: 12px;
+    }
+    
+    .standings-table th:nth-child(2),
+    .standings-table td:nth-child(2) {
+        font-size: 13px;
+        padding-left: 4px;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 60px;
+        font-size: 11px;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 50px;
+        font-size: 11px;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 55px;
+        font-size: 11px;
+    }
+    
+    /* Прогресс-бар в ячейке имени */
+    .standings-row td:nth-child(2) {
+        padding: 0 !important;
+    }
+    
+    .standings-row td:nth-child(2) > div {
+        min-height: 38px !important;
+    }
+    
+    .standings-row td:nth-child(2) span {
+        padding: 6px 6px 6px 8px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Селектор матчей */
+    .match-selector select {
+        font-size: 14px !important;
+        padding: 8px 10px !important;
+        width: 100% !important;
+    }
+    
+    .match-info {
+        font-size: 14px !important;
+        padding: 6px 12px !important;
+    }
+    
+    /* Кнопки навигации */
+    .nav-btn {
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+        min-width: 100px !important;
+    }
+    
+    /* Заголовок */
+    .fill-header__title h1 {
+        font-size: 18px !important;
+    }
+    
+    .fill-header__title .sub {
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .standings-table {
+        font-size: 12px;
+    }
+    
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 35px;
+        font-size: 10px;
+    }
+    
+    .standings-table th:nth-child(2),
+    .standings-table td:nth-child(2) span {
+        font-size: 10px !important;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 50px;
+        font-size: 9px;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 40px;
+        font-size: 9px;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 45px;
+        font-size: 9px;
+    }
+    
+    .nav-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        min-width: 80px !important;
+    }
+    
+    .match-selector select {
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+    }
+    
+    .match-info {
+        font-size: 12px !important;
+        padding: 4px 10px !important;
+    }
+}
