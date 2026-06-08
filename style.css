@@ -46,7 +46,6 @@ h1 {
     margin: 0 0 15px 0;
 }
 
-/* ===== УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ВСЕХ КНОПОК ===== */
 .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random, .nav-btn, .btn-rules {
     transition: 0.2s;
     text-decoration: none;
@@ -132,7 +131,6 @@ h1 {
     transform: none;
 }
 
-/* ===== ВЕРХНЯЯ ПАНЕЛЬ (ОБЩАЯ ДЛЯ ВСЕХ СТРАНИЦ) ===== */
 .fill-header {
     display: flex;
     justify-content: space-between;
@@ -154,7 +152,6 @@ h1 {
     text-align: left;
 }
 
-/* Правый блок для главной страницы (две строки) */
 .index-actions {
     display: flex;
     flex-direction: column;
@@ -173,7 +170,6 @@ h1 {
     gap: 8px;
 }
 
-/* Второй блок на странице fill */
 .fill-controls-bar {
     display: flex;
     justify-content: space-between;
@@ -212,7 +208,6 @@ h1 {
     border: 1px solid #bcbc7c;
 }
 
-/* Второй блок на странице battle */
 .battle-selector-bar {
     display: flex;
     justify-content: flex-start;
@@ -245,9 +240,9 @@ h1 {
     font-size: 0.8rem;
 }
 
-/* ===== СТРАНИЦА "ХОД БОРЬБЫ" ===== */
+/* ===== СТРАНИЦА "ХОД БОРЬБЫ" — КРУПНО ДЛЯ ТЕЛЕФОНА ===== */
 .battle-container {
-    max-width: 700px !important;
+    max-width: 100% !important;
     margin: 0 auto;
     padding: 12px !important;
     height: auto !important;
@@ -271,7 +266,7 @@ h1 {
 
 .standings-table th,
 .standings-table td {
-    padding: 6px 8px;
+    padding: 10px 8px;
     border-bottom: 1px solid #9aaa80;
 }
 
@@ -282,17 +277,18 @@ h1 {
 .standings-table th {
     border-bottom: 2px solid #9aaa80;
     background: #dde8c0;
+    font-weight: bold;
 }
 
 .standings-table th:nth-child(1) { width: 60px; text-align: center; }
 .standings-table td:nth-child(1) { text-align: center; font-weight: bold; color: #b8860b; }
 .standings-table th:nth-child(2) { text-align: left; }
 .standings-table td:nth-child(2) { text-align: left; font-weight: 500; padding-left: 8px; }
-.standings-table th:nth-child(3) { width: 70px; text-align: center; }
+.standings-table th:nth-child(3) { width: 80px; text-align: center; }
 .standings-table td:nth-child(3) { text-align: center; font-family: monospace; }
-.standings-table th:nth-child(4) { width: 60px; text-align: center; }
+.standings-table th:nth-child(4) { width: 70px; text-align: center; }
 .standings-table td:nth-child(4) { text-align: center; font-weight: bold; }
-.standings-table th:nth-child(5) { width: 70px; text-align: center; }
+.standings-table th:nth-child(5) { width: 80px; text-align: center; }
 .standings-table td:nth-child(5) { text-align: center; font-weight: bold; }
 
 .progress-container {
@@ -349,7 +345,6 @@ h1 {
     background: #6c3483;
 }
 
-/* ===== СТИЛИ ДЛЯ ТАБЛИЦ (ОБЩИЕ) ===== */
 .table-wrapper {
     overflow-x: auto;
     border-radius: 20px;
@@ -413,7 +408,6 @@ td:nth-child(7), th:nth-child(7) {
     padding-left: 10px;
 }
 
-/* Ширина колонок для главной таблицы */
 th:nth-child(1), td:nth-child(1) { width: 40px; }
 th:nth-child(2), td:nth-child(2) { width: 65px; }
 th:nth-child(3), td:nth-child(3) { width: 55px; }
@@ -423,7 +417,6 @@ th:nth-child(6), td:nth-child(6) { width: 12px; }
 th:nth-child(7), td:nth-child(7) { width: 120px; }
 th:nth-child(8), td:nth-child(8) { width: 70px; }
 
-/* Ширина колонок для страницы fill */
 .fill-table th, .fill-table td {
     padding: 6px 2px;
 }
@@ -455,7 +448,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     font-size: 0.65rem;
 }
 
-/* ===== СТАТУС И ПРОГРЕСС ===== */
 .status-msg {
     background: #ffe3b5;
     padding: 6px 12px;
@@ -501,35 +493,24 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     color: #1e4620;
 }
 
-/* ===== СКРЫТЫЕ БЛОКИ ===== */
 .fill-container .user-section {
     display: none;
 }
 
-/* ===== ВЕРТИКАЛЬНЫЕ РАЗДЕЛИТЕЛИ МЕЖДУ УЧАСТНИКАМИ ===== */
-/* Начиная с 8-й колонки (индекс 7) добавляем левую границу */
 #table-wrapper table td:nth-child(n+8),
 #table-wrapper table th:nth-child(n+8) {
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
+/* ===== МОБИЛЬНАЯ АДАПТАЦИЯ — ВСЁ КРУПНО ===== */
 @media (max-width: 768px) {
     body {
         padding: 8px;
     }
     
     .container, .fill-container {
-        padding: 10px;
+        padding: 12px;
         border-radius: 16px;
-    }
-    
-    h1 {
-        font-size: 1rem;
-    }
-    
-    .sub {
-        font-size: 0.65rem;
     }
     
     .fill-header {
@@ -554,66 +535,57 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         justify-content: center;
     }
     
-    .fill-controls-bar .user-input input {
-        width: 80px;
-        min-width: 70px;
-        max-width: 80px;
-    }
-    
     .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random {
-        padding: 3px 10px;
-        font-size: 0.7rem;
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 25px;
     }
     
-    .table-wrapper {
-        font-size: 10px;
+    /* BATTLE — КРУПНО */
+    .battle-container {
+        padding: 10px !important;
     }
     
-    th, td {
-        padding: 4px 3px;
+    .standings-table {
+        font-size: 14px;
     }
     
-    th:nth-child(1), td:nth-child(1) { width: 25px; }
-    th:nth-child(2), td:nth-child(2) { width: 45px; }
-    th:nth-child(3), td:nth-child(3) { width: 35px; }
-    th:nth-child(4), td:nth-child(4) { width: 35px; }
-    th:nth-child(5), td:nth-child(5) { width: 80px; }
-    th:nth-child(7), td:nth-child(7) { width: 80px; }
-    th:nth-child(8), td:nth-child(8) { width: 50px; }
-    
-    .fill-table th, .fill-table td {
-        padding: 4px 1px;
+    .standings-table th,
+    .standings-table td {
+        padding: 12px 6px;
     }
     
-    .fill-table th:nth-child(1), .fill-table td:nth-child(1) { width: 25px; }
-    .fill-table th:nth-child(2), .fill-table td:nth-child(2) { width: 40px; }
-    .fill-table th:nth-child(3), .fill-table td:nth-child(3) { width: 35px; }
-    .fill-table th:nth-child(4), .fill-table td:nth-child(4) { width: 35px; }
-    .fill-table th:nth-child(5), .fill-table td:nth-child(5) { width: 70px; }
-    .fill-table th:nth-child(7), .fill-table td:nth-child(7) { width: 70px; }
-    .fill-table th:nth-child(8), .fill-table td:nth-child(8) { width: 50px; }
-    
-    .team-name img {
-        width: 16px !important;
-        height: 12px !important;
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 50px;
+        font-size: 14px;
     }
     
-    .status-msg {
-        font-size: 0.65rem;
-        padding: 4px 8px;
+    .standings-table td:nth-child(2) > div {
+        min-height: 48px !important;
     }
     
-    #rulesModal > div {
-        max-width: 90%;
-        padding: 15px;
+    .standings-table td:nth-child(2) span {
+        padding: 8px 6px 8px 10px !important;
+        font-size: 13px !important;
     }
     
-    #rulesModal h2 {
-        font-size: 1.1rem;
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 70px;
+        font-size: 14px;
     }
     
-    #rulesModal p {
-        font-size: 0.7rem;
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 60px;
+        font-size: 14px;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 70px;
+        font-size: 14px;
     }
     
     .battle-selector-bar {
@@ -624,257 +596,107 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .battle-container .match-selector {
         flex-direction: column;
         align-items: stretch;
-    }
-    
-    .battle-container .match-selector select {
-        width: 100%;
-    }
-    
-    .battle-container .match-info {
-        text-align: center;
-    }
-    
-    .nav-buttons {
         gap: 10px;
     }
     
-    .nav-btn {
-        min-width: 85px;
-        padding: 4px 12px;
-        font-size: 0.7rem;
-    }
-    
-    .animate-all-btn {
-        width: 105px;
-    }
-    
-    /* ===== АДАПТАЦИЯ СТРАНИЦЫ BATTLE ДЛЯ ТЕЛЕФОНА ===== */
-    .battle-container {
-        padding: 8px !important;
-    }
-    
-    .standings-table {
-        font-size: 11px;
-        min-width: auto;
-    }
-    
-    .standings-table th,
-    .standings-table td {
-        padding: 6px 4px;
-    }
-    
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 35px;
-        font-size: 10px;
-        padding: 4px 2px;
-    }
-    
-    .standings-table th:nth-child(2) {
-        text-align: left;
-        font-size: 10px;
-    }
-    
-    .standings-table td:nth-child(2) {
-        padding: 0 !important;
-    }
-    
-    .standings-table td:nth-child(2) > div {
-        min-height: 36px !important;
-    }
-    
-    .standings-table td:nth-child(2) span {
-        padding: 5px 4px 5px 6px !important;
-        font-size: 10px !important;
-    }
-    
-    .standings-table th:nth-child(3),
-    .standings-table td:nth-child(3) {
-        width: 50px;
-        font-size: 10px;
-    }
-    
-    .standings-table th:nth-child(4),
-    .standings-table td:nth-child(4) {
-        width: 45px;
-        font-size: 10px;
-    }
-    
-    .standings-table th:nth-child(5),
-    .standings-table td:nth-child(5) {
-        width: 50px;
-        font-size: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .fill-controls-bar .user-input {
-        flex-wrap: wrap;
-    }
-    
-    .fill-controls-bar .user-input label {
-        width: 100%;
-    }
-    
-    .fill-controls-bar .user-input input {
-        width: 100%;
-    }
-    
-    th, td {
-        font-size: 9px;
-        padding: 3px 2px;
-    }
-    
-    .score-input {
-        width: 40px;
-        font-size: 0.65rem;
-    }
-    
-    .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random {
-        padding: 2px 8px;
-        font-size: 0.65rem;
-    }
-    
-    .nav-btn {
-        padding: 3px 8px;
-        font-size: 0.65rem;
-        min-width: 75px;
-    }
-    
-    .animate-all-btn {
-        width: 95px;
-    }
-    
     .battle-container .match-selector select {
         width: 100%;
-        font-size: 12px;
-        padding: 6px 8px;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 12px;
     }
     
-    .match-info {
-        font-size: 11px;
-        padding: 4px 8px;
-    }
-    
-    /* ===== УСИЛЕННАЯ АДАПТАЦИЯ BATTLE ДЛЯ МАЛЕНЬКИХ ТЕЛЕФОНОВ ===== */
-    .standings-table {
-        font-size: 10px;
-    }
-    
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 28px;
-        font-size: 9px;
-        padding: 3px 1px;
-    }
-    
-    .standings-table th:nth-child(3),
-    .standings-table td:nth-child(3) {
-        width: 42px;
-        font-size: 9px;
-        padding: 3px 2px;
-    }
-    
-    .standings-table th:nth-child(4),
-    .standings-table td:nth-child(4) {
-        width: 38px;
-        font-size: 9px;
-        padding: 3px 2px;
-    }
-    
-    .standings-table th:nth-child(5),
-    .standings-table td:nth-child(5) {
-        width: 42px;
-        font-size: 9px;
-        padding: 3px 2px;
-    }
-    
-    .standings-table td:nth-child(2) span {
-        font-size: 9px !important;
-        padding: 4px 3px 4px 5px !important;
-    }
-    
-    .standings-table td:nth-child(2) > div {
-        min-height: 30px !important;
-    }
-    
-    .progress-bar-bg {
-        height: 6px;
+    .battle-container .match-info {
+        font-size: 15px;
+        padding: 10px;
+        text-align: center;
     }
     
     .nav-buttons {
-        gap: 6px;
+        gap: 12px;
+        margin-top: 16px;
     }
     
     .nav-btn {
-        padding: 6px 0 !important;
-        font-size: 10px !important;
-        min-width: 0 !important;
         flex: 1;
+        padding: 12px 0 !important;
+        font-size: 15px !important;
+        min-width: 0;
         text-align: center;
+        border-radius: 12px;
     }
     
     .animate-all-btn {
         flex: 1.2;
     }
     
+    .progress-bar-bg {
+        height: 10px;
+    }
+    
     .fill-header__title h1 {
-        font-size: 14px !important;
+        font-size: 20px !important;
+    }
+    
+    .fill-header__title .sub {
+        font-size: 13px !important;
     }
     
     .btn-back {
-        padding: 3px 8px;
-        font-size: 10px;
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+    
+    .status-msg {
+        font-size: 13px;
+        padding: 8px 12px;
     }
 }
 
-/* ===== ДОПОЛНИТЕЛЬНАЯ АДАПТАЦИЯ ДЛЯ ОЧЕНЬ УЗКИХ ЭКРАНОВ (до 360px) ===== */
-@media (max-width: 360px) {
+@media (max-width: 480px) {
     .standings-table {
-        font-size: 9px;
+        font-size: 13px;
     }
     
     .standings-table th:nth-child(1),
     .standings-table td:nth-child(1) {
-        width: 24px;
-        font-size: 8px;
+        width: 45px;
+        font-size: 13px;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        font-size: 12px !important;
     }
     
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 38px;
-        font-size: 8px;
+        width: 65px;
+        font-size: 13px;
     }
     
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 34px;
-        font-size: 8px;
+        width: 55px;
+        font-size: 13px;
     }
     
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 38px;
-        font-size: 8px;
+        width: 65px;
+        font-size: 13px;
     }
     
-    .standings-table td:nth-child(2) span {
-        font-size: 8px !important;
-        padding: 3px 2px 3px 4px !important;
-    }
-    
-    .match-selector select {
-        font-size: 11px;
-        padding: 5px 6px;
-    }
-    
-    .match-info {
-        font-size: 10px;
-        padding: 3px 6px;
+    .battle-container .match-selector select {
+        font-size: 15px;
+        padding: 10px;
     }
     
     .nav-btn {
-        font-size: 9px !important;
-        padding: 5px 0 !important;
+        font-size: 14px !important;
+        padding: 10px 0 !important;
+    }
+    
+    .fill-header__title h1 {
+        font-size: 18px !important;
     }
 }
