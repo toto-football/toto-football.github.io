@@ -526,8 +526,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table {
-        min-width: 320px !important;
-        width: 320px !important;
+        min-width: 360px !important;
+        width: 360px !important;
         table-layout: fixed !important;
         border-collapse: collapse !important;
         border-spacing: 0 !important;
@@ -546,12 +546,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         text-align: center !important;
     }
     
-    /* Участник */
+    /* Участник — уже (60px) */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 70px !important;
-        min-width: 70px !important;
-        max-width: 70px !important;
+        width: 60px !important;
+        min-width: 60px !important;
+        max-width: 60px !important;
         padding: 0 !important;
         margin: 0 !important;
     }
@@ -559,24 +559,24 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table td:nth-child(2) > div {
         min-height: 36px !important;
         margin: 0 !important;
+        position: relative !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 4px 0 4px 4px !important;
-        font-size: 11px !important;
+        padding: 4px 0 4px 2px !important;
+        font-size: 10px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         display: block !important;
+        width: 100% !important;
     }
     
-    /* Прогноз — УБРАНО ВСЁ РАССТОЯНИЕ до Участника */
+    /* Прогноз — вплотную */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
         width: 32px !important;
         text-align: center !important;
-        padding-left: 0 !important;
-        margin-left: 0 !important;
     }
     
     /* Ошибка */
@@ -586,11 +586,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         text-align: center !important;
     }
     
-    /* Сумма ошибок */
+    /* Сумма ошибок — увеличен отступ слева (расстояние от Ошибки) */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 32px !important;
+        width: 38px !important;
         text-align: center !important;
+        padding-left: 6px !important;
     }
     
     /* Высота строк */
@@ -600,5 +601,11 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .standings-table td {
         vertical-align: middle !important;
+    }
+    
+    /* Чтобы таблица НЕ обрезалась — добавляем отступ справа для последнего заголовка */
+    .standings-table th:last-child,
+    .standings-table td:last-child {
+        padding-right: 8px !important;
     }
 }
