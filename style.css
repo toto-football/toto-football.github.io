@@ -499,13 +499,13 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         padding: 20px;
     }
     
-    /* Кнопка "Назад к таблице" — УМЕНЬШЕНА */
+    /* Кнопка "Назад к таблице" */
     .btn-back {
         padding: 4px 10px !important;
         font-size: 12px !important;
     }
     
-    /* Кнопки: Предыдущий, Анимация, Следующий — УМЕНЬШЕНЫ */
+    /* Кнопки навигации */
     .nav-btn {
         padding: 5px 0 !important;
         font-size: 12px !important;
@@ -525,23 +525,58 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table {
-        min-width: 650px !important;
-        width: 650px !important;
+        min-width: 550px !important;
+        width: 550px !important;
     }
     
+    /* ПЛОТНАЯ УПАКОВКА КОЛОНОК */
     .standings-table th,
     .standings-table td {
-        font-size: 14px !important;
-        padding: 6px 4px !important;
+        padding: 4px 2px !important;
+        font-size: 13px !important;
     }
     
-    /* Уменьшение высоты строк */
+    .standings-table th:nth-child(1),
+    .standings-table td:nth-child(1) {
+        width: 30px !important;
+        padding: 4px 1px !important;
+        font-size: 12px !important;
+    }
+    
+    .standings-table th:nth-child(2),
+    .standings-table td:nth-child(2) {
+        width: auto !important;
+        min-width: 90px;
+    }
+    
+    .standings-table th:nth-child(3),
+    .standings-table td:nth-child(3) {
+        width: 50px !important;
+        padding: 4px 1px !important;
+        font-size: 12px !important;
+    }
+    
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4) {
+        width: 40px !important;
+        padding: 4px 1px !important;
+        font-size: 12px !important;
+    }
+    
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        width: 50px !important;
+        padding: 4px 1px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Высота строк */
     .standings-table td:nth-child(2) > div {
-        min-height: 28px !important;
+        min-height: 26px !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 3px 3px 3px 6px !important;
+        padding: 2px 2px 2px 5px !important;
         font-size: 12px !important;
     }
     
