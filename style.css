@@ -247,8 +247,8 @@ h1 {
     background: #fffffa;
     border-radius: 20px;
     border: 1px solid #cfd9b7;
-    padding: 8px;
-    margin-bottom: 8px;
+    margin: 0;
+    padding: 0;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -510,6 +510,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
         border-radius: 20px !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .standings-table {
@@ -517,12 +519,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 370px !important;
     }
     
-    /* Участник — ширина 65px */
+    /* Участник — ширина 60px */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 65px !important;
-        min-width: 65px !important;
-        max-width: 65px !important;
+        width: 60px !important;
+        min-width: 60px !important;
+        max-width: 60px !important;
     }
     
     .standings-table td:nth-child(2) span {
