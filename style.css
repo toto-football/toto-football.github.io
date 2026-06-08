@@ -699,3 +699,30 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 16px;
     }
 }
+
+/* ===== ФИКС СКРОЛЛА BATTLE ===== */
+@media (max-width: 768px) {
+    body.battle-page,
+    .battle-container {
+        height: 100% !important;
+        min-height: 100vh !important;
+    }
+    
+    .battle-container {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .standings-table-wrapper {
+        flex: 1 1 auto !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        min-height: 200px !important;
+    }
+    
+    .standings-table {
+        display: table !important;
+        min-width: 550px !important;
+        width: max-content !important;
+    }
+}
