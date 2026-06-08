@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Заполнение прогнозов</title>
+    <link rel="icon" type="image/png" href="images/world-cup.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container fill-container">
+    <div class="fill-header">
+        <div class="fill-header__title">
+
+	    <h1><span id="logoContainer"></span>Заполнение прогноза</h1>
+
+            <div class="sub"></div>
+        </div>
+        <a href="index.html" class="btn-back">← Назад к таблице</a>
+    </div>
+
+    <div class="fill-controls-bar">
+        <div class="fill-controls-bar__left">
+            <div class="user-input">
+                <label>👤 Ваше имя:</label>
+                <input type="text" id="username" placeholder="Евпатий К." value="">
+                <span id="sentBadge" class="sent-badge" style="display: none;">✓ Прогноз уже отправлен</span>
+            </div>
+            <button id="submitBtn" class="btn-submit" disabled>📤 Отправить прогноз</button>
+        </div>
+        <div class="fill-controls-bar__right">
+            <button id="resetBtn" class="btn-reset">🗑 Очистить всё</button>
+            <button id="randomBtn" class="btn-random">🎲 Заполнить наугад</button>
+        </div>
+    </div>
+
+    <div id="writingProgressContainer" style="display: none; margin-top: 12px; margin-bottom: 12px;">
+        <div class="progress-bar-writing">
+            <div id="writingProgressFill" class="progress-fill"></div>
+        </div>
+        <div id="writingProgressText" class="progress-text-writing">⏳ Отправка...</div>
+    </div>
+
+    <div class="table-wrapper fill-table" id="table-wrapper">
+        <div class="loading-overlay">⏳ Загрузка таблицы матчей...<br><span style="font-size:0.75rem; color:#888;">(если не грузится, включите VPN)</span></div>
+    </div>
+
+    <div id="statusMsg" class="status-msg">⚡ Заполните счета для ВСЕХ матчей</div>
+</div>
+
+<script src="config.js"></script>
+<script src="fill.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Ход борьбы</title>
+    <link rel="icon" type="image/png" href="images/world-cup.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="velocity.min.js"></script>
+</head>
+<body>
+<div class="container battle-container">
+    <!-- ПЕРВЫЙ БЛОК: заголовок + подзаголовок слева, кнопка "Назад" справа (как на fill) -->
+    <div class="fill-header">
+        <div class="fill-header__title">
+
+	    <h1><span id="logoContainer"></span>Ход борьбы</h1>
+
+            <div class="sub"></div>
+        </div>
+        <a href="index.html" class="btn-back">← Назад к таблице</a>
+    </div>
+
+    <!-- ВТОРОЙ БЛОК: селектор матчей и информация о счёте -->
+    <div class="battle-selector-bar">
+        <div class="match-selector">
+            <select id="matchSelect"></select>
+            <div id="matchInfo" class="match-info"></div>
+        </div>
+    </div>
+
+    <div class="standings-table-wrapper" id="standingsTable">
+        <div class="loading-overlay">⏳ Загрузка данных...</div>
+    </div>
+
+    <div id="progressContainer" class="progress-container" style="display: none;">
+        <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button id="prevMatchBtn" class="nav-btn">◀ Предыдущий</button>
+        <button id="animateAllBtn" class="nav-btn animate-all-btn">Анимация ▶▶</button>
+        <button id="nextMatchBtn" class="nav-btn">Следующий ▶</button>
+    </div>
+</div>
+
+<script src="config.js"></script>
+<script src="battle.js"></script>
+</body>
+</html>
