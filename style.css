@@ -541,3 +541,11 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         padding-left: 2px !important;
     }
 }
+
+@media (max-width: 768px) {
+    .fill-header:has(.index-actions) .fill-header__title h1 {
+        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
