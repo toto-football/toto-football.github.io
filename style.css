@@ -549,3 +549,21 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* ===== INDEX — ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
+@media (max-width: 768px) {
+    .index-actions {
+        align-items: flex-end !important;
+        width: 100% !important;
+    }
+    
+    .index-actions__row {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+    
+    .index-actions__buttons {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+}
