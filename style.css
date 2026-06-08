@@ -518,19 +518,20 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 360px !important;
     }
     
-    /* Участник — ширина 50px (текст не обрезается) */
+    /* Участник — ширина 55px, без переноса */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 50px !important;
-        min-width: 50px !important;
-        max-width: 50px !important;
+        width: 55px !important;
+        min-width: 55px !important;
+        max-width: 55px !important;
     }
     
     .standings-table td:nth-child(2) span {
         font-size: 9px !important;
         padding: 4px 2px !important;
-        white-space: normal !important;
-        word-break: break-word !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
     
     /* Расстояние между Ошибка и Сумма ошибок — 2px */
