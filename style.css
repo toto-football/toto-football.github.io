@@ -250,17 +250,20 @@ h1 {
 
 .standings-table-wrapper {
     overflow-x: auto;
+    overflow-y: auto;
     background: #fffffa;
     border-radius: 20px;
     border: 1px solid #cfd9b7;
     padding: 8px;
     margin-bottom: 8px;
     -webkit-overflow-scrolling: touch;
+    max-height: 70vh;
 }
 
 .standings-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 500px;
 }
 
 .standings-table th,
@@ -514,6 +517,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .battle-container {
         padding: 20px !important;
+        height: auto;
+        overflow-y: visible;
     }
     
     .fill-header {
@@ -562,8 +567,14 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         border-radius: 20px;
     }
     
+    .standings-table-wrapper {
+        max-height: 55vh;
+        overflow-y: auto;
+    }
+    
     .standings-table {
         font-size: 12px;
+        min-width: 500px;
     }
     
     .standings-table th,
@@ -648,6 +659,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 @media (max-width: 480px) {
     .standings-table {
         font-size: 11px;
+        min-width: 480px;
     }
     
     .standings-table th:nth-child(1),
