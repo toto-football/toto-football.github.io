@@ -493,101 +493,14 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН — ЕДИНЫЙ БЛОК ===== */
+/* ===== ТЕЛЕФОН — ТОЛЬКО ДЛЯ INDEX ===== */
 @media (max-width: 768px) {
-    body {
-        padding: 20px;
-    }
-    
-    /* Кнопки */
-    .btn-back {
-        padding: 4px 10px !important;
-        font-size: 12px !important;
-    }
-    
-    .nav-btn {
-        padding: 5px 0 !important;
-        font-size: 12px !important;
-        min-width: 65px !important;
-    }
-    
-    .battle-container .match-selector select {
-        padding: 6px 10px !important;
-        font-size: 13px !important;
-    }
-    
-    /* Таблица */
-    .standings-table-wrapper {
-        overflow-x: scroll !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .standings-table {
-        min-width: 480px !important;
-        width: 480px !important;
-    }
-    
-    /* Сжатие колонок */
-    .standings-table th,
-    .standings-table td {
-        padding: 3px 1px !important;
-        font-size: 11px !important;
-    }
-    
-    .standings-table th:nth-child(1),
-    .standings-table td:nth-child(1) {
-        width: 25px !important;
-        padding: 3px 0 !important;
-        font-size: 10px !important;
-    }
-    
-    .standings-table th:nth-child(2),
-    .standings-table td:nth-child(2) {
-        width: auto !important;
-        min-width: 80px;
-    }
-    
-    .standings-table th:nth-child(3),
-    .standings-table td:nth-child(3) {
-        width: 40px !important;
-        padding: 3px 0 !important;
-        font-size: 10px !important;
-    }
-    
-    .standings-table th:nth-child(4),
-    .standings-table td:nth-child(4) {
-        width: 30px !important;
-        padding: 3px 0 !important;
-        font-size: 10px !important;
-    }
-    
-    .standings-table th:nth-child(5),
-    .standings-table td:nth-child(5) {
-        width: 40px !important;
-        padding: 3px 0 !important;
-        font-size: 10px !important;
-    }
-    
-    .standings-table td:nth-child(2) > div {
-        min-height: 22px !important;
-    }
-    
-    .standings-table td:nth-child(2) span {
-        padding: 2px 2px 2px 3px !important;
-        font-size: 10px !important;
-    }
-    
-    .fill-header__title h1 {
-        font-size: 18px;
-    }
-    
-    /* Подзаголовок на index — только запрет переноса, без изменения шрифта */
     .index-actions {
-        width: 100%;
+        width: auto;
+        flex-shrink: 0;
     }
     
     .fill-header__title .sub {
         white-space: nowrap;
-        overflow-x: auto;
     }
 }
