@@ -493,12 +493,32 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН — КАК INDEX ===== */
+/* ===== ТЕЛЕФОН — ЕДИНЫЙ БЛОК ===== */
 @media (max-width: 768px) {
     body {
         padding: 20px;
     }
     
+    /* Кнопка "Назад к таблице" — УМЕНЬШЕНА */
+    .btn-back {
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Кнопки: Предыдущий, Анимация, Следующий — УМЕНЬШЕНЫ */
+    .nav-btn {
+        padding: 5px 0 !important;
+        font-size: 12px !important;
+        min-width: 70px !important;
+    }
+    
+    /* Селектор матчей */
+    .battle-container .match-selector select {
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+    }
+    
+    /* Таблица — горизонтальный скролл */
     .standings-table-wrapper {
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
@@ -512,31 +532,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table th,
     .standings-table td {
         font-size: 14px !important;
-        padding: 10px 8px !important;
+        padding: 6px 4px !important;
     }
     
-    .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-    
-    .battle-container .match-selector select {
-        padding: 10px 12px;
-        font-size: 14px;
-    }
-    
-    .nav-btn {
-        padding: 10px 0;
-        font-size: 14px;
-    }
-    
-    .fill-header__title h1 {
-        font-size: 18px;
-    }
-}
-
-/* ===== УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ ===== */
-@media (max-width: 768px) {
+    /* Уменьшение высоты строк */
     .standings-table td:nth-child(2) > div {
         min-height: 28px !important;
     }
@@ -546,8 +545,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         font-size: 12px !important;
     }
     
-    .standings-table th,
-    .standings-table td {
-        padding: 4px 3px !important;
+    .fill-header__title h1 {
+        font-size: 18px;
     }
 }
