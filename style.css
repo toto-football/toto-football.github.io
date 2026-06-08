@@ -525,40 +525,39 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table {
-        min-width: 380px !important;
-        width: 380px !important;
+        min-width: 320px !important;
+        width: 320px !important;
         table-layout: fixed !important;
     }
     
     .standings-table th,
     .standings-table td {
-        padding: 4px 1px !important;
+        padding: 4px 0 !important;
         font-size: 10px !important;
     }
     
     /* Место */
     .standings-table th:nth-child(1),
     .standings-table td:nth-child(1) {
-        width: 22px !important;
-        padding: 4px 0 !important;
+        width: 20px !important;
         text-align: center !important;
     }
     
-    /* Участник — максимально сжато */
+    /* Участник */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 85px !important;
-        min-width: 85px !important;
-        max-width: 85px !important;
+        width: 65px !important;
+        min-width: 65px !important;
+        max-width: 65px !important;
         padding: 0 !important;
     }
     
     .standings-table td:nth-child(2) > div {
-        min-height: 24px !important;
+        min-height: 22px !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 2px 2px 2px 2px !important;
+        padding: 2px 2px 2px 3px !important;
         font-size: 9px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
@@ -569,24 +568,21 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     /* Прогноз */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 32px !important;
-        padding: 4px 0 !important;
+        width: 30px !important;
         text-align: center !important;
     }
     
     /* Ошибка */
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 28px !important;
-        padding: 4px 0 !important;
+        width: 25px !important;
         text-align: center !important;
     }
     
     /* Сумма ошибок */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 32px !important;
-        padding: 4px 0 !important;
+        width: 30px !important;
         text-align: center !important;
     }
 }
