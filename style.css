@@ -493,91 +493,94 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН — ЕДИНЫЙ БЛОК ===== */
+/* ===== ТЕЛЕФОН — МАКСИМАЛЬНОЕ СЖАТИЕ ===== */
 @media (max-width: 768px) {
     body {
         padding: 20px;
     }
     
-    /* Кнопка "Назад к таблице" */
+    /* Кнопки */
     .btn-back {
         padding: 4px 10px !important;
         font-size: 12px !important;
     }
     
-    /* Кнопки навигации */
     .nav-btn {
         padding: 5px 0 !important;
         font-size: 12px !important;
-        min-width: 70px !important;
+        min-width: 65px !important;
     }
     
-    /* Селектор матчей */
     .battle-container .match-selector select {
         padding: 6px 10px !important;
         font-size: 13px !important;
     }
     
-    /* Таблица — горизонтальный скролл */
+    /* Таблица */
     .standings-table-wrapper {
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
     }
     
     .standings-table {
-        min-width: 550px !important;
-        width: 550px !important;
+        min-width: 480px !important;
+        width: 480px !important;
     }
     
-    /* ПЛОТНАЯ УПАКОВКА КОЛОНОК */
+    /* МАКСИМАЛЬНОЕ СЖАТИЕ КОЛОНОК */
     .standings-table th,
     .standings-table td {
-        padding: 4px 2px !important;
-        font-size: 13px !important;
+        padding: 3px 1px !important;
+        font-size: 11px !important;
     }
     
+    /* Место */
     .standings-table th:nth-child(1),
     .standings-table td:nth-child(1) {
-        width: 30px !important;
-        padding: 4px 1px !important;
-        font-size: 12px !important;
+        width: 25px !important;
+        padding: 3px 0 !important;
+        font-size: 10px !important;
     }
     
+    /* Участник */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
         width: auto !important;
-        min-width: 90px;
+        min-width: 80px;
     }
     
+    /* Прогноз */
     .standings-table th:nth-child(3),
     .standings-table td:nth-child(3) {
-        width: 50px !important;
-        padding: 4px 1px !important;
-        font-size: 12px !important;
+        width: 40px !important;
+        padding: 3px 0 !important;
+        font-size: 10px !important;
     }
     
+    /* Ошибка */
     .standings-table th:nth-child(4),
     .standings-table td:nth-child(4) {
-        width: 40px !important;
-        padding: 4px 1px !important;
-        font-size: 12px !important;
+        width: 30px !important;
+        padding: 3px 0 !important;
+        font-size: 10px !important;
     }
     
+    /* Сумма ошибок */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
-        width: 50px !important;
-        padding: 4px 1px !important;
-        font-size: 12px !important;
+        width: 40px !important;
+        padding: 3px 0 !important;
+        font-size: 10px !important;
     }
     
     /* Высота строк */
     .standings-table td:nth-child(2) > div {
-        min-height: 26px !important;
+        min-height: 22px !important;
     }
     
     .standings-table td:nth-child(2) span {
-        padding: 2px 2px 2px 5px !important;
-        font-size: 12px !important;
+        padding: 2px 2px 2px 3px !important;
+        font-size: 10px !important;
     }
     
     .fill-header__title h1 {
