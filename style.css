@@ -567,3 +567,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 100% !important;
     }
 }
+
+/* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
+.standings-table td:nth-child(2) span {
+    font-weight: 700 !important;
+}
