@@ -315,7 +315,7 @@ function updateAnimateAllButton() {
     if (isAutoPlaying) {
         animateAllBtn.innerHTML = 'Стоп ◼';
     } else {
-        animateAllBtn.innerHTML = 'Анимация ▶▶';
+        animateAllBtn.innerHTML = 'Авто ▶▶';
     }
 }
 

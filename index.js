@@ -477,10 +477,19 @@ function renderTable() {
         tr.appendChild(createCell('–', false, '', true));
         tr.appendChild(createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name'));
         
-        const resultCell = createCell(m.result, false, 'result-cell');
-        resultCell.style.backgroundColor = (m.result && m.result !== '—') ? '#a8d0e6' : '#e8f4f8';
-        if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
-        tr.appendChild(resultCell);
+	const resultCell = createCell(m.result, false, 'result-cell');
+	// Для ячейки результата
+	if (m.result && m.result !== '—') {
+	    // Чередуем оттенки голубого в зависимости от дня (используем bg, который уже определён)
+	    // bg = 'transparent' для светлого дня, bg = '#f0f0e8' для тёмного дня
+	    const isLightDay = bg === 'transparent';
+	    resultCell.style.backgroundColor = isLightDay ? '#a8d0e6' : '#7fb8d0';
+	} else {
+	    // Если нет счета — тот же фон, что у строки
+	    resultCell.style.backgroundColor = bg;
+	}
+	if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
+	tr.appendChild(resultCell);
         
         for (let idx = 0; idx < participantsData.length; idx++) {
             const p = participantsData[idx];
