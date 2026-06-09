@@ -333,12 +333,14 @@ h1 {
 }
 
 .animate-all-btn {
-    background: #8e44ad;
-    width: 120px;
+    background: #2c7840;
+    color: white;
+    width: 100px;
 }
 
-.animate-all-btn:hover:not(:disabled) {
-    background: #6c3483;
+.animate-all-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .table-wrapper {
