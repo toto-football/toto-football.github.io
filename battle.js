@@ -313,7 +313,7 @@ function updateAnimateAllButton() {
     const animateAllBtn = document.getElementById('animateAllBtn');
     if (!animateAllBtn) return;
     if (isAutoPlaying) {
-        animateAllBtn.innerHTML = 'Стоп ◼';
+        animateAllBtn.innerHTML = 'Стоп';
     } else {
         animateAllBtn.innerHTML = 'Авто ▶▶';
     }

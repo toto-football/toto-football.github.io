@@ -582,6 +582,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 @media (max-width: 768px) {
     .container {
         height: 96vh;
-        padding: 4px;
+        padding: 8px;
     }
 }
