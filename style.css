@@ -20,6 +20,9 @@ body {
     border-radius: 28px;
     padding: 12px;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    height: 96vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .fill-container {
@@ -340,9 +343,12 @@ h1 {
 
 .table-wrapper {
     overflow-x: auto;
+    overflow-y: auto;
     border-radius: 20px;
     border: 1px solid #cfd9b7;
     background: #fffffa;
+    flex: 1;
+    min-height: 0;
 }
 
 table {
@@ -571,4 +577,11 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 /* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
 .standings-table td:nth-child(2) span {
     font-weight: 700 !important;
+}
+
+@media (max-width: 768px) {
+    .container {
+        height: 96vh;
+        padding: 4px;
+    }
 }
