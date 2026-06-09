@@ -483,7 +483,8 @@ function renderTable() {
 	    // Чередуем оттенки голубого в зависимости от дня (используем bg, который уже определён)
 	    // bg = 'transparent' для светлого дня, bg = '#f0f0e8' для тёмного дня
 	    const isLightDay = bg === 'transparent';
-	    resultCell.style.backgroundColor = isLightDay ? '#a8d0e6' : '#7fb8d0';
+	    //resultCell.style.backgroundColor = isLightDay ? '#a8d0e6' : '#7fb8d0';
+	    resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
 	} else {
 	    // Если нет счета — тот же фон, что у строки
 	    resultCell.style.backgroundColor = bg;
