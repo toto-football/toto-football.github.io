@@ -248,7 +248,7 @@ h1 {
 .standings-table-wrapper {
     overflow-x: auto;
     background: #fffffa;
-    //border-radius: 20px;
+    border-radius: 8px;
     border: 1px solid #cfd9b7;
     margin: 0;
     padding: 0;
@@ -346,7 +346,7 @@ h1 {
 .table-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    //border-radius: 20px;
+    border-radius: 8px;
     border: 1px solid #cfd9b7;
     background: #fffffa;
     flex: 1;
@@ -517,7 +517,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table-wrapper {
         overflow-x: scroll !important;
         -webkit-overflow-scrolling: touch !important;
-        //border-radius: 20px !important;
+        border-radius: 8px !important;
         margin: 0 !important;
         padding: 0 !important;
     }
