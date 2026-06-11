@@ -588,3 +588,17 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         padding: 8px;
     }
 }
+
+/* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ С СОХРАНЕНИЕМ ЦВЕТОВ ===== */
+/* Заголовки участников */
+.participant-col {
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+/* Ячейки с прогнозами участников */
+#table-wrapper table td:nth-child(n+9) {
+    box-shadow: inset -1px -1px 3px rgba(0,0,0,0.08), inset 1px 1px 3px rgba(255,255,255,0.5);
+    border-radius: 8px;
+}
