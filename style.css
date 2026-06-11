@@ -14,8 +14,8 @@ body {
 }
 
 .container {
-    /* max-width: 1300px;*/
-    max-width: 95%;
+    /* max-width: 1300px; */
+    max-width: 100%;
     margin: 0 auto;
     background: #fef9e8;
     border-radius: 24px;
@@ -362,7 +362,7 @@ table {
 }
 
 th {
-    background: #dde8c0 !important;
+    background: #dde8c0;
     position: sticky;
     top: 0;
     z-index: 20;
@@ -370,7 +370,7 @@ th {
 }
 
 .participant-col {
-    background-color: #e0e6e0 !important;
+    background-color: #e0e6e0;
     position: sticky;
     top: 0;
     z-index: 20;

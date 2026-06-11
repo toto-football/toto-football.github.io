@@ -177,6 +177,29 @@ function formatTeamWithFlag(teamName, position = 'home') {
     }
 }
 
+// ========== ЦВЕТА ДЛЯ УЧАСТНИКОВ ==========
+let participantColors = {};
+
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+function getParticipantColor(name) {
+    if (!participantColors[name]) {
+        const hash = hashCode(name);
+        const hue = hash % 360;
+        const saturation = 30 + (hash % 20);
+        const lightness = 90 + (hash % 5);
+        participantColors[name] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+    return participantColors[name];
+}
+
 // ========== АКТИВАЦИЯ КНОПОК ==========
 function activateButtons() {
     const fillBtn = document.getElementById('fillBtn');
@@ -446,10 +469,15 @@ function renderTable() {
         const totalScore = totalScores.find(ts => ts.name === p.name)?.totalScore || 0;
         const th = document.createElement('th');
         th.classList.add('participant-col');
+    
+        // Получаем цвет участника (как в battle.js)
+        const bgColor = getParticipantColor(p.name);
+    
+        th.style.backgroundColor = bgColor;
         th.innerHTML = `<div><div style="font-size:0.65rem;color:#b8860b;">${rank}</div><div>${p.name}</div><div style="font-size:0.65rem;color:#888;">${totalScore}</div></div>`;
         headerRow.appendChild(th);
     }
-    
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
