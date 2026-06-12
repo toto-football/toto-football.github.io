@@ -242,10 +242,23 @@ function getStandingsAfterMatches(upToMatchIndex) {
 
 function calculateProgressWidth(totalSum, allSums) {
     if (!allSums.length) return 0;
+    
+    // Находим минимальное и максимальное значение
     const maxSum = Math.max(...allSums);
-    if (maxSum === 0) return 0;
-    let percent = (totalSum / maxSum) * 100;
-    return Math.max(5, Math.min(100, percent));
+    const minSum = Math.min(...allSums);
+    
+    // Если все суммы одинаковы (диапазон 0) — не показываем прогресс
+    if (maxSum === minSum) return 0;
+    
+    // Смещаем шкалу так, чтобы минимальное значение было в 0%
+    // А максимальное — в 100%
+    let percent = ((totalSum - minSum) / (maxSum - minSum)) * 100;
+    
+    // Ограничиваем от 0 до 100%
+    percent = Math.max(0, Math.min(100, percent));
+    
+    // Минимальная ширина 5%, максимальная 100%
+    return Math.max(5, percent);
 }
 
 async function loadData() {
@@ -507,12 +520,16 @@ function animateFlipWithCallback(callback) {
         html += `
             <tr class="standings-row" data-name="${item.name}" style="background-color: ${bgColor};">
                 <td style="color: #b8860b; font-weight: bold; text-align: center;">${item.rank}</td>
-                <td style="text-align: left; font-weight: 500; position: relative; padding: 0;">
-                    <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
-                        <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 3px;"></div>
-                        <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${item.name}</span>
-                    </div>
-                </td>
+                
+		<td style="text-align: left; font-weight: 500; padding: 2px;">
+		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
+		        <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
+		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
+		            <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${item.name}</span>
+		        </div>
+		    </div>
+		</td>
+
                 <td style="text-align: center; font-family: monospace;">${item.prediction}</td>
                 <td style="text-align: center; font-weight: bold;">${item.matchError}</td>
                 <td style="text-align: center; font-weight: bold;">${item.totalSum}</td>
@@ -596,20 +613,24 @@ function renderStandingsStatic() {
         const darkerColor = getParticipantDarkerColor(sorted[i].name);
         const progressPercent = calculateProgressWidth(sorted[i].totalSum, allSums);
         
-        html += `
-            <tr class="standings-row" data-name="${sorted[i].name}" style="background-color: ${bgColor};">
-                <td style="color: #b8860b; font-weight: bold; text-align: center;">${sorted[i].rank}</td>
-                <td style="text-align: left; font-weight: 500; position: relative; padding: 0;">
-                    <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
-                        <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 3px;"></div>
-                        <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
-                    </div>
-                </td>
-                <td style="text-align: center; font-family: monospace;">${sorted[i].prediction}</td>
-                <td style="text-align: center; font-weight: bold;">${sorted[i].matchError}</td>
-                <td style="text-align: center; font-weight: bold;">${sorted[i].totalSum}</td>
-            </tr>
-        `;
+	html += `
+	    <tr class="standings-row" data-name="${sorted[i].name}" style="background-color: ${bgColor};">
+	        <td style="color: #b8860b; font-weight: bold; text-align: center;">${sorted[i].rank}</td>
+
+	        <td style="text-align: left; font-weight: 500; padding: 2px;">
+	            <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
+	                <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
+	                    <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
+	                    <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
+        	        </div>
+	            </div>
+	        </td>
+
+	        <td style="text-align: center; font-family: monospace;">${sorted[i].prediction}</td>
+	        <td style="text-align: center; font-weight: bold;">${sorted[i].matchError}</td>
+	        <td style="text-align: center; font-weight: bold;">${sorted[i].totalSum}</td>
+	    </tr>
+	`;
     }
     html += `</tbody> <table>`;
     container.innerHTML = html;

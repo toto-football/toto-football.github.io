@@ -264,7 +264,7 @@ h1 {
 .standings-table th,
 .standings-table td {
     padding: 10px 8px;
-    border-bottom: 1px solid #9aaa80;
+    /* border-bottom: 1px solid #9aaa80; */
 }
 
 .standings-table tr:last-child td {
@@ -601,4 +601,49 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 #table-wrapper table td:nth-child(n+9) {
     box-shadow: inset -1px -1px 3px rgba(0,0,0,0.08), inset 1px 1px 3px rgba(255,255,255,0.5);
     border-radius: 8px;
+}
+
+/* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ НА BATTLE (СИЛЬНЫЙ ЭФФЕКТ) ===== */
+.standings-table td:nth-child(2) > div {
+    /* Не переопределяем background-color, чтобы не сломать цветные фоны */
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.15), inset 3px 3px 6px rgba(255,255,255,0.6), 4px 4px 8px rgba(0,0,0,0.15);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+/* Добавляем лёгкий градиент поверх, но не заменяя цвет */
+.standings-table td:nth-child(2) > div::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.3), rgba(0,0,0,0.05));
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Текст поверх эффекта */
+.standings-table td:nth-child(2) span {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "МЕСТО" НА BATTLE (БЕЗ ИЗМЕНЕНИЯ ФОНА) ===== */
+.standings-table td:nth-child(1) {
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.08), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.standings-cell-3d {
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.6), 2px 2px 6px rgba(0,0,0,0.1);
+    background: inherit;
+}
+
+/* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "РЕЗУЛЬТАТ" НА INDEX ===== */
+.result-cell {
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
 }
