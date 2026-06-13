@@ -379,7 +379,8 @@ th {
 }
 
 td {
-    padding: 6px 6px;
+    /*padding: 6px 6px;*/
+    padding: 2px 4px;
     border-bottom: 1px solid #e7edcf;
     text-align: center;
 }
