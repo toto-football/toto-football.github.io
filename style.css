@@ -603,8 +603,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table {
-        min-width: 370px !important;
-        width: auto !important;
+        /*min-width: 370px !important;*/
+        width: 100% !important;
 	max-width: 100% !important;
     }
     
