@@ -551,6 +551,13 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table td:nth-child(5) {
         padding-left: 2px !important;
     }
+
+    /* ДОБАВЬТЕ ЭТО — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ */
+    .standings-table th,
+    .standings-table td {
+        padding: 2px 4px !important;
+        line-height: 1.2 !important;
+    }
 }
 
 @media (max-width: 768px) {
