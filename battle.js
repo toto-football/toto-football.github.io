@@ -563,7 +563,7 @@ function animateFlipWithCallback(callback) {
         
         setTimeout(() => {
             newItems.forEach(item => {
-                item.style.transition = 'transform 1s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+                item.style.transition = 'transform 3s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
                 item.style.transform = 'translateY(0)';
             });
         }, 20);
@@ -576,7 +576,7 @@ function animateFlipWithCallback(callback) {
             isAnimating = false;
             updateNavButtons();
             if (callback) callback();
-        }, 1100);
+        }, 3300);
     } else {
         isAnimating = false;
         updateNavButtons();
