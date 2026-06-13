@@ -542,12 +542,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 370px !important;
     }
     
-    /* Участник — ширина 80px */
+    /* Участник — ширина 90px */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 80px !important;
-        min-width: 80px !important;
-        max-width: 80px !important;
+        width: 90px !important;
+        min-width: 90px !important;
+        max-width: 90px !important;
     }
     
     .standings-table td:nth-child(2) span {
@@ -706,15 +706,15 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 /* ===== ТОЛЬКО BATTLE НА ТЕЛЕФОНЕ — УМЕНЬШЕНИЕ отступов по высоте в верхней части ===== */
 @media (max-width: 768px) {
     .battle-container {
-        padding-top: 2px !important;
+        padding-top: 4px !important;
     }
     
     .battle-selector-bar {
-        margin-bottom: 2px !important;
+        margin-bottom: 4px !important;
     }
     
     .battle-container .fill-header {
-        margin-bottom: 2px !important;
-        gap: 2px !important;
+        margin-bottom: 4px !important;
+        gap: 4px !important;
     }
 }
