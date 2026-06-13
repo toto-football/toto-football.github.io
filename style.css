@@ -608,6 +608,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         height: 96vh;
         padding: 8px;
     }
+
+    .battle-container {
+        padding-top: 4px !important;
+    }
 }
 
 /* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ С СОХРАНЕНИЕМ ЦВЕТОВ ===== */
