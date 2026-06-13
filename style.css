@@ -583,20 +583,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     /* ===== BATTLE: НАСТРОЙКИ ПОКАЗА ТАБЛИЦЫ ===== */
     .standings-table-wrapper {
-/*        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        border-radius: 8px !important;
-        margin: 0 !important;
-        padding: 0 !important; */
-
 	width: 100% !important; 
     }
-    
-/*    /* ===== BATTLE: НАСТРОЙКИ ТАБЛИЦЫ ===== */
-    .standings-table {
-        width: 100% !important; 
-	max-width: 100% !important;
-    } */
     
     /* ===== BATTLE: КОЛОНКА УЧАСТНИК — ширина 90px */
     .standings-table th:nth-child(2),
@@ -620,15 +608,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table td:nth-child(5) {
         padding-left: 1px !important;
     }
-
-/*
-    /* ==== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ ===== */
-    .standings-table th,
-    .standings-table td {
-        padding: 2px 4px !important;
-        line-height: 1.2 !important;
-    } */
-
 }
 
 /* ===== INDEX: ПРОКРУТКА ЗАГОЛОВКА ГОРИЗОНТАЛЬНО ===== */
@@ -643,12 +622,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 /* ===== INDEX: ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
 @media (max-width: 768px) {
     .index-actions {
-/*        align-items: flex-end !important;*/
         width: 100%;
     }
     
     .index-actions__row {
-/*        justify-content: flex-end !important;*/
         width: 100%;
     }
     
@@ -660,21 +637,19 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 /* ===== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ТАБЛИЦЫ ===== */
 @media (max-width: 768px) {
-/*
     .battle-container .standings-table td {
-        padding: 2px 4px !important;
-    } */
-    
-    .battle-container .standings-table td:nth-child(2) span {
-        padding: 2px 2px !important;
+        padding: 2px 2px !important;  	/* уменьшаем отступы ячеек */
+        line-height: 1.1 !important;   	/* уменьшаем высоту строки */
     }
+
+/*    .battle-container .standings-table td:nth-child(2) span {
+        padding: 2px 2px !important;
+    } */
 }
 
 /* ===== ДЛЯ ВСЕХ СТРАНИЦ: ОДИНАКОВЫЕ ОТСТУПЫ МЕЖДУ БЛОКАМИ ВВЕРХУ, НАД ТАБЛИЦАМИ ===== */
 @media (max-width: 768px) {
     .container {
-/*        height: 96vh;
-        padding-top: 4px; */
         padding: 8px;
     }
 
