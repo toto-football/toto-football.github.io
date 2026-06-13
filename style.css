@@ -610,7 +610,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 
     .battle-container {
-        padding-top: 4px !important;
+        padding: 4px 8px 8px 8px !important;
     }
 }
 
@@ -700,5 +700,21 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     
     .battle-container .standings-table td:nth-child(2) span {
         padding: 2px 2px !important;
+    }
+}
+
+/* ===== ТОЛЬКО BATTLE НА ТЕЛЕФОНЕ — УМЕНЬШЕНИЕ отступов по высоте в верхней части ===== */
+@media (max-width: 768px) {
+    .battle-container {
+        padding-top: 2px !important;
+    }
+    
+    .battle-selector-bar {
+        margin-bottom: 2px !important;
+    }
+    
+    .battle-container .fill-header {
+        margin-bottom: 2px !important;
+        gap: 2px !important;
     }
 }
