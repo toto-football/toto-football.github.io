@@ -523,7 +523,7 @@ function animateFlipWithCallback(callback) {
                 
 		<td style="text-align: left; font-weight: 500; padding: 2px;">
 		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
-		        <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
+		        <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
 		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
 		            <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${item.name}</span>
 		        </div>
@@ -619,7 +619,7 @@ function renderStandingsStatic() {
 
 	        <td style="text-align: left; font-weight: 500; padding: 2px;">
 	            <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
-	                <div style="position: relative; display: flex; align-items: center; min-height: 44px;">
+	                <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
 	                    <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
 	                    <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
         	        </div>
