@@ -530,12 +530,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 370px !important;
     }
     
-    /* Участник — ширина 70px */
+    /* Участник — ширина 80px */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
-        width: 70px !important;
-        min-width: 70px !important;
-        max-width: 70px !important;
+        width: 80px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
     }
     
     .standings-table td:nth-child(2) span {
