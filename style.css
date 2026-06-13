@@ -593,16 +593,19 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
     
     .standings-table-wrapper {
-        overflow-x: scroll !important;
+        /*overflow-x: scroll !important;*/
+        overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         border-radius: 8px !important;
         margin: 0 !important;
         padding: 0 !important;
+	width: 100% !important; 
     }
     
     .standings-table {
         min-width: 370px !important;
-        width: 370px !important;
+        width: auto !important;
+	max-width: 100% !important;
     }
     
     /* Участник — ширина 90px */
