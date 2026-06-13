@@ -245,6 +245,7 @@ h1 {
     margin: 0 auto;
     padding: 12px;
     padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .standings-table-wrapper {
@@ -315,6 +316,7 @@ h1 {
     justify-content: center;
     gap: 12px;
     margin-top: 4px;
+    margin-bottom: 4px;
     flex-wrap: wrap;
 }
 
@@ -563,6 +565,26 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-radius: 10px;
 }
 
+/* ===== BATTLE: ПУЛЬСАЦИЯ ЦИФРЫ УГАДАВШИХ СЧЁТ ===== */
+@keyframes pulse-bullseye {
+    0% {
+        color: #1e4620;
+        transform: scale(1);
+    }
+    50% {
+        color: #e63946;
+        transform: scale(1.5);
+    }
+    100% {
+        color: #1e4620;
+        transform: scale(1);
+    }
+}
+
+.pulse-bullseye {
+    animation: pulse-bullseye 1s ease-in-out infinite;
+    display: inline-block;
+}
 
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */

@@ -531,7 +531,12 @@ function animateFlipWithCallback(callback) {
 		</td>
 
                 <td style="text-align: center; font-family: monospace;">${item.prediction}</td>
-                <td style="text-align: center; font-weight: bold;">${item.matchError}</td>
+                
+		${item.matchError === -2 
+		    ? `<td style="text-align: center; font-weight: bold;"><span class="pulse-bullseye">${item.matchError}</span></td>`
+		    : `<td style="text-align: center; font-weight: bold;">${item.matchError}</td>`
+		}
+
                 <td style="text-align: center; font-weight: bold;">${item.totalSum}</td>
             </tr>
         `;
@@ -627,7 +632,12 @@ function renderStandingsStatic() {
 	        </td>
 
 	        <td style="text-align: center; font-family: monospace;">${sorted[i].prediction}</td>
-	        <td style="text-align: center; font-weight: bold;">${sorted[i].matchError}</td>
+	        
+		${sorted[i].matchError === -2 
+		    ? `<td style="text-align: center; font-weight: bold;"><span class="pulse-bullseye">${sorted[i].matchError}</span></td>`
+		    : `<td style="text-align: center; font-weight: bold;">${sorted[i].matchError}</td>`
+		}
+
 	        <td style="text-align: center; font-weight: bold;">${sorted[i].totalSum}</td>
 	    </tr>
 	`;
