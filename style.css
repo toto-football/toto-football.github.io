@@ -14,7 +14,6 @@ body {
 }
 
 .container {
-    /* max-width: 1300px; */
     max-width: 100%;
     margin: 0 auto;
     background: #fef9e8;
@@ -265,10 +264,8 @@ h1 {
 
 .standings-table th,
 .standings-table td {
-    /* padding: 10px 8px; */
     padding: 2px 4px;
     line-height: 1.2;
-    /* border-bottom: 1px solid #9aaa80; */
 }
 
 .standings-table tr:last-child td {
@@ -381,9 +378,7 @@ th {
 }
 
 td {
-    /*padding: 6px 6px;*/
     padding: 2px 4px;
-    /*border-bottom: 1px solid #e7edcf;*/
     text-align: center;
 }
 
@@ -502,12 +497,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     display: none;
 }
 
-/* ===== Вертикальные границы на INDEX ===== */
-/* #table-wrapper table td:nth-child(n+8),
-#table-wrapper table th:nth-child(n+8) {
-    border-left: 1px solid rgba(0, 0, 0, 0.12);
-} */
-
 /* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
 .standings-table td:nth-child(2) span {
     font-weight: 700 !important;
@@ -527,7 +516,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-radius: 8px;
 }
 
-/* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ НА BATTLE (СИЛЬНЫЙ ЭФФЕКТ) ===== */
+/* ===== BATTLE: ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ ===== */
 .standings-table td:nth-child(2) > div {
     /* Не переопределяем background-color, чтобы не сломать цветные фоны */
     box-shadow: inset -3px -3px 6px rgba(0,0,0,0.15), inset 3px 3px 6px rgba(255,255,255,0.6), 4px 4px 8px rgba(0,0,0,0.15);
@@ -556,7 +545,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     z-index: 1;
 }
 
-/* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "МЕСТО" НА BATTLE (БЕЗ ИЗМЕНЕНИЯ ФОНА) ===== */
+/* ===== BATTLE: 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "МЕСТО" (БЕЗ ИЗМЕНЕНИЯ ФОНА) ===== */
 .standings-table td:nth-child(1) {
     box-shadow: inset -2px -2px 5px rgba(0,0,0,0.08), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
     border-radius: 12px;
@@ -575,112 +564,118 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 }
 
 
+/* ####################################################################################################### */
+/* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
+/* ####################################################################################################### */
 
-/* ===== БЛОК ДЛЯ ТЕЛЕФОНА ===== */
-
-
-/* ===== ТОЛЬКО ДЛЯ BATTLE ===== */
 @media (max-width: 768px) {
+    /* ===== BATTLE: НАСТРОЙКИ ЭЛЕМЕНТОВ СТРАНИЦЫ ===== */
     .btn-back {
         padding: 4px 10px !important;
-        font-size: 12px !important;
+        font-size: 12px;
     }
     
     .nav-btn {
         padding: 5px 0 !important;
-        font-size: 12px !important;
+        font-size: 12px;
         min-width: 70px !important;
     }
     
+    /* ===== BATTLE: НАСТРОЙКИ ПОКАЗА ТАБЛИЦЫ ===== */
     .standings-table-wrapper {
-        /*overflow-x: scroll !important;*/
-        overflow-x: auto !important;
+/*        overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         border-radius: 8px !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 0 !important; */
+
 	width: 100% !important; 
     }
     
+/*    /* ===== BATTLE: НАСТРОЙКИ ТАБЛИЦЫ ===== */
     .standings-table {
-        /*min-width: 370px !important;*/
-        width: 100% !important;
+        width: 100% !important; 
 	max-width: 100% !important;
-    }
+    } */
     
-    /* Участник — ширина 90px */
+    /* ===== BATTLE: КОЛОНКА УЧАСТНИК — ширина 90px */
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
         width: 90px !important;
-        min-width: 90px !important;
-        max-width: 90px !important;
+        min-width: 90px;
+        max-width: 90px;
     }
     
+    /* ===== BATTLE: НАСТРОЙКА ИМЕН УЧАСТНИКОВ В ТАБЛИЦЕ ===== */
     .standings-table td:nth-child(2) span {
-        font-size: 10px !important;
-        padding: 4px 2px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        font-size: 10px; 			/* уменьшить шрифт */
+        padding: 4px 2px;			/* ужать отступы */
+        white-space: nowrap;		/* зпретить перенос строки */
+        overflow: hidden;			/* обрезка всего, что не помещается в ширину ячейки */
+        text-overflow: ellipsis;		/* ... вместо обрезанного текста */
     }
     
-    /* Расстояние между Ошибка и Сумма ошибок — 1px */
+    /* ===== BATTLE: УМЕНЬШЕНИЕ РАССТОЯНИЯ МЕЖДУ КОЛОНКАМИ ОШИБКА И СУММА ОШИБОК ===== */
     .standings-table th:nth-child(5),
     .standings-table td:nth-child(5) {
         padding-left: 1px !important;
     }
 
-    /* ДОБАВЬТЕ ЭТО — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ */
+/*
+    /* ==== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ ===== */
     .standings-table th,
     .standings-table td {
         padding: 2px 4px !important;
         line-height: 1.2 !important;
-    }
+    } */
+
 }
 
+/* ===== INDEX: ПРОКРУТКА ЗАГОЛОВКА ГОРИЗОНТАЛЬНО ===== */
 @media (max-width: 768px) {
     .fill-header:has(.index-actions) .fill-header__title h1 {
-        white-space: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;					/* зпретить перенос строки */
+        overflow-x: auto;						/* включает горизонтальную прокрутку, если заголовок шире контейнера */
+        -webkit-overflow-scrolling: touch;		/* делает прокрутку плавной, с инерцией */
     }
 }
 
-/* ===== INDEX — ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
+/* ===== INDEX: ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
 @media (max-width: 768px) {
     .index-actions {
-        align-items: flex-end !important;
-        width: 100% !important;
+/*        align-items: flex-end !important;*/
+        width: 100%;
     }
     
     .index-actions__row {
-        justify-content: flex-end !important;
-        width: 100% !important;
+/*        justify-content: flex-end !important;*/
+        width: 100%;
     }
     
     .index-actions__buttons {
-        justify-content: flex-end !important;
-        width: 100% !important;
+        justify-content: flex-end;
+        width: 100%;
     }
 }
 
-/* ===== ТОЛЬКО BATTLE НА ТЕЛЕФОНЕ — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ===== */
+/* ===== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ТАБЛИЦЫ ===== */
 @media (max-width: 768px) {
+/*
     .battle-container .standings-table td {
         padding: 2px 4px !important;
-    }
+    } */
     
     .battle-container .standings-table td:nth-child(2) span {
         padding: 2px 2px !important;
     }
 }
 
-/* ===== ОДИНАКОВЫЕ ОТСТУПЫ ВВЕРХУ ДЛЯ ВСЕХ СТРАНИЦ ===== */
+/* ===== ДЛЯ ВСЕХ СТРАНИЦ: ОДИНАКОВЫЕ ОТСТУПЫ МЕЖДУ БЛОКАМИ ВВЕРХУ, НАД ТАБЛИЦАМИ ===== */
 @media (max-width: 768px) {
     .container {
-        height: 96vh;
+/*        height: 96vh;
+        padding-top: 4px; */
         padding: 8px;
-        padding-top: 4px;
     }
 
     .fill-header {
@@ -698,12 +693,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }    
 }
 
+/* ===== ЧТОБЫ СТРАНИЦА ОТКРЫВАЛАСЬ ПРИЖАТОЙ КВЕРХУ БРАУЗЕРА НА ТЕЛЕФОНЕ ===== */
 @media (max-width: 768px) {
     body {
         padding-top: 0;
-/*        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;*/
     }
     
     .container {
@@ -711,13 +704,14 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 }
 
+/* ===== BATTLE: ПЕРЕОПРЕДЕЛИТЬ ОТСТУП ПОЛЯ СЧЕТА ОТ ПОЛЯ ВЫБОРА МАТЧА (ОН - БОЛЬШОЙ НА КОМПЕ РАДИ ВЫРАВНИВАНИЯ С КОЛОНКОЙ ПРОГНОЗ) ===== */
 @media (max-width: 768px) {
     .battle-container .match-selector {
         gap: 12px;
     }
 }
 
-/* ===== SELECT НА ТЕЛЕФОНЕ — МИНИМАЛЬНЫЕ ПРАВКИ ===== */
+/* ===== BATTLE: ПОЛЕ ВЫБОРА МАТЧА - УМЕНЬШЕНИЕ ШРИФТА И ВЫСОТЫ ПОЛЯ ===== */
 @media (max-width: 768px) {
     .battle-container .match-selector select {
         font-size: 14px;
