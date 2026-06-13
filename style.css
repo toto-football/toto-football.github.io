@@ -694,6 +694,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         height: 96vh;
         padding: 8px;
         padding-top: 4px;
+	margin-top: 0 !important;
     }
 
     .fill-header {
