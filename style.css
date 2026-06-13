@@ -590,8 +590,8 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table th:nth-child(2),
     .standings-table td:nth-child(2) {
         width: 90px !important;
-        min-width: 90px;
-        max-width: 90px;
+        min-width: 90px !important;
+        max-width: 90px !important;
     }
     
     /* ===== BATTLE: НАСТРОЙКА ИМЕН УЧАСТНИКОВ В ТАБЛИЦЕ ===== */
@@ -642,9 +642,9 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         line-height: 1.1 !important;   	/* уменьшаем высоту строки */
     }
 
-/*    .battle-container .standings-table td:nth-child(2) span {
+    .battle-container .standings-table td:nth-child(2) span {
         padding: 2px 2px !important;
-    } */
+    } 
 }
 
 /* ===== ДЛЯ ВСЕХ СТРАНИЦ: ОДИНАКОВЫЕ ОТСТУПЫ МЕЖДУ БЛОКАМИ ВВЕРХУ, НАД ТАБЛИЦАМИ ===== */
