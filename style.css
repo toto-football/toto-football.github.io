@@ -638,12 +638,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 /* ===== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ТАБЛИЦЫ ===== */
 @media (max-width: 768px) {
     .battle-container .standings-table td {
-        padding: 2px 2px !important;  	/* уменьшаем отступы ячеек */
-        line-height: 1.1 !important;   	/* уменьшаем высоту строки */
+        padding: 1px 2px !important;  	/* уменьшаем отступы ячеек */
+        line-height: 1.0 !important;   	/* уменьшаем высоту строки */
     }
 
     .battle-container .standings-table td:nth-child(2) span {
-        padding: 2px 2px !important;
+        padding: 1px 2px !important;
     } 
 }
 
