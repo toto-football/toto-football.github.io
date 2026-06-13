@@ -20,6 +20,7 @@ body {
     background: #fef9e8;
     border-radius: 24px;
     padding: 12px;
+    padding-top: 4px;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
     height: 96vh;
     display: flex;
@@ -135,9 +136,9 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 6px;
 }
 
 .fill-header__title h1 {
@@ -147,7 +148,7 @@ h1 {
 }
 
 .fill-header__title .sub {
-    margin: 4px 0 0 0;
+    margin: 2px 0 0 0;
     font-size: 0.8rem;
     text-align: left;
 }
@@ -176,7 +177,7 @@ h1 {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .fill-controls-bar__left {
@@ -212,7 +213,6 @@ h1 {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    /*margin-bottom: 16px;*/
     margin-bottom: 8px;
 }
 
@@ -246,15 +246,6 @@ h1 {
     margin: 0 auto;
     padding: 12px;
     padding-top: 4px;
-}
-
-.battle-container .fill-header {
-    margin-bottom: 8px;
-    gap: 6px;
-}
-
-.battle-container .fill-header__title .sub {
-    margin-top: 2px;
 }
 
 .standings-table-wrapper {
@@ -516,102 +507,9 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* ===== ТЕЛЕФОН — ТОЛЬКО ДЛЯ BATTLE ===== */
-@media (max-width: 768px) {
-    .btn-back {
-        padding: 4px 10px !important;
-        font-size: 12px !important;
-    }
-    
-    .nav-btn {
-        padding: 5px 0 !important;
-        font-size: 12px !important;
-        min-width: 70px !important;
-    }
-    
-    .standings-table-wrapper {
-        overflow-x: scroll !important;
-        -webkit-overflow-scrolling: touch !important;
-        border-radius: 8px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    .standings-table {
-        min-width: 370px !important;
-        width: 370px !important;
-    }
-    
-    /* Участник — ширина 90px */
-    .standings-table th:nth-child(2),
-    .standings-table td:nth-child(2) {
-        width: 90px !important;
-        min-width: 90px !important;
-        max-width: 90px !important;
-    }
-    
-    .standings-table td:nth-child(2) span {
-        font-size: 10px !important;
-        padding: 4px 2px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    
-    /* Расстояние между Ошибка и Сумма ошибок — 2px */
-    .standings-table th:nth-child(5),
-    .standings-table td:nth-child(5) {
-        padding-left: 2px !important;
-    }
-
-    /* ДОБАВЬТЕ ЭТО — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ */
-    .standings-table th,
-    .standings-table td {
-        padding: 2px 4px !important;
-        line-height: 1.2 !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .fill-header:has(.index-actions) .fill-header__title h1 {
-        white-space: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-
-/* ===== INDEX — ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
-@media (max-width: 768px) {
-    .index-actions {
-        align-items: flex-end !important;
-        width: 100% !important;
-    }
-    
-    .index-actions__row {
-        justify-content: flex-end !important;
-        width: 100% !important;
-    }
-    
-    .index-actions__buttons {
-        justify-content: flex-end !important;
-        width: 100% !important;
-    }
-}
-
 /* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
 .standings-table td:nth-child(2) span {
     font-weight: 700 !important;
-}
-
-@media (max-width: 768px) {
-    .container {
-        height: 96vh;
-        padding: 8px;
-    }
-
-    .battle-container {
-        padding: 4px 8px 8px 8px !important;
-    }
 }
 
 /* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ С СОХРАНЕНИЕМ ЦВЕТОВ ===== */
@@ -675,6 +573,93 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-radius: 10px;
 }
 
+
+
+/* ===== БЛОК ДЛЯ ТЕЛЕФОНА ===== */
+
+
+/* ===== ТОЛЬКО ДЛЯ BATTLE ===== */
+@media (max-width: 768px) {
+    .btn-back {
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .nav-btn {
+        padding: 5px 0 !important;
+        font-size: 12px !important;
+        min-width: 70px !important;
+    }
+    
+    .standings-table-wrapper {
+        overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .standings-table {
+        min-width: 370px !important;
+        width: 370px !important;
+    }
+    
+    /* Участник — ширина 90px */
+    .standings-table th:nth-child(2),
+    .standings-table td:nth-child(2) {
+        width: 90px !important;
+        min-width: 90px !important;
+        max-width: 90px !important;
+    }
+    
+    .standings-table td:nth-child(2) span {
+        font-size: 10px !important;
+        padding: 4px 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    /* Расстояние между Ошибка и Сумма ошибок — 1px */
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5) {
+        padding-left: 1px !important;
+    }
+
+    /* ДОБАВЬТЕ ЭТО — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК НА ТЕЛЕФОНЕ */
+    .standings-table th,
+    .standings-table td {
+        padding: 2px 4px !important;
+        line-height: 1.2 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .fill-header:has(.index-actions) .fill-header__title h1 {
+        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ===== INDEX — ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
+@media (max-width: 768px) {
+    .index-actions {
+        align-items: flex-end !important;
+        width: 100% !important;
+    }
+    
+    .index-actions__row {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+    
+    .index-actions__buttons {
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+}
+
 /* ===== УБРАТЬ ГАЛОЧКУ В SELECT НА ТЕЛЕФОНЕ ===== */
 @media (max-width: 768px) {
     .battle-container .match-selector select {
@@ -703,18 +688,25 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 }
 
-/* ===== ТОЛЬКО BATTLE НА ТЕЛЕФОНЕ — УМЕНЬШЕНИЕ отступов по высоте в верхней части ===== */
+/* ===== ОДИНАКОВЫЕ ОТСТУПЫ ВВЕРХУ ДЛЯ ВСЕХ СТРАНИЦ ===== */
 @media (max-width: 768px) {
-    .battle-container {
-        padding-top: 4px !important;
+    .container {
+        height: 96vh;
+        padding: 8px;
+        padding-top: 4px;
     }
-    
-    .battle-selector-bar {
-        margin-bottom: 4px !important;
-    }
-    
-    .battle-container .fill-header {
+
+    .fill-header {
         margin-bottom: 4px !important;
         gap: 4px !important;
     }
+    
+    .fill-header__title .sub {
+        margin-top: 0 !important;
+    }
+    
+    .battle-selector-bar,
+    .fill-controls-bar {
+        margin-bottom: 4px !important;
+    }    
 }
