@@ -675,3 +675,14 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         padding: 4px 6px !important;
     }
 }
+
+/* ===== ТОЛЬКО BATTLE НА ТЕЛЕФОНЕ — УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ===== */
+@media (max-width: 768px) {
+    .battle-container .standings-table td {
+        padding: 2px 4px !important;
+    }
+    
+    .battle-container .standings-table td:nth-child(2) span {
+        padding: 2px 2px !important;
+    }
+}
