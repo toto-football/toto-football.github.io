@@ -692,8 +692,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     outline-offset: -1px;
     background-color: rgba(230, 180, 34, 0.15) !important;
     border-radius: 12px;
-    position: relative;
-    z-index: 100;
 }
 
 .standings-table tr.selected-battle-row td:first-child {
