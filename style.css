@@ -696,11 +696,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     z-index: 100;
 }
 
-.standings-table {
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
 .standings-table tr.selected-battle-row td:first-child {
     border-top-left-radius: 12px;
     border-bottom-left-radius: 12px;
