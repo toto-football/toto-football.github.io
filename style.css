@@ -688,12 +688,14 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 /* ===== BATTLE: ПОДСВЕТКА СТРОКИ ВЫБРАННОГО УЧАСТНИКА ===== */
 .standings-table tr.selected-battle-row {
-    outline: 3px solid #e6b422;
-    outline-offset: -1px;
+/*    outline: 3px solid #e6b422;*/
+/*    outline-offset: -1px;*/
     background-color: rgba(230, 180, 34, 0.15) !important;
     border-radius: 12px;
     position: relative;
     z-index: 100;
+
+    box-shadow: 0 0 0 3px #e6b422;
 }
 
 .standings-table {
