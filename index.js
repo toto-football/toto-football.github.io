@@ -486,7 +486,7 @@ function renderTable() {
     
         // ===== ОБРАБОТЧИК ВЫБОРА =====
         th.style.cursor = 'pointer';
-        th.title = 'Клик — выбрать/отменить участника';
+        th.title = 'Нажатие выделяет/освобождает колонку участника';
     
         th.onclick = () => {
             if (selectedUserName === p.name) {
@@ -553,7 +553,7 @@ function renderTable() {
 
 	// ===== ОБРАБОТЧИК ВЫБОРА СТРОКИ (МАТЧА) =====
 	resultCell.style.cursor = 'pointer';
-	resultCell.title = 'Клик — выбрать/отменить матч';
+	resultCell.title = 'Нажатие выделяет/освобождает строку матча';
 
 	resultCell.onclick = (function(matchId, rowElement, resultCellElement) {
 	    return function() {

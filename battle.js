@@ -527,7 +527,8 @@ function animateFlipWithCallback(callback) {
                 <td style="color: #b8860b; font-weight: bold; text-align: center;">${item.rank}</td>
                 
 		<td style="text-align: left; font-weight: 500; padding: 2px; cursor: pointer;" 
-		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))">
+		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))"
+		    title="Нажатие выделяет/освобождает строку участника">
 		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
 		        <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
 		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
@@ -633,7 +634,8 @@ function renderStandingsStatic() {
 	        <td style="color: #b8860b; font-weight: bold; text-align: center;">${sorted[i].rank}</td>
 
 		<td style="text-align: left; font-weight: 500; padding: 2px; cursor: pointer;" 
-		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))">
+		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))"
+		    title="Нажатие выделяет/освобождает строку участника">
 		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
 		        <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
 		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
