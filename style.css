@@ -586,6 +586,130 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     display: inline-block;
 }
 
+
+/* ===== INDEX: ПУЛЬСАЦИЯ ФОНА ЯЧЕЙКИ УГАДАВШИХ СЧЁТ ===== */
+@keyframes pulse-bullseye-index {
+    0% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: #aed581;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.pulse-bullseye-index {
+    animation: pulse-bullseye-index 2s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+/* ===== INDEX: ПУЛЬСАЦИЯ ЯЧЕЙКИ РЕЗУЛЬТАТА, КОГДА МАТЧ НАЧАЛСЯ, НО СЧЁТА ЕЩЁ НЕТ ===== */
+@keyframes pulse-result-missed {
+    0% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: #B7E2FA;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.pulse-result-missed {
+    animation: pulse-result-missed 1.5s ease-in-out infinite !important;
+    font-weight: bold;
+}
+
+/* ===== INDEX: ПОДСВЕТКА КОЛОНКИ ВЫБРАННОГО УЧАСТНИКА ===== */
+#table-wrapper table th.selected-col,
+#table-wrapper table td.selected-col {
+    background-color: rgba(230, 180, 34, 0.2);
+}
+
+/* Верхняя рамка с закруглением у заголовка */
+#table-wrapper table th.selected-col {
+    box-shadow: inset 0 0 0 1px #e6b422, 0 1px 0 0 #e6b422;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+/* Левая и правая границы для всех ячеек колонки */
+#table-wrapper table td.selected-col {
+    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422;
+}
+
+/* Нижняя рамка с закруглением у последней ячейки */
+#table-wrapper table tr:last-child td.selected-col {
+    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422, inset 0 -1px 0 0 #e6b422;
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+/* Убираем нижнюю рамку у всех, кроме последней */
+#table-wrapper table td.selected-col {
+    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422, inset 0 -1px 0 0 #e6b422;
+}
+
+#table-wrapper table tr:last-child td.selected-col {
+    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422;
+}
+
+/* ===== INDEX: ПОДСВЕТКА СТРОКИ ВЫБРАННОГО МАТЧА ===== */
+#table-wrapper table tr.selected-match-row td {
+    background-color: rgba(230, 180, 34, 0.2);
+}
+
+/* Верхняя рамка с закруглением у первой ячейки строки */
+#table-wrapper table tr.selected-match-row td:first-child {
+    border-top-left-radius: 16px !important;
+    border-bottom-left-radius: 16px !important;
+    box-shadow: inset 0 0 0 1px #e6b422, -1px 0 0 0 #e6b422;
+}
+
+/* Нижняя и верхняя границы для всех ячеек строки */
+#table-wrapper table tr.selected-match-row td {
+    box-shadow: inset 0 -1px 0 0 #e6b422, inset 0 1px 0 0 #e6b422;
+}
+
+/* Правая рамка с закруглением у последней ячейки строки */
+#table-wrapper table tr.selected-match-row td:last-child {
+    border-top-right-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+    box-shadow: inset 0 0 0 1px #e6b422, 1px 0 0 0 #e6b422;
+}
+
+/* Убираем двойные рамки между строками */
+#table-wrapper table tr.selected-match-row + tr.selected-match-row td {
+    box-shadow: inset 0 1px 0 0 #e6b422;
+}
+
+/* ===== BATTLE: ПОДСВЕТКА СТРОКИ ВЫБРАННОГО УЧАСТНИКА ===== */
+.standings-table tr.selected-battle-row {
+    outline: 3px solid #e6b422;
+    outline-offset: -1px;
+    background-color: rgba(230, 180, 34, 0.15) !important;
+    border-radius: 12px;
+}
+
+.standings-table tr.selected-battle-row td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.standings-table tr.selected-battle-row td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* ===== BATTLE: запретить выделение текста при клике ===== */
+.standings-table td:nth-child(2) {
+    user-select: none;
+    -webkit-tap-highlight-color: rgba(230, 180, 34, 0.3);
+}
+
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
 /* ####################################################################################################### */

@@ -10,6 +10,7 @@ let autoPlayTimeout = null;
 let stopRequested = false;
 let isDataLoaded = false;
 let tournamentParams = {};
+let selectedBattleUserName = localStorage.getItem('selectedBattleUserName') || null;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
 async function loadTournamentParams() {
@@ -517,15 +518,20 @@ function animateFlipWithCallback(callback) {
         const darkerColor = getParticipantDarkerColor(item.name);
         const progressPercent = calculateProgressWidth(item.totalSum, allSums);
         
-        html += `
-            <tr class="standings-row" data-name="${item.name}" style="background-color: ${bgColor};">
+	const isSelected = (selectedBattleUserName === sorted[i].name);
+	const selectedClass = isSelected ? 'selected-battle-row' : '';
+
+	html += `
+	    <tr class="standings-row ${selectedClass}" data-name="${sorted[i].name}" style="background-color: ${bgColor};">
+
                 <td style="color: #b8860b; font-weight: bold; text-align: center;">${item.rank}</td>
                 
-		<td style="text-align: left; font-weight: 500; padding: 2px;">
+		<td style="text-align: left; font-weight: 500; padding: 2px; cursor: pointer;" 
+		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))">
 		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
 		        <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
 		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
-		            <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${item.name}</span>
+		            <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
 		        </div>
 		    </div>
 		</td>
@@ -618,18 +624,23 @@ function renderStandingsStatic() {
         const darkerColor = getParticipantDarkerColor(sorted[i].name);
         const progressPercent = calculateProgressWidth(sorted[i].totalSum, allSums);
         
+	const isSelected = (selectedBattleUserName === sorted[i].name);
+	const selectedClass = isSelected ? 'selected-battle-row' : '';
+
 	html += `
-	    <tr class="standings-row" data-name="${sorted[i].name}" style="background-color: ${bgColor};">
+	    <tr class="standings-row ${selectedClass}" data-name="${sorted[i].name}" style="background-color: ${bgColor};">
+
 	        <td style="color: #b8860b; font-weight: bold; text-align: center;">${sorted[i].rank}</td>
 
-	        <td style="text-align: left; font-weight: 500; padding: 2px;">
-	            <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
-	                <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
-	                    <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
-	                    <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
-        	        </div>
-	            </div>
-	        </td>
+		<td style="text-align: left; font-weight: 500; padding: 2px; cursor: pointer;" 
+		    onclick="selectBattleUser('${sorted[i].name.replace(/'/g, "\\'")}', this.closest('tr'))">
+		    <div class="standings-cell-3d" style="position: relative; border-radius: 12px; overflow: hidden;">
+		        <div style="position: relative; display: flex; align-items: center; min-height: 28px;">
+		            <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${progressPercent}%; background-color: ${darkerColor}; opacity: 0.6; border-radius: 0;"></div>
+		            <span style="position: relative; z-index: 1; padding: 8px 8px 8px 12px;">${sorted[i].name}</span>
+		        </div>
+		    </div>
+		</td>
 
 	        <td style="text-align: center; font-family: monospace;">${sorted[i].prediction}</td>
 	        
@@ -730,5 +741,27 @@ async function init() {
         updateNavButtons();
     }
 }
+
+// ========== ВЫБОР УЧАСТНИКА НА СТРАНИЦЕ BATTLE ==========
+window.selectBattleUser = function(userName, rowElement) {
+    if (selectedBattleUserName === userName) {
+        // Отменяем выбор
+        selectedBattleUserName = null;
+        localStorage.removeItem('selectedBattleUserName');
+        rowElement.classList.remove('selected-battle-row');
+        console.log('❌ Выбор участника отменён');
+    } else {
+        // Убираем подсветку с предыдущего выбранного участника
+        if (selectedBattleUserName !== null) {
+            const prevRow = document.querySelector(`.standings-table tr[data-name="${selectedBattleUserName}"]`);
+            if (prevRow) prevRow.classList.remove('selected-battle-row');
+        }
+        // Выбираем нового участника
+        selectedBattleUserName = userName;
+        localStorage.setItem('selectedBattleUserName', selectedBattleUserName);
+        rowElement.classList.add('selected-battle-row');
+        console.log('✅ Выбран участник:', userName);
+    }
+};
 
 init();

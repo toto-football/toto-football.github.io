@@ -6,6 +6,8 @@ let firstMatchDeadline = null;
 let REVEAL_DATE = null;
 let teamsData = {};
 let tournamentParams = {};
+let selectedUserName = localStorage.getItem('selectedUserName') || null;
+let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localStorage.getItem('selectedMatchId')) : null;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
 async function loadTournamentParams() {
@@ -469,12 +471,53 @@ function renderTable() {
         const totalScore = totalScores.find(ts => ts.name === p.name)?.totalScore || 0;
         const th = document.createElement('th');
         th.classList.add('participant-col');
-    
+        th.setAttribute('data-participant', p.name);
+
         // Получаем цвет участника (как в battle.js)
         const bgColor = getParticipantColor(p.name);
     
         th.style.backgroundColor = bgColor;
         th.innerHTML = `<div><div style="font-size:0.65rem;color:#b8860b;">${rank}</div><div>${p.name}</div><div style="font-size:0.65rem;color:#888;">${totalScore}</div></div>`;
+
+        // Подсветка выбранной колонки при загрузке
+        if (selectedUserName === p.name) {
+            th.classList.add('selected-col');
+        }
+    
+        // ===== ОБРАБОТЧИК ВЫБОРА =====
+        th.style.cursor = 'pointer';
+        th.title = 'Клик — выбрать/отменить участника';
+    
+        th.onclick = () => {
+            if (selectedUserName === p.name) {
+                // Отменяем выбор
+                selectedUserName = null;
+		localStorage.removeItem('selectedUserName');
+
+                // Убираем подсветку со всех ячеек этого участника
+                document.querySelectorAll(`th[data-participant="${p.name}"], td[data-participant="${p.name}"]`).forEach(el => {
+                    el.classList.remove('selected-col');
+                });
+                console.log('❌ Выбор отменён');
+            } else {
+                // Убираем подсветку с предыдущего выбранного участника
+                if (selectedUserName) {
+                    document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+                        el.classList.remove('selected-col');
+                    });
+                }
+                // Выбираем нового участника
+                selectedUserName = p.name;
+		localStorage.setItem('selectedUserName', selectedUserName);
+
+                // Подсвечиваем новую колонку
+                document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+                    el.classList.add('selected-col');
+                });
+                console.log('✅ Выбран участник:', selectedUserName);
+            }
+        };
+
         headerRow.appendChild(th);
     }
 
@@ -487,6 +530,7 @@ function renderTable() {
     for (let i = 0; i < matchesData.length; i++) {
         const m = matchesData[i];
         const tr = document.createElement('tr');
+	tr.setAttribute('data-match-id', m.id);
         
         let bg = 'transparent';
         if (i > 0 && m.date !== matchesData[i-1].date) {
@@ -506,16 +550,92 @@ function renderTable() {
         tr.appendChild(createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name'));
         
 	const resultCell = createCell(m.result, false, 'result-cell');
+
+	// ===== ОБРАБОТЧИК ВЫБОРА СТРОКИ (МАТЧА) =====
+	resultCell.style.cursor = 'pointer';
+	resultCell.title = 'Клик — выбрать/отменить матч';
+
+	resultCell.onclick = (function(matchId, rowElement, resultCellElement) {
+	    return function() {
+        	if (selectedMatchId === matchId) {
+	            // Отменяем выбор
+        	    selectedMatchId = null;
+	            localStorage.removeItem('selectedMatchId');
+            
+        	    // Убираем подсветку со строки
+	            rowElement.classList.remove('selected-match-row');
+            
+        	    console.log('❌ Выбор матча отменён');
+	        } else {
+        	    // Убираем подсветку с предыдущего выбранного матча
+	            if (selectedMatchId !== null) {
+                	const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
+        	        if (prevRow) prevRow.classList.remove('selected-match-row');
+	            }
+            
+        	    // Выбираем новый матч
+	            selectedMatchId = matchId;
+        	    localStorage.setItem('selectedMatchId', selectedMatchId);
+            
+	            // Подсвечиваем новую строку
+        	    rowElement.classList.add('selected-match-row');
+            
+	            console.log('✅ Выбран матч:', matchId);
+        	}
+	    };
+	})(m.id, tr, resultCell);
+
+
+	// Парсим дату и время матча для проверки, начался ли он
+	let matchStarted = false;
+	if (m.date && m.date !== '—' && m.time && m.time !== '—') {
+	    try {
+        	// Получаем год турнира из параметров
+	        let year = tournamentParams.турнир_год ? parseInt(tournamentParams.турнир_год) : new Date().getFullYear();
+        
+        	// Формат даты: "12 июня" (русские названия месяцев)
+	        let months = {
+        	    'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3, 'мая': 4, 'июня': 5,
+	            'июля': 6, 'августа': 7, 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
+        	};
+        
+	        let dateParts = m.date.trim().split(' ');
+        	if (dateParts.length === 2) {
+	            let day = parseInt(dateParts[0]);
+        	    let monthName = dateParts[1];
+	            let month = months[monthName];
+            
+        	    if (!isNaN(day) && month !== undefined) {
+	                let timeParts = m.time.split(':');
+                	let hours = parseInt(timeParts[0]);
+        	        let minutes = parseInt(timeParts[1]);
+                
+	                let matchDateTime = new Date(year, month, day, hours, minutes);
+                	let now = new Date();
+        	        matchStarted = now >= matchDateTime;
+	            }
+        	}
+	    } catch(e) {
+        	matchStarted = false;
+	    }
+	}
+
 	// Для ячейки результата
 	if (m.result && m.result !== '—') {
 	    // Чередуем оттенки голубого в зависимости от дня (используем bg, который уже определён)
-	    // bg = 'transparent' для светлого дня, bg = '#f0f0e8' для тёмного дня
+	    // bg = 'transparent' для светлого дня, bg = '#...' для тёмного дня
 	    const isLightDay = bg === 'transparent';
-	    //resultCell.style.backgroundColor = isLightDay ? '#a8d0e6' : '#7fb8d0';
 	    resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
 	} else {
-	    // Если нет счета — тот же фон, что у строки
-	    resultCell.style.backgroundColor = bg;
+	    // Если нет счёта — проверяем, начался ли матч
+	    if (matchStarted) {
+	        // Матч начался, но счёта нет — пульсация
+	        resultCell.classList.add('pulse-result-missed');
+	        resultCell.style.backgroundColor = '#B7E2FA'; // базовый цвет
+	    } else {
+	        // Матч ещё не начался — фон как у строки
+	        resultCell.style.backgroundColor = bg;
+	    }
 	}
 	if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
 	tr.appendChild(resultCell);
@@ -529,13 +649,30 @@ function renderTable() {
                 total = calculateTotalScore(m.result, raw);
             }
             const cell = document.createElement('td');
+	    cell.setAttribute('data-participant', p.name);
             cell.style.textAlign = 'center';
             cell.innerHTML = total !== null ? `${disp}<sup style="font-size:0.65rem;color:#888;">${total}</sup>` : disp;
+
+	    // Если точный счёт (total === -2) — добавляем класс пульсации ко всей ячейке
+	    if (total === -2) {
+	        cell.classList.add('pulse-bullseye-index');
+	    }
+
+    	    // Подсветка выбранной колонки
+	    if (selectedUserName === p.name) {
+	        cell.classList.add('selected-col');
+	    }
+
             if (disp !== raw && !isRevealed()) {
                 cell.style.filter = 'blur(1px)';
                 cell.title = REVEAL_DATE ? `Откроется ${formatDateTime(REVEAL_DATE)}` : '';
             }
             tr.appendChild(cell);
+        }
+
+       // Восстанавливаем подсветку при загрузке
+        if (selectedMatchId === m.id) {
+            tr.classList.add('selected-match-row');
         }
         tbody.appendChild(tr);
     }
