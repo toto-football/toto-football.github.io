@@ -11,6 +11,7 @@ let stopRequested = false;
 let isDataLoaded = false;
 let tournamentParams = {};
 let selectedBattleUserName = localStorage.getItem('selectedBattleUserName') || null;
+let savedMatchIndex = localStorage.getItem('battleCurrentMatchIndex') ? parseInt(localStorage.getItem('battleCurrentMatchIndex')) : 0;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
 async function loadTournamentParams() {
@@ -297,7 +298,14 @@ async function loadData() {
         }
         
         playedMatches = getPlayedMatches();
-        currentMatchIndex = 0;
+	// Восстанавливаем сохранённый матч, если он существует
+	let savedIndex = localStorage.getItem('battleCurrentMatchIndex');
+	if (savedIndex !== null && parseInt(savedIndex) < playedMatches.length) {
+	    currentMatchIndex = parseInt(savedIndex);
+	} else {
+	    currentMatchIndex = 0;
+	}
+
         return true;
     } catch (err) {
         console.error('Ошибка загрузки:', err);
@@ -367,6 +375,7 @@ function renderMatchSelector() {
     select.addEventListener('change', (e) => {
         if (isAnimating || isAutoPlaying) return;
         currentMatchIndex = parseInt(e.target.value);
+	localStorage.setItem('battleCurrentMatchIndex', currentMatchIndex);
         updateProgressBar();
         animateFlip();
         const selected = playedMatches[currentMatchIndex];
@@ -444,6 +453,7 @@ function startAutoPlayStep(current) {
     }
     
     currentMatchIndex = current;
+    localStorage.setItem('battleCurrentMatchIndex', currentMatchIndex);
     const select = document.getElementById('matchSelect');
     if (select) select.value = currentMatchIndex;
     const selected = playedMatches[currentMatchIndex];
@@ -669,6 +679,7 @@ function setupNavigation() {
         prevBtn.addEventListener('click', () => {
             if (currentMatchIndex > 0 && !isAnimating && !isAutoPlaying && isDataLoaded) {
                 currentMatchIndex--;
+		localStorage.setItem('battleCurrentMatchIndex', currentMatchIndex);
                 const select = document.getElementById('matchSelect');
                 if (select) select.value = currentMatchIndex;
                 updateProgressBar();
@@ -691,6 +702,7 @@ function setupNavigation() {
         nextBtn.addEventListener('click', () => {
             if (currentMatchIndex < playedMatches.length - 1 && !isAnimating && !isAutoPlaying && isDataLoaded) {
                 currentMatchIndex++;
+		localStorage.setItem('battleCurrentMatchIndex', currentMatchIndex);
                 const select = document.getElementById('matchSelect');
                 if (select) select.value = currentMatchIndex;
                 updateProgressBar();
