@@ -8,7 +8,6 @@ let teamsData = {};
 let tournamentParams = {};
 let selectedUserName = localStorage.getItem('selectedUserName') || null;
 let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localStorage.getItem('selectedMatchId')) : null;
-let isTouchDevice = false;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
 async function loadTournamentParams() {
@@ -19,33 +18,29 @@ async function loadTournamentParams() {
         tournamentParams = params;
         console.log('🏆 Параметры турнира загружены:', tournamentParams);
 
-	// Обновляем логотип
-	const logoContainer = document.getElementById('logoContainer');
-	if (logoContainer && tournamentParams.логотип_файл) {
-	    logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: 	middle; margin-right: 1px;">`;
-	}
+        const logoContainer = document.getElementById('logoContainer');
+        if (logoContainer && tournamentParams.логотип_файл) {
+            logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
+        }
         
-        // Обновляем подзаголовок на странице
-	const subElement = document.querySelector('.sub');
-	if (subElement && tournamentParams.подзаголовок) {
-	    // Определяем, какая страница открыта
-	    let linkParam = null;
-	    const path = window.location.pathname;
-	    if (path.includes('fill.html')) {
-	        linkParam = tournamentParams.ссылка_подзаголовка_fill;
-	    } else if (path.includes('battle.html')) {
-	        linkParam = tournamentParams.ссылка_подзаголовка_battle;
-	    } else {
-	        linkParam = tournamentParams.ссылка_подзаголовка_index;
-	    }
+        const subElement = document.querySelector('.sub');
+        if (subElement && tournamentParams.подзаголовок) {
+            let linkParam = null;
+            const path = window.location.pathname;
+            if (path.includes('fill.html')) {
+                linkParam = tournamentParams.ссылка_подзаголовка_fill;
+            } else if (path.includes('battle.html')) {
+                linkParam = tournamentParams.ссылка_подзаголовка_battle;
+            } else {
+                linkParam = tournamentParams.ссылка_подзаголовка_index;
+            }
     
-	    if (linkParam && linkParam !== '') {
-	        subElement.innerHTML = `<a href="${linkParam}" target="_blank" rel="noopener noreferrer" style="color: #2c5a2a; text-decoration: 	none;">${tournamentParams.подзаголовок}</a>`;
-	    } else {
-	        subElement.innerHTML = tournamentParams.подзаголовок;
-	    }
-	}        
-        // Обновляем заголовок страницы
+            if (linkParam && linkParam !== '') {
+                subElement.innerHTML = `<a href="${linkParam}" target="_blank" rel="noopener noreferrer" style="color: #2c5a2a; text-decoration: none;">${tournamentParams.подзаголовок}</a>`;
+            } else {
+                subElement.innerHTML = tournamentParams.подзаголовок;
+            }
+        }        
         if (tournamentParams.турнир_год) {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Таблица прогнозов`;
         }
@@ -77,16 +72,13 @@ function getFirstMatchDeadlineFromParams() {
     
     let year, month, day, hour, minute;
     
-    // Парсим первый_матч_дата (может быть строкой или объектом Date)
     if (typeof tournamentParams.первый_матч_дата === 'string') {
-        // Формат "DD.MM.YYYY"
         const dateParts = tournamentParams.первый_матч_дата.split('.');
         if (dateParts.length === 3) {
             day = parseInt(dateParts[0]);
             month = parseInt(dateParts[1]) - 1;
             year = parseInt(dateParts[2]);
         } else {
-            // Попытка распарсить ISO строку
             const d = new Date(tournamentParams.первый_матч_дата);
             if (!isNaN(d.getTime())) {
                 year = d.getFullYear();
@@ -95,20 +87,17 @@ function getFirstMatchDeadlineFromParams() {
             }
         }
     } else if (tournamentParams.первый_матч_дата instanceof Date || tournamentParams.первый_матч_дата?.getTime) {
-        // Уже объект Date
         const d = new Date(tournamentParams.первый_матч_дата);
         year = d.getFullYear();
         month = d.getMonth();
         day = d.getDate();
     } else if (typeof tournamentParams.первый_матч_дата === 'number') {
-        // Unix timestamp
         const d = new Date(tournamentParams.первый_матч_дата);
         year = d.getFullYear();
         month = d.getMonth();
         day = d.getDate();
     }
     
-    // Парсим первый_матч_время
     if (typeof tournamentParams.первый_матч_время === 'string') {
         const timeParts = tournamentParams.первый_матч_время.split(':');
         if (timeParts.length === 2) {
@@ -135,7 +124,7 @@ function getFirstMatchDeadlineFromParams() {
     return new Date(year, month, day, hour, minute);
 }
 
-// ========== ФОРМАТИРОВАНИЕ ДАТЫ БЕЗ СЕКУНД ==========
+// ========== ФОРМАТИРОВАНИЕ ДАТЫ ==========
 function formatDateTime(date) {
     if (!date) return '';
     const day = date.getDate().toString().padStart(2, '0');
@@ -150,7 +139,6 @@ function formatDateTime(date) {
 function getFlagUrl(teamName) {
     const team = teamsData[teamName];
     if (team && team.flagCode) {
-        // Используем локальную папку flags с PNG-файлами
         return `images/flags/${team.flagCode}.png`;
     }
     return '';
@@ -226,8 +214,7 @@ function activateButtons() {
             return false;
         };
         if (statusDiv) {
-            // Показываем прогресс матчей вместо сообщения о завершении приёма
-	    const participantsCount = participantsData.length;
+            const participantsCount = participantsData.length;
             let playedMatches = 0;
             for (const match of matchesData) {
                 if (match.result && match.result !== '—') playedMatches++;
@@ -243,14 +230,13 @@ function activateButtons() {
         fillBtn.title = '✏️ Сделать прогноз';
         fillBtn.onclick = null;
         if (statusDiv) {
-	    const participantsCount = participantsData.length;
-	    const matchesCount = matchesData.length;
-	    statusDiv.innerHTML = `📅 Участников: ${participantsCount}, матчей: ${matchesCount}. Приём прогнозов до 	${formatDateTime(firstMatchDeadline)} (мск)`;
-	    statusDiv.className = 'status-msg deadline';
+            const participantsCount = participantsData.length;
+            const matchesCount = matchesData.length;
+            statusDiv.innerHTML = `📅 Участников: ${participantsCount}, матчей: ${matchesCount}. Приём прогнозов до ${formatDateTime(firstMatchDeadline)} (мск)`;
+            statusDiv.className = 'status-msg deadline';
         }
     }
     
-    // Кнопка "Ход борьбы"
     const table = document.querySelector('#table-wrapper table');
     if (table) {
         let hasFinished = false;
@@ -433,6 +419,293 @@ async function loadAllData() {
     }
 }
 
+// ========== КОНТЕКСТНОЕ МЕНЮ ==========
+let contextMenuVisible = false;
+let contextMenuTarget = null;
+
+function showContextMenu(event, participantName, targetElement) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Если уже открыто меню для этого участника — закрываем и снимаем выделение
+    if (contextMenuVisible && contextMenuTarget === participantName) {
+        closeContextMenu();
+        // Снимаем выделение
+        if (selectedUserName === participantName) {
+            selectedUserName = null;
+            localStorage.removeItem('selectedUserName');
+            document.querySelectorAll(`th[data-participant="${participantName}"], td[data-participant="${participantName}"]`).forEach(el => {
+                el.classList.remove('selected-col');
+            });
+        }
+        return;
+    }
+    
+    // Если открыто меню для другого участника — закрываем его
+    if (contextMenuVisible) {
+        closeContextMenu();
+    }
+    
+    // Находим участника
+    const participant = participantsData.find(p => p.name === participantName);
+    if (!participant) return;
+    
+    // Собираем статистику прогнозов
+    const results = matchesData.map(m => m.result);
+    const stats = {};
+    let totalMatches = 0;
+    let sumResults = 0;
+    
+    for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const pred = participant.predictions[i];
+        if (result && result !== '—' && pred && pred !== '—') {
+            const score = calculateTotalScore(result, pred);
+            if (score !== null) {
+                stats[score] = (stats[score] || 0) + 1;
+                sumResults += score;
+                totalMatches++;
+            }
+        }
+    }
+    
+    const average = totalMatches > 0 ? (sumResults / totalMatches) : 0;
+    const averageFormatted = average.toFixed(2);
+    
+    // Создаём меню
+    const menu = document.createElement('div');
+    menu.id = 'participantContextMenu';
+    menu.style.cssText = `
+        position: fixed;
+        background: #fef9e8;
+        border: 1px solid #9aaa80;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        padding: 10px 14px;
+        z-index: 9999;
+        min-width: 200px;
+        max-width: 240px;
+        font-size: 0.7rem;
+        color: #1e4620;
+    `;
+    
+    // Заголовок
+    const header = document.createElement('div');
+    header.style.cssText = `
+        font-weight: bold;
+        font-size: 0.8rem;
+        color: #1e4620;
+        border-bottom: 1px solid #dde8c0;
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+        text-align: center;
+    `;
+    header.textContent = 'Статистика участника';
+    menu.appendChild(header);
+    
+    // Подзаголовки
+    const subHeader = document.createElement('div');
+    subHeader.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        color: #555;
+        margin-bottom: 8px;
+        padding: 0 2px;
+    `;
+    subHeader.innerHTML = `
+        <span>участник: <strong>${participantName}</strong></span>
+        <span>матчей: <strong>${totalMatches}</strong></span>
+    `;
+    menu.appendChild(subHeader);
+    
+    // Статистика
+    if (totalMatches === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color: #888; text-align: center; padding: 8px 0;';
+        empty.textContent = 'Нет сыгранных матчей';
+        menu.appendChild(empty);
+    } else {
+        const statsDiv = document.createElement('div');
+        statsDiv.style.cssText = 'margin-bottom: 6px;';
+        
+        const sortedKeys = Object.keys(stats).sort((a, b) => parseInt(a) - parseInt(b));
+        
+        const headerRow = document.createElement('div');
+        headerRow.style.cssText = `
+            display: grid;
+            grid-template-columns: 1fr 40px;
+            gap: 2px 8px;
+            font-weight: bold;
+            color: #666;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e9e6cf;
+            padding-bottom: 3px;
+            margin-bottom: 3px;
+        `;
+        headerRow.innerHTML = `
+            <div style="text-align: center;">Результат прогноза</div>
+            <div style="text-align: right;">Кол-во</div>
+        `;
+        statsDiv.appendChild(headerRow);
+        
+        const maxKey = Math.max(...sortedKeys.map(Number));
+        const minScale = -2;
+        const maxScale = maxKey;
+        const scaleRange = maxScale - minScale;
+        
+        for (const key of sortedKeys) {
+            const count = stats[key];
+            const keyNum = parseInt(key);
+            
+            let percent;
+            if (scaleRange === 0) {
+                percent = 100;
+            } else {
+                percent = ((keyNum - minScale) / scaleRange) * 100;
+            }
+            percent = Math.max(0, Math.min(100, percent));
+            
+            const row = document.createElement('div');
+            row.style.cssText = `
+                display: grid;
+                grid-template-columns: 1fr 40px;
+                gap: 2px 8px;
+                align-items: center;
+                padding: 1px 0;
+            `;
+            
+            const leftCell = document.createElement('div');
+            leftCell.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+            
+            const val = document.createElement('div');
+            val.textContent = key;
+            val.style.cssText = 'font-weight: bold; text-align: right; min-width: 18px; font-size: 0.7rem;';
+            if (keyNum < 0) val.style.color = '#c62828';
+            else if (keyNum === 0) val.style.color = '#e65100';
+            else val.style.color = '#2e7d32';
+            
+            let color;
+            if (keyNum === -2) {
+                color = '#1a5c1a';
+            } else {
+                const intensity = Math.min(1, (keyNum + 2) / 10);
+                const r = 46 + intensity * 119;
+                const g = 125 - intensity * 59;
+                const b = 50 + intensity * 117;
+                color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+            }
+            
+            const barContainer = document.createElement('div');
+            barContainer.style.cssText = 'flex: 1; background: #e9e6cf; border-radius: 8px; height: 10px; overflow: hidden;';
+            const bar = document.createElement('div');
+            bar.style.cssText = `width: ${percent}%; height: 100%; background: ${color}; border-radius: 8px; opacity: 0.8;`;
+            barContainer.appendChild(bar);
+            
+            leftCell.appendChild(val);
+            leftCell.appendChild(barContainer);
+            
+            const countDiv = document.createElement('div');
+            countDiv.textContent = count;
+            countDiv.style.cssText = 'text-align: right; font-weight: bold; font-size: 0.7rem;';
+            
+            row.appendChild(leftCell);
+            row.appendChild(countDiv);
+            statsDiv.appendChild(row);
+        }
+        
+        menu.appendChild(statsDiv);
+    }
+    
+    const sep = document.createElement('hr');
+    sep.style.cssText = 'border: none; border-top: 1px solid #dde8c0; margin: 6px 0;';
+    menu.appendChild(sep);
+    
+    const avgDiv = document.createElement('div');
+    avgDiv.style.cssText = 'text-align: center; font-size: 0.7rem; color: #1e4620; padding: 2px 0;';
+    avgDiv.innerHTML = `Средний результат: <strong>${averageFormatted}</strong>`;
+    menu.appendChild(avgDiv);
+    
+    // Позиционирование — левый верхний угол под левым нижним углом ячейки
+    const rect = targetElement.getBoundingClientRect();
+    let x = rect.left;
+    let y = rect.bottom + 4;
+    
+    // Корректировка, чтобы не выходило за экран
+    const menuWidth = 240;
+    const menuHeight = 300;
+    if (x + menuWidth > window.innerWidth) {
+        x = window.innerWidth - menuWidth - 10;
+    }
+    if (y + menuHeight > window.innerHeight) {
+        y = rect.top - menuHeight - 4;
+    }
+    if (x < 10) x = 10;
+    if (y < 10) y = 10;
+    
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    
+    // Клик по меню закрывает его
+    menu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeContextMenu();
+        // Снимаем выделение
+        if (selectedUserName === contextMenuTarget) {
+            selectedUserName = null;
+            localStorage.removeItem('selectedUserName');
+            document.querySelectorAll(`th[data-participant="${contextMenuTarget}"], td[data-participant="${contextMenuTarget}"]`).forEach(el => {
+                el.classList.remove('selected-col');
+            });
+        }
+    });
+
+    document.body.appendChild(menu);
+    contextMenuVisible = true;
+    contextMenuTarget = participantName;
+    
+    // Выделяем колонку
+    selectParticipant(participantName);
+}
+
+function selectParticipant(participantName) {
+    if (selectedUserName === participantName) return;
+    
+    if (selectedUserName) {
+        document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+            el.classList.remove('selected-col');
+        });
+    }
+    selectedUserName = participantName;
+    localStorage.setItem('selectedUserName', selectedUserName);
+    document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+        el.classList.add('selected-col');
+    });
+}
+
+function closeContextMenu() {
+    const menu = document.getElementById('participantContextMenu');
+    if (menu) menu.remove();
+    contextMenuVisible = false;
+    contextMenuTarget = null;
+}
+
+// Закрываем меню при клике вне его
+document.addEventListener('click', (e) => {
+    if (contextMenuVisible) {
+        const menu = document.getElementById('participantContextMenu');
+        if (menu && !menu.contains(e.target)) {
+            // Проверяем, не кликнули ли по имени участника в заголовке
+            const header = e.target.closest('th[data-participant]');
+            if (!header) {
+                // Закрываем только меню, выделение НЕ снимаем
+                closeContextMenu();
+            }
+        }
+    }
+});
+
 function renderTable() {
     const wrapper = document.getElementById('table-wrapper');
     if (!wrapper) return;
@@ -474,76 +747,22 @@ function renderTable() {
         th.classList.add('participant-col');
         th.setAttribute('data-participant', p.name);
 
-        // Получаем цвет участника (как в battle.js)
         const bgColor = getParticipantColor(p.name);
-    
         th.style.backgroundColor = bgColor;
         th.innerHTML = `<div><div style="font-size:0.65rem;color:#b8860b;">${rank}</div><div>${p.name}</div><div style="font-size:0.65rem;color:#888;">${totalScore}</div></div>`;
 
-        // Подсветка выбранной колонки при загрузке
         if (selectedUserName === p.name) {
             th.classList.add('selected-col');
         }
     
-        // ===== ОБРАБОТЧИК ВЫБОРА =====
         th.style.cursor = 'pointer';
-        th.title = 'Нажатие выделяет/освобождает колонку участника';
+        th.title = 'Нажмите для статистики';
     
-	// Логика выделения - отдельная функция
-	th._onclick = () => {
-	    if (selectedUserName === p.name) {
-	        selectedUserName = null;
-	        localStorage.removeItem('selectedUserName');
-	        document.querySelectorAll(`th[data-participant="${p.name}"], td[data-participant="${p.name}"]`).forEach(el => {
-	            el.classList.remove('selected-col');
-	        });
-	        console.log('❌ Выбор отменён');
-	    } else {
-	        if (selectedUserName) {
-	            document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
-	                el.classList.remove('selected-col');
-	            });
-	        }
-	        selectedUserName = p.name;
-	        localStorage.setItem('selectedUserName', selectedUserName);
-	        document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
-        	    el.classList.add('selected-col');
-	        });
-        	console.log('✅ Выбран участник:', selectedUserName);
-	    }
-	};
-
-	// Для мыши (левый клик) - проверяем, что это не touch-устройство
-	th.onclick = (e) => {
-	    if (isTouchDevice) return;
-	    th._onclick();
-	};
-
-	th.addEventListener('contextmenu', (e) => {
-	    e.preventDefault();
-	    showContextMenu(e, p.name);
-	});
-
-
-	// ===== ДОЛГОЕ НАЖАТИЕ (ТЕЛЕФОН) =====
-	th.addEventListener('touchstart', (e) => {
-	    if (document.getElementById('participantContextMenu')) return;
-	    handleTouchStart(e, p.name);
-	});
-
-	th.addEventListener('touchend', () => {
-	    handleTouchEnd();
-	    // Если это был короткий тап (не долгое нажатие) - выделяем колонку
-	    if (!isLongPressTriggered && !document.getElementById('participantContextMenu')) {
-	        isTouchDevice = true;
-	        th._onclick();
-	        setTimeout(() => { isTouchDevice = false; }, 50);
-	    }
-	});
-
-	th.addEventListener('touchmove', () => {
-	    handleTouchMove();
-	});
+        // Обработчик клика по заголовку (ТОЛЬКО ЗДЕСЬ!)
+        th.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showContextMenu(e, p.name, th);
+        });
 
         headerRow.appendChild(th);
     }
@@ -557,7 +776,7 @@ function renderTable() {
     for (let i = 0; i < matchesData.length; i++) {
         const m = matchesData[i];
         const tr = document.createElement('tr');
-	tr.setAttribute('data-match-id', m.id);
+        tr.setAttribute('data-match-id', m.id);
         
         let bg = 'transparent';
         if (i > 0 && m.date !== matchesData[i-1].date) {
@@ -576,96 +795,71 @@ function renderTable() {
         tr.appendChild(createCell('–', false, '', true));
         tr.appendChild(createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name'));
         
-	const resultCell = createCell(m.result, false, 'result-cell');
+        const resultCell = createCell(m.result, false, 'result-cell');
 
-	// ===== ОБРАБОТЧИК ВЫБОРА СТРОКИ (МАТЧА) =====
-	resultCell.style.cursor = 'pointer';
-	resultCell.title = 'Нажатие выделяет/освобождает строку матча';
+        resultCell.style.cursor = 'pointer';
+        resultCell.title = 'Нажатие выделяет/освобождает строку матча';
 
-	resultCell.onclick = (function(matchId, rowElement, resultCellElement) {
-	    return function() {
-        	if (selectedMatchId === matchId) {
-	            // Отменяем выбор
-        	    selectedMatchId = null;
-	            localStorage.removeItem('selectedMatchId');
-            
-        	    // Убираем подсветку со строки
-	            rowElement.classList.remove('selected-match-row');
-            
-        	    console.log('❌ Выбор матча отменён');
-	        } else {
-        	    // Убираем подсветку с предыдущего выбранного матча
-	            if (selectedMatchId !== null) {
-                	const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
-        	        if (prevRow) prevRow.classList.remove('selected-match-row');
-	            }
-            
-        	    // Выбираем новый матч
-	            selectedMatchId = matchId;
-        	    localStorage.setItem('selectedMatchId', selectedMatchId);
-            
-	            // Подсвечиваем новую строку
-        	    rowElement.classList.add('selected-match-row');
-            
-	            console.log('✅ Выбран матч:', matchId);
-        	}
-	    };
-	})(m.id, tr, resultCell);
+        resultCell.onclick = (function(matchId, rowElement) {
+            return function() {
+                if (selectedMatchId === matchId) {
+                    selectedMatchId = null;
+                    localStorage.removeItem('selectedMatchId');
+                    rowElement.classList.remove('selected-match-row');
+                    console.log('❌ Выбор матча отменён');
+                } else {
+                    if (selectedMatchId !== null) {
+                        const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
+                        if (prevRow) prevRow.classList.remove('selected-match-row');
+                    }
+                    selectedMatchId = matchId;
+                    localStorage.setItem('selectedMatchId', selectedMatchId);
+                    rowElement.classList.add('selected-match-row');
+                    console.log('✅ Выбран матч:', matchId);
+                }
+            };
+        })(m.id, tr);
 
+        let matchStarted = false;
+        if (m.date && m.date !== '—' && m.time && m.time !== '—') {
+            try {
+                let year = tournamentParams.турнир_год ? parseInt(tournamentParams.турнир_год) : new Date().getFullYear();
+                let months = {
+                    'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3, 'мая': 4, 'июня': 5,
+                    'июля': 6, 'августа': 7, 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
+                };
+                let dateParts = m.date.trim().split(' ');
+                if (dateParts.length === 2) {
+                    let day = parseInt(dateParts[0]);
+                    let monthName = dateParts[1];
+                    let month = months[monthName];
+                    if (!isNaN(day) && month !== undefined) {
+                        let timeParts = m.time.split(':');
+                        let hours = parseInt(timeParts[0]);
+                        let minutes = parseInt(timeParts[1]);
+                        let matchDateTime = new Date(year, month, day, hours, minutes);
+                        let now = new Date();
+                        matchStarted = now >= matchDateTime;
+                    }
+                }
+            } catch(e) {
+                matchStarted = false;
+            }
+        }
 
-	// Парсим дату и время матча для проверки, начался ли он
-	let matchStarted = false;
-	if (m.date && m.date !== '—' && m.time && m.time !== '—') {
-	    try {
-        	// Получаем год турнира из параметров
-	        let year = tournamentParams.турнир_год ? parseInt(tournamentParams.турнир_год) : new Date().getFullYear();
-        
-        	// Формат даты: "12 июня" (русские названия месяцев)
-	        let months = {
-        	    'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3, 'мая': 4, 'июня': 5,
-	            'июля': 6, 'августа': 7, 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
-        	};
-        
-	        let dateParts = m.date.trim().split(' ');
-        	if (dateParts.length === 2) {
-	            let day = parseInt(dateParts[0]);
-        	    let monthName = dateParts[1];
-	            let month = months[monthName];
-            
-        	    if (!isNaN(day) && month !== undefined) {
-	                let timeParts = m.time.split(':');
-                	let hours = parseInt(timeParts[0]);
-        	        let minutes = parseInt(timeParts[1]);
-                
-	                let matchDateTime = new Date(year, month, day, hours, minutes);
-                	let now = new Date();
-        	        matchStarted = now >= matchDateTime;
-	            }
-        	}
-	    } catch(e) {
-        	matchStarted = false;
-	    }
-	}
-
-	// Для ячейки результата
-	if (m.result && m.result !== '—') {
-	    // Чередуем оттенки голубого в зависимости от дня (используем bg, который уже определён)
-	    // bg = 'transparent' для светлого дня, bg = '#...' для тёмного дня
-	    const isLightDay = bg === 'transparent';
-	    resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
-	} else {
-	    // Если нет счёта — проверяем, начался ли матч
-	    if (matchStarted) {
-	        // Матч начался, но счёта нет — пульсация
-	        resultCell.classList.add('pulse-result-missed');
-	        resultCell.style.backgroundColor = '#B7E2FA'; // базовый цвет
-	    } else {
-	        // Матч ещё не начался — фон как у строки
-	        resultCell.style.backgroundColor = bg;
-	    }
-	}
-	if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
-	tr.appendChild(resultCell);
+        if (m.result && m.result !== '—') {
+            const isLightDay = bg === 'transparent';
+            resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
+        } else {
+            if (matchStarted) {
+                resultCell.classList.add('pulse-result-missed');
+                resultCell.style.backgroundColor = '#B7E2FA';
+            } else {
+                resultCell.style.backgroundColor = bg;
+            }
+        }
+        if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
+        tr.appendChild(resultCell);
         
         for (let idx = 0; idx < participantsData.length; idx++) {
             const p = participantsData[idx];
@@ -676,53 +870,29 @@ function renderTable() {
                 total = calculateTotalScore(m.result, raw);
             }
             const cell = document.createElement('td');
-	    cell.setAttribute('data-participant', p.name);
+            cell.setAttribute('data-participant', p.name);
             cell.style.textAlign = 'center';
             cell.innerHTML = total !== null ? `${disp}<sup style="font-size:0.65rem;color:#888;">${total}</sup>` : disp;
 
-	    // Если точный счёт (total === -2) — добавляем класс пульсации ко всей ячейке
-	    if (total === -2) {
-	        cell.classList.add('pulse-bullseye-index');
-	    }
+            if (total === -2) {
+                cell.classList.add('pulse-bullseye-index');
+            }
 
-    	    // Подсветка выбранной колонки
-	    if (selectedUserName === p.name) {
-	        cell.classList.add('selected-col');
-	    }
+            if (selectedUserName === p.name) {
+                cell.classList.add('selected-col');
+            }
 
             if (disp !== raw && !isRevealed()) {
                 cell.style.filter = 'blur(1px)';
                 cell.title = REVEAL_DATE ? `Откроется ${formatDateTime(REVEAL_DATE)}` : '';
             }
+            
+            // Только добавляем классы, НО НЕ вешаем обработчик клика!
+            // Клик по ячейке с прогнозом НЕ открывает меню и НЕ выделяет колонку
+            
             tr.appendChild(cell);
-
-	    // ===== ДОЛГОЕ НАЖАТИЕ (ТЕЛЕФОН) =====
-	    cell.addEventListener('touchstart', (e) => {
-	        if (document.getElementById('participantContextMenu')) return;
-	        handleTouchStart(e, p.name);
-	    });
-
-	    cell.addEventListener('touchend', () => {
-	        handleTouchEnd();
-	        // Если это был короткий тап - выделяем колонку
-	        if (!isLongPressTriggered && !document.getElementById('participantContextMenu')) {
-	            // Находим заголовок этого участника и вызываем его _onclick
-	            const header = document.querySelector(`th[data-participant="${p.name}"]`);
-	            if (header && header._onclick) {
-	                isTouchDevice = true;
-	                header._onclick();
-	                setTimeout(() => { isTouchDevice = false; }, 50);
-	            }
-	        }
-	    });
-
-	    cell.addEventListener('touchmove', () => {
-	        handleTouchMove();
-	    });
-
         }
 
-       // Восстанавливаем подсветку при загрузке
         if (selectedMatchId === m.id) {
             tr.classList.add('selected-match-row');
         }
@@ -736,318 +906,19 @@ function renderTable() {
     activateButtons();
 }
 
-// ========== КОНТЕКСТНОЕ МЕНЮ ДЛЯ УЧАСТНИКОВ (начало) ==========
-let contextMenuVisible = false;
-
-function showContextMenu(event, participantName) {
-    event.preventDefault();
-    
-    // Удаляем старое меню
-    const existingMenu = document.getElementById('participantContextMenu');
-    if (existingMenu) existingMenu.remove();
-    
-    // Находим участника
-    const participant = participantsData.find(p => p.name === participantName);
-    if (!participant) return;
-    
-    // Собираем статистику прогнозов
-    const results = matchesData.map(m => m.result);
-    const stats = {};
-    let totalMatches = 0;
-    let sumResults = 0;
-    
-    for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        const pred = participant.predictions[i];
-        if (result && result !== '—' && pred && pred !== '—') {
-            const score = calculateTotalScore(result, pred);
-            if (score !== null) {
-                stats[score] = (stats[score] || 0) + 1;
-                sumResults += score;
-                totalMatches++;
-            }
-        }
-    }
-    
-    // Средний результат
-    const average = totalMatches > 0 ? (sumResults / totalMatches) : 0;
-    const averageFormatted = average.toFixed(2);
-    
-    // Создаём меню - делаем его уже
-    const menu = document.createElement('div');
-    menu.id = 'participantContextMenu';
-    menu.style.cssText = `
-        position: fixed;
-        background: #fef9e8;
-        border: 1px solid #9aaa80;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        padding: 16px 20px;
-        z-index: 9999;
-        min-width: 240px;
-        max-width: 260px;
-        font-size: 0.85rem;
-        color: #1e4620;
-    `;
-    
-    // Заголовок
-    const header = document.createElement('div');
-    header.style.cssText = `
-        font-weight: bold;
-        font-size: 1rem;
-        color: #1e4620;
-        border-bottom: 2px solid #dde8c0;
-        padding-bottom: 8px;
-        margin-bottom: 8px;
-        text-align: center;
-    `;
-    header.textContent = 'Статистика участника';
-    menu.appendChild(header);
-    
-    // Подзаголовки: участник и матчей
-    const subHeader = document.createElement('div');
-    subHeader.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.75rem;
-        color: #555;
-        margin-bottom: 12px;
-        padding: 0 4px;
-    `;
-    subHeader.innerHTML = `
-        <span>участник: <strong>${participantName}</strong></span>
-        <span>матчей: <strong>${totalMatches}</strong></span>
-    `;
-    menu.appendChild(subHeader);
-    
-    // Статистика
-    if (totalMatches === 0) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'color: #888; text-align: center; padding: 12px 0;';
-        empty.textContent = 'Нет сыгранных матчей';
-        menu.appendChild(empty);
-    } else {
-        const statsDiv = document.createElement('div');
-        statsDiv.style.cssText = 'margin-bottom: 8px;';
-        
-        // Сортируем ключи
-        const sortedKeys = Object.keys(stats).sort((a, b) => parseInt(a) - parseInt(b));
-        
-        // Заголовки таблицы - объединяем первые 2 колонки
-        const headerRow = document.createElement('div');
-        headerRow.style.cssText = `
-            display: grid;
-            grid-template-columns: 1fr 50px;
-            gap: 4px 12px;
-            font-weight: bold;
-            color: #666;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e9e6cf;
-            padding-bottom: 4px;
-            margin-bottom: 4px;
-        `;
-        headerRow.innerHTML = `
-            <div style="text-align: center;">Результат прогноза</div>
-            <div style="text-align: right;">Кол-во</div>
-        `;
-        statsDiv.appendChild(headerRow);
-        
-        // Находим максимальное значение для шкалы
-        const maxKey = Math.max(...sortedKeys.map(Number));
-        const minScale = -2;
-        const maxScale = maxKey;
-        const scaleRange = maxScale - minScale;
-        
-        for (const key of sortedKeys) {
-            const count = stats[key];
-            const keyNum = parseInt(key);
-            
-            // Вычисляем позицию на шкале от -2 до максимума
-            let percent;
-            if (scaleRange === 0) {
-                percent = 100;
-            } else {
-                percent = ((keyNum - minScale) / scaleRange) * 100;
-            }
-            percent = Math.max(0, Math.min(100, percent));
-            
-            const row = document.createElement('div');
-            row.style.cssText = `
-                display: grid;
-                grid-template-columns: 1fr 50px;
-                gap: 4px 12px;
-                align-items: center;
-                padding: 2px 0;
-            `;
-            
-            // Левая часть: значение + полоса
-            const leftCell = document.createElement('div');
-            leftCell.style.cssText = 'display: flex; align-items: center; gap: 8px;';
-            
-            // Значение
-            const val = document.createElement('div');
-            val.textContent = key;
-            val.style.cssText = 'font-weight: bold; text-align: right; min-width: 20px;';
-            if (keyNum < 0) val.style.color = '#c62828';
-            else if (keyNum === 0) val.style.color = '#e65100';
-            else val.style.color = '#2e7d32';
-            
-            // Полоса
-            let color;
-            if (keyNum === -2) {
-                color = '#1a5c1a'; // тёмно-зелёный
-            } else {
-                const intensity = Math.min(1, (keyNum + 2) / 10);
-                const r = 46 + intensity * 119;
-                const g = 125 - intensity * 59;
-                const b = 50 + intensity * 117;
-                color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
-            }
-            
-            const barContainer = document.createElement('div');
-            barContainer.style.cssText = 'flex: 1; background: #e9e6cf; border-radius: 10px; height: 14px; overflow: hidden;';
-            const bar = document.createElement('div');
-            bar.style.cssText = `width: ${percent}%; height: 100%; background: ${color}; border-radius: 10px; opacity: 0.8;`;
-            barContainer.appendChild(bar);
-            
-            leftCell.appendChild(val);
-            leftCell.appendChild(barContainer);
-            
-            // Правая часть: количество
-            const countDiv = document.createElement('div');
-            countDiv.textContent = count;
-            countDiv.style.cssText = 'text-align: right; font-weight: bold;';
-            
-            row.appendChild(leftCell);
-            row.appendChild(countDiv);
-            statsDiv.appendChild(row);
-        }
-        
-        menu.appendChild(statsDiv);
-    }
-    
-    // Разделитель
-    const sep = document.createElement('hr');
-    sep.style.cssText = 'border: none; border-top: 1px solid #dde8c0; margin: 8px 0;';
-    menu.appendChild(sep);
-    
-    // Средний результат
-    const avgDiv = document.createElement('div');
-    avgDiv.style.cssText = 'text-align: center; font-size: 0.8rem; color: #1e4620; padding: 4px 0;';
-    avgDiv.innerHTML = `Средний результат: <strong>${averageFormatted}</strong>`;
-    menu.appendChild(avgDiv);
-    
-    // Позиционирование
-    let x = event.clientX;
-    let y = event.clientY;
-    const menuWidth = 260;
-    const menuHeight = 450;
-    if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
-    if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
-    if (x < 10) x = 10;
-    if (y < 10) y = 10;
-    
-    menu.style.left = x + 'px';
-    menu.style.top = y + 'px';
-    
-    document.body.appendChild(menu);
-    contextMenuVisible = true;
-}
-
-function closeContextMenu() {
-    const menu = document.getElementById('participantContextMenu');
-    if (menu) menu.remove();
-    contextMenuVisible = false;
-}
-
-// Закрываем меню при клике вне его
-document.addEventListener('click', (e) => {
-    if (contextMenuVisible) {
-        const menu = document.getElementById('participantContextMenu');
-        if (menu && !menu.contains(e.target)) {
-            closeContextMenu();
-        }
-    }
-});
-
-// Отключаем стандартное контекстное меню
-document.addEventListener('contextmenu', (e) => {
-    const cell = e.target.closest('td[data-participant]');
-    const header = e.target.closest('th[data-participant]');
-    if (cell || header) {
-        e.preventDefault();
-        const name = (cell || header).getAttribute('data-participant');
-        if (name) {
-            showContextMenu(e, name);
-        }
-    }
-});
-
-// ========== КОНТЕКСТНОЕ МЕНЮ ДЛЯ УЧАСТНИКОВ (окончание) ==========
-
-// ========== ДОЛГОЕ НАЖАТИЕ ДЛЯ ТЕЛЕФОНОВ (начало) ==========
-let longPressTimer = null;
-let longPressTarget = null;
-let isLongPressTriggered = false;
-
-function handleTouchStart(element, participantName) {
-    // НЕ сбрасываем isLongPressTriggered здесь!
-    longPressTarget = participantName;
-    
-    // Очищаем предыдущий таймер
-    if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-    }
-    
-    longPressTimer = setTimeout(() => {
-        isLongPressTriggered = true;
-        // Эмулируем событие для showContextMenu
-        const fakeEvent = {
-            clientX: window.innerWidth / 2,
-            clientY: window.innerHeight / 2,
-            preventDefault: () => {}
-        };
-        showContextMenu(fakeEvent, participantName);
-        // Вибрация (если поддерживается)
-        if (navigator.vibrate) navigator.vibrate(20);
-    }, 600); // 600 мс = долгое нажатие
-}
-
-function handleTouchEnd() {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-    longPressTarget = null;
-    // ВАЖНО: сбрасываем флаг, чтобы короткие тапы работали
-    isLongPressTriggered = false;
-}
-
-function handleTouchMove() {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-    longPressTarget = null;
-}
-
-// ========== ДОЛГОЕ НАЖАТИЕ ДЛЯ ТЕЛЕФОНОВ (окончание) ==========
-
 async function init() {
-    // 1. Загружаем параметры
     const paramsLoaded = await loadTournamentParams();
     if (!paramsLoaded) {
         document.getElementById('table-wrapper').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки параметров</div>';
         return;
     }
     
-    // 2. Определяем дедлайн
     firstMatchDeadline = getFirstMatchDeadlineFromParams();
     REVEAL_DATE = firstMatchDeadline;
     console.log(`🎯 Дедлайн: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`);
     
-    // 3. Загружаем данные о сборных
     await loadTeamsData();
     
-    // 4. Загружаем матчи и прогнозы
     const success = await loadAllData();
     if (success) {
         renderTable();
