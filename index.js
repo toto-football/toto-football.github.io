@@ -8,6 +8,7 @@ let teamsData = {};
 let tournamentParams = {};
 let selectedUserName = localStorage.getItem('selectedUserName') || null;
 let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localStorage.getItem('selectedMatchId')) : null;
+let isTouchDevice = false;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
 async function loadTournamentParams() {
@@ -488,35 +489,35 @@ function renderTable() {
         th.style.cursor = 'pointer';
         th.title = 'Нажатие выделяет/освобождает колонку участника';
     
-        th.onclick = () => {
-            if (selectedUserName === p.name) {
-                // Отменяем выбор
-                selectedUserName = null;
-		localStorage.removeItem('selectedUserName');
+	// Логика выделения - отдельная функция
+	th._onclick = () => {
+	    if (selectedUserName === p.name) {
+	        selectedUserName = null;
+	        localStorage.removeItem('selectedUserName');
+	        document.querySelectorAll(`th[data-participant="${p.name}"], td[data-participant="${p.name}"]`).forEach(el => {
+	            el.classList.remove('selected-col');
+	        });
+	        console.log('❌ Выбор отменён');
+	    } else {
+	        if (selectedUserName) {
+	            document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+	                el.classList.remove('selected-col');
+	            });
+	        }
+	        selectedUserName = p.name;
+	        localStorage.setItem('selectedUserName', selectedUserName);
+	        document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+        	    el.classList.add('selected-col');
+	        });
+        	console.log('✅ Выбран участник:', selectedUserName);
+	    }
+	};
 
-                // Убираем подсветку со всех ячеек этого участника
-                document.querySelectorAll(`th[data-participant="${p.name}"], td[data-participant="${p.name}"]`).forEach(el => {
-                    el.classList.remove('selected-col');
-                });
-                console.log('❌ Выбор отменён');
-            } else {
-                // Убираем подсветку с предыдущего выбранного участника
-                if (selectedUserName) {
-                    document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
-                        el.classList.remove('selected-col');
-                    });
-                }
-                // Выбираем нового участника
-                selectedUserName = p.name;
-		localStorage.setItem('selectedUserName', selectedUserName);
-
-                // Подсвечиваем новую колонку
-                document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
-                    el.classList.add('selected-col');
-                });
-                console.log('✅ Выбран участник:', selectedUserName);
-            }
-        };
+	// Для мыши (левый клик) - проверяем, что это не touch-устройство
+	th.onclick = (e) => {
+	    if (isTouchDevice) return;
+	    th._onclick();
+	};
 
 	th.addEventListener('contextmenu', (e) => {
 	    e.preventDefault();
@@ -703,10 +704,12 @@ function renderTable() {
 	        handleTouchEnd();
 	        // Если это был короткий тап - выделяем колонку
 	        if (!isLongPressTriggered && !document.getElementById('participantContextMenu')) {
-	            // Находим заголовок этого участника и вызываем его onclick
+	            // Находим заголовок этого участника и вызываем его _onclick
 	            const header = document.querySelector(`th[data-participant="${p.name}"]`);
-	            if (header && header.onclick) {
-	                header.onclick();
+	            if (header && header._onclick) {
+	                isTouchDevice = true;
+	                header._onclick();
+	                setTimeout(() => { isTouchDevice = false; }, 50);
 	            }
 	        }
 	    });
