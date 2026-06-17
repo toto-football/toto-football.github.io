@@ -535,7 +535,9 @@ function renderTable() {
 	    handleTouchEnd();
 	    // Если это был короткий тап (не долгое нажатие) - выделяем колонку
 	    if (!isLongPressTriggered && !document.getElementById('participantContextMenu')) {
-	        th.onclick();
+	        isTouchDevice = true;
+	        th._onclick();
+	        setTimeout(() => { isTouchDevice = false; }, 50);
 	    }
 	});
 
