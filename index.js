@@ -508,14 +508,15 @@ function showContextMenu(event, participantName, targetElement) {
     subHeader.style.cssText = `
         display: flex;
         justify-content: space-between;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         color: #555;
         margin-bottom: 8px;
         padding: 0 2px;
+	gap: 12px;
     `;
     subHeader.innerHTML = `
-        <span>участник: <strong>${participantName}</strong></span>
-        <span>матчей: <strong>${totalMatches}</strong></span>
+        <span style="white-space: nowrap; text-align: left;">участник: <strong>${participantName}</strong></span>
+        <span style="white-space: nowrap; text-align: right;">матчей: <strong>${totalMatches}</strong></span>
     `;
     menu.appendChild(subHeader);
     
@@ -529,8 +530,16 @@ function showContextMenu(event, participantName, targetElement) {
         const statsDiv = document.createElement('div');
         statsDiv.style.cssText = 'margin-bottom: 6px;';
         
-        const sortedKeys = Object.keys(stats).sort((a, b) => parseInt(a) - parseInt(b));
+	// Находим максимальное значение ошибки
+	const maxError = Math.max(...Object.keys(stats).map(Number));
+	// Создаём полный список от -2 до maxError, пропуская -1
+	const allValues = [];
+	for (let i = -2; i <= maxError; i++) {
+	    if (i === -1) continue; // пропускаем -1
+	    allValues.push(i);
+	}
         
+        // Заголовки таблицы
         const headerRow = document.createElement('div');
         headerRow.style.cssText = `
             display: grid;
@@ -545,27 +554,20 @@ function showContextMenu(event, participantName, targetElement) {
             margin-bottom: 3px;
         `;
         headerRow.innerHTML = `
-            <div style="text-align: center;">Результат прогноза</div>
+            <div style="text-align: left;">Результат прогноза</div>
             <div style="text-align: right;">Кол-во</div>
         `;
         statsDiv.appendChild(headerRow);
         
-        const maxKey = Math.max(...sortedKeys.map(Number));
-        const minScale = -2;
-        const maxScale = maxKey;
-        const scaleRange = maxScale - minScale;
+        // Находим максимальное количество для шкалы
+        const maxCount = Math.max(...Object.values(stats));
         
-        for (const key of sortedKeys) {
-            const count = stats[key];
+        for (const key of allValues) {
+            const count = stats[key] || 0;
             const keyNum = parseInt(key);
             
-            let percent;
-            if (scaleRange === 0) {
-                percent = 100;
-            } else {
-                percent = ((keyNum - minScale) / scaleRange) * 100;
-            }
-            percent = Math.max(0, Math.min(100, percent));
+            // Процент для прогрессбара (от 0 до 100% от максимального количества)
+            const percent = maxCount > 0 ? (count / maxCount) * 100 : 0;
             
             const row = document.createElement('div');
             row.style.cssText = `
@@ -576,40 +578,55 @@ function showContextMenu(event, participantName, targetElement) {
                 padding: 1px 0;
             `;
             
+            // Левая часть: значение + полоса
             const leftCell = document.createElement('div');
             leftCell.style.cssText = 'display: flex; align-items: center; gap: 6px;';
             
+            // Значение (прижато влево)
             const val = document.createElement('div');
             val.textContent = key;
-            val.style.cssText = 'font-weight: bold; text-align: right; min-width: 18px; font-size: 0.7rem;';
-            if (keyNum < 0) val.style.color = '#c62828';
-            else if (keyNum === 0) val.style.color = '#e65100';
-            else val.style.color = '#2e7d32';
+            val.style.cssText = 'font-weight: bold; text-align: left; min-width: 18px; font-size: 0.7rem;';
+	    if (keyNum === -2) val.style.color = '#2e7d32';
+	    else val.style.color = '#c62828';
             
-            let color;
-            if (keyNum === -2) {
-                color = '#1a5c1a';
-            } else {
-                const intensity = Math.min(1, (keyNum + 2) / 10);
-                const r = 46 + intensity * 119;
-                const g = 125 - intensity * 59;
-                const b = 50 + intensity * 117;
-                color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
-            }
-            
+            // Полоса
+	    let color;
+	    if (keyNum === -2) {
+	        color = '#1a5c1a'; // зелёный для -2
+	    } else {
+	        color = '#b0b0b0'; // серый для всех остальных
+	    }            
+
             const barContainer = document.createElement('div');
             barContainer.style.cssText = 'flex: 1; background: #e9e6cf; border-radius: 8px; height: 10px; overflow: hidden;';
             const bar = document.createElement('div');
             bar.style.cssText = `width: ${percent}%; height: 100%; background: ${color}; border-radius: 8px; opacity: 0.8;`;
+            
+	    // Если это максимальное количество — выделяем тёмно-серым (кроме -2)
+	    if (count === maxCount && count > 0 && keyNum !== -2) {
+	        bar.style.background = '#555555'; // тёмно-серый
+	        bar.style.opacity = '1';
+	        bar.style.boxShadow = '0 0 6px rgba(85, 85, 85, 0.5)';
+	    }
+	    // Если это -2 и оно максимальное — оставляем зелёным, но делаем ярче
+	    if (count === maxCount && count > 0 && keyNum === -2) {
+	        bar.style.opacity = '1';
+	        bar.style.boxShadow = '0 0 6px rgba(26, 92, 26, 0.5)';
+	    }
+            
             barContainer.appendChild(bar);
             
             leftCell.appendChild(val);
             leftCell.appendChild(barContainer);
             
-            const countDiv = document.createElement('div');
-            countDiv.textContent = count;
-            countDiv.style.cssText = 'text-align: right; font-weight: bold; font-size: 0.7rem;';
-            
+            // Правая часть: количество
+	    const countDiv = document.createElement('div');
+	    countDiv.textContent = count === 0 ? '-' : count;
+	    countDiv.style.cssText = 'text-align: center; font-weight: bold; font-size: 0.7rem;';
+	    if (keyNum === -2 && count > 0) {
+	        countDiv.style.color = '#2e7d32';
+	    }
+
             row.appendChild(leftCell);
             row.appendChild(countDiv);
             statsDiv.appendChild(row);
