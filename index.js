@@ -701,6 +701,14 @@ function renderTable() {
 
 	    cell.addEventListener('touchend', () => {
 	        handleTouchEnd();
+	        // Если это был короткий тап - выделяем колонку
+	        if (!isLongPressTriggered && !document.getElementById('participantContextMenu')) {
+	            // Находим заголовок этого участника и вызываем его onclick
+	            const header = document.querySelector(`th[data-participant="${p.name}"]`);
+	            if (header && header.onclick) {
+	                header.onclick();
+	            }
+	        }
 	    });
 
 	    cell.addEventListener('touchmove', () => {
@@ -982,12 +990,18 @@ function handleTouchStart(element, participantName) {
     isLongPressTriggered = false;
     longPressTarget = participantName;
     
+    // Очищаем предыдущий таймер
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+    
     longPressTimer = setTimeout(() => {
         isLongPressTriggered = true;
         // Эмулируем событие для showContextMenu
         const fakeEvent = {
-            clientX: 50, // центр экрана
-            clientY: 100,
+            clientX: window.innerWidth / 2,
+            clientY: window.innerHeight / 2,
             preventDefault: () => {}
         };
         showContextMenu(fakeEvent, participantName);
