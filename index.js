@@ -472,6 +472,42 @@ function showContextMenu(event, participantName, targetElement) {
     const average = totalMatches > 0 ? (sumResults / totalMatches) : 0;
     const averageFormatted = average.toFixed(2);
     
+    // Расчет места и отставания от лидера
+    let rankDisplay = '—';
+    let leaderDiff = '—';
+    let totalParticipants = participantsData.length;
+
+    if (totalMatches > 0) {
+        // Считаем сумму ошибок для всех участников
+        const results = matchesData.map(m => m.result);
+        const allScores = participantsData.map(p => ({
+            name: p.name,
+            totalScore: calculateTotalParticipantScore(p.predictions, results)
+        }));
+    
+        // Сортируем по сумме ошибок
+        allScores.sort((a, b) => a.totalScore - b.totalScore);
+    
+        // Находим место текущего участника
+        const currentScore = allScores.find(p => p.name === participantName)?.totalScore || 0;
+        const sameScoreCount = allScores.filter(p => p.totalScore === currentScore).length;
+        const betterCount = allScores.filter(p => p.totalScore < currentScore).length;
+    
+        if (sameScoreCount === 1) {
+            rankDisplay = `${betterCount + 1}`;
+        } else {
+            rankDisplay = `${betterCount + 1}-${betterCount + sameScoreCount}`;
+        }
+    
+        // Отставание от лидера
+        const leaderScore = allScores[0]?.totalScore || 0;
+        if (currentScore !== leaderScore) {
+            leaderDiff = `+${currentScore - leaderScore}`;
+        } else {
+            leaderDiff = '0';
+        }
+    }
+
     // Создаём меню
     const menu = document.createElement('div');
     menu.id = 'participantContextMenu';
@@ -481,7 +517,7 @@ function showContextMenu(event, participantName, targetElement) {
         border: 1px solid #9aaa80;
         border-radius: 12px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-        padding: 10px 14px;
+        padding: 10px 14px 10px 14px;
         z-index: 9999;
         min-width: 200px;
         max-width: 240px;
@@ -510,15 +546,44 @@ function showContextMenu(event, participantName, targetElement) {
         justify-content: space-between;
         font-size: 0.7rem;
         color: #555;
-        margin-bottom: 8px;
-        padding: 0 2px;
-	gap: 12px;
+        margin-bottom: 4px;
+        padding: 0;
+        gap: 12px;
     `;
     subHeader.innerHTML = `
         <span style="white-space: nowrap; text-align: left;">участник: <strong>${participantName}</strong></span>
         <span style="white-space: nowrap; text-align: right;">матчей: <strong>${totalMatches}</strong></span>
     `;
     menu.appendChild(subHeader);
+
+    // Место (из)
+    const rankRow = document.createElement('div');
+    rankRow.style.cssText = `
+        font-size: 0.7rem;
+        color: #555;
+        margin-bottom: 4px;
+        padding: 0;
+	text-align: center;
+    `;
+    rankRow.innerHTML = `
+        <span>место: <strong>${rankDisplay}</strong> (из ${totalParticipants})</span>
+    `;
+    menu.appendChild(rankRow);
+
+    // Сумма ошибок (отставание от лидера)
+    const diffRow = document.createElement('div');
+    diffRow.style.cssText = `
+        font-size: 0.7rem;
+        color: #555;
+        margin-bottom: 8px;
+        padding: 0;
+	text-align: center;
+    `;
+    diffRow.innerHTML = `
+        <span>сумма ошибок: <strong>${totalMatches > 0 ? sumResults : '-'}</strong>${totalMatches > 0 ? ` (${leaderDiff})` : ''}</span>
+    `;
+
+    menu.appendChild(diffRow);
     
     // Статистика
     if (totalMatches === 0) {
@@ -554,7 +619,7 @@ function showContextMenu(event, participantName, targetElement) {
             margin-bottom: 3px;
         `;
         headerRow.innerHTML = `
-            <div style="text-align: left;">Результат прогноза</div>
+            <div style="text-align: left;">Результаты прогноза</div>
             <div style="text-align: right;">Кол-во</div>
         `;
         statsDiv.appendChild(headerRow);
@@ -585,7 +650,7 @@ function showContextMenu(event, participantName, targetElement) {
             // Значение (прижато влево)
             const val = document.createElement('div');
             val.textContent = key;
-            val.style.cssText = 'font-weight: bold; text-align: left; min-width: 18px; font-size: 0.7rem;';
+            val.style.cssText = 'font-weight: bold; text-align: center; min-width: 18px; font-size: 0.7rem;';
 	    if (keyNum === -2) val.style.color = '#2e7d32';
 	    else val.style.color = '#c62828';
             
