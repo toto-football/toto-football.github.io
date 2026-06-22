@@ -475,22 +475,22 @@ function renderTable() {
         
         td.appendChild(inp);
         
-        // Иконка справа внутри ячейки
-        if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
-            const iconBtn = document.createElement('span');
-            iconBtn.textContent = '🎤';
-            iconBtn.style.cssText = 'position:absolute; right:4px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:0.85rem; z-index:1; user-select:none;';
-            iconBtn.title = 'Ввести счёт голосом';
-            iconBtn.onclick = function(e) {
-                e.stopPropagation();
-                if (isAlreadySent || isDeadlinePassed) {
-                    alert('Прогноз уже отправлен или дедлайн прошёл.');
-                    return;
-                }
-                startVoiceRecognition(m.id, inp);
-            };
-            td.appendChild(iconBtn);
-        }
+	// Иконка справа внутри ячейки (временно для теста — без проверки дедлайна)
+	if (speechSupported) {
+	    const iconBtn = document.createElement('span');
+	    iconBtn.textContent = '🎤';
+	    iconBtn.style.cssText = 'position:absolute; right:4px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:0.85rem; z-index:1; user-select:none;';
+	    iconBtn.title = 'Ввести счёт голосом';
+	    iconBtn.onclick = function(e) {
+	        e.stopPropagation();
+	        if (isAlreadySent) {
+	            alert('Прогноз уже отправлен.');
+	            return;
+	        }
+	        startVoiceRecognition(m.id, inp);
+	    };
+	    td.appendChild(iconBtn);
+	}
     }
     w.innerHTML = '';
     w.appendChild(t);
