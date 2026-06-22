@@ -478,8 +478,20 @@ function renderTable() {
 	        e.stopPropagation();
 	        startVoiceRecognition(m.id, inp);
 	    };
-	    // td.appendChild(micIcon);
-	    inp.after(micIcon); 
+
+	    const iconBtn = document.createElement('span');
+	    iconBtn.textContent = '🎤 ';
+	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
+	    iconBtn.title = 'Ввести счёт голосом';
+	    iconBtn.onclick = function(e) {
+	        e.stopPropagation();
+	        if (isAlreadySent) {
+	            alert('Прогноз уже отправлен.');
+	            return;
+	        }
+	        startVoiceRecognition(m.id, inp);
+	    };
+	    td.insertBefore(iconBtn, inp);
 	}        
 
         inp.onchange = (function(id, input) {
