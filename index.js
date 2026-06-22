@@ -1537,8 +1537,11 @@ function scrollToSelectedMatchOnLoad() {
     // Вычисляем позицию для прокрутки (строка должна быть 4-й сверху)
     const targetScroll = selectedRow.offsetTop - (4 * rowHeight);
     
-    // Прокручиваем
-    wrapper.scrollTop = Math.max(0, targetScroll);
+    // Задержка 300ms для телефона (на компьютере тоже работает)
+    setTimeout(function() {
+        // Прокручиваем
+        wrapper.scrollTop = Math.max(0, targetScroll);
+    }, 300);
 }
 
 async function init() {
