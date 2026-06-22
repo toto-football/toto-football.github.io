@@ -339,6 +339,10 @@ function startVoiceRecognition(matchId, inputElement) {
     if (!SpeechRecognition) {
         return;
     }
+
+     // Активируем микрофонный режим
+    inputElement.classList.remove('input-active-keyboard');
+    inputElement.classList.add('input-active-microphone');
     
     const recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
@@ -361,6 +365,8 @@ function startVoiceRecognition(matchId, inputElement) {
             inputElement.value = score;
             inputElement.style.borderColor = '#cddba8';
             inputElement.placeholder = 'x:x';
+            // Убираем микрофонный режим
+            inputElement.classList.remove('input-active-microphone');
             inputElement.dispatchEvent(new Event('change'));
         } else {
             alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
@@ -373,6 +379,7 @@ function startVoiceRecognition(matchId, inputElement) {
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
         inputElement.placeholder = 'x:x';
+	inputElement.classList.remove('input-active-microphone');
         alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
     };
     
@@ -380,6 +387,7 @@ function startVoiceRecognition(matchId, inputElement) {
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
         inputElement.placeholder = 'x:x';
+	inputElement.classList.remove('input-active-microphone');
     };
 }
 
@@ -434,6 +442,17 @@ function renderTable() {
         inp.classList.add('score-input');
         inp.value = predictions[m.id] ? formatScore(predictions[m.id]) : '';
 	inp.style.display = 'inline-block';
+
+	// Обработчик для начала ввода с клавиатуры
+	inp.addEventListener('focus', function() {
+	    this.classList.remove('input-active-microphone');
+	    this.classList.add('input-active-keyboard');
+	});
+
+	// Обработчик окончания ввода
+	inp.addEventListener('blur', function() {
+	    this.classList.remove('input-active-keyboard', 'input-active-microphone');
+	});
         
         const now = new Date();
         const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;

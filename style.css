@@ -729,6 +729,30 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     background: transparent !important;
 }
 
+/* ===== АКТИВНЫЙ ВВОД С КЛАВИАТУРЫ ===== */
+@keyframes pulse-keyboard {
+    0% { background-color: #fff3cd; }
+    50% { background-color: #ffe69c; }
+    100% { background-color: #fff3cd; }
+}
+
+.input-active-keyboard {
+    animation: pulse-keyboard 0.8s ease-in-out infinite;
+    background-color: #fff3cd !important;
+}
+
+/* ===== АКТИВНЫЙ ВВОД С МИКРОФОНА ===== */
+@keyframes pulse-microphone {
+    0% { background-color: #fce4ec; }
+    50% { background-color: #f8bbd0; }
+    100% { background-color: #fce4ec; }
+}
+
+.input-active-microphone {
+    animation: pulse-microphone 0.8s ease-in-out infinite;
+    background-color: #fce4ec !important;
+}
+
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
 /* ####################################################################################################### */
