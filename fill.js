@@ -460,30 +460,27 @@ function renderTable() {
 	    inp.style.paddingRight = '28px';
     
 	    // Создаем иконку микрофона
-	    const micIcon = document.createElement('span');
+	   const micIcon = document.createElement('span');
 	    micIcon.textContent = '🎤';
 	    micIcon.style.cssText = `
 	        position: absolute;
-        	right: 6px;
+	        right: 6px;
 	        top: 50%;
-        	transform: translateY(-50%);
+	        transform: translateY(-50%);
 	        cursor: pointer;
-        	font-size: 14px;
+	        font-size: 14px;
 	        opacity: 0.7;
-        	transition: opacity 0.2s;
 	        z-index: 5;
-        	pointer-events: auto;
+	        pointer-events: auto;
 	        user-select: none;
 	    `;
-	    micIcon.onmouseenter = function() { this.style.opacity = '1'; };
-	    micIcon.onmouseleave = function() { this.style.opacity = '0.7'; };
 	    micIcon.onclick = function(e) {
-        	e.stopPropagation();
+	        e.stopPropagation();
 	        startVoiceRecognition(m.id, inp);
 	    };
 	    td.appendChild(micIcon);
-	}
-        
+	}        
+
         inp.onchange = (function(id, input) {
             return function() {
                 if (isAlreadySent) return;
