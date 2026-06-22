@@ -455,10 +455,34 @@ function renderTable() {
         // Временно отключаем блокировку для теста
         // if (isAlreadySent || isDeadlinePassed) inp.disabled = true;
         
-        const speechSupported = isSpeechSupported();
-        if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
-            inp.style.paddingRight = '22px';
-        }
+	const speechSupported = isSpeechSupported();
+	if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
+	    inp.style.paddingRight = '28px';
+    
+	    // Создаем иконку микрофона
+	    const micIcon = document.createElement('span');
+	    micIcon.textContent = '🎤';
+	    micIcon.style.cssText = `
+	        position: absolute;
+        	right: 6px;
+	        top: 50%;
+        	transform: translateY(-50%);
+	        cursor: pointer;
+        	font-size: 14px;
+	        opacity: 0.7;
+        	transition: opacity 0.2s;
+	        z-index: 5;
+        	pointer-events: auto;
+	        user-select: none;
+	    `;
+	    micIcon.onmouseenter = function() { this.style.opacity = '1'; };
+	    micIcon.onmouseleave = function() { this.style.opacity = '0.7'; };
+	    micIcon.onclick = function(e) {
+        	e.stopPropagation();
+	        startVoiceRecognition(m.id, inp);
+	    };
+	    td.appendChild(micIcon);
+	}
         
         inp.onchange = (function(id, input) {
             return function() {
