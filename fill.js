@@ -478,7 +478,8 @@ function renderTable() {
 	        e.stopPropagation();
 	        startVoiceRecognition(m.id, inp);
 	    };
-	    td.appendChild(micIcon);
+	    // td.appendChild(micIcon);
+	    inp.after(micIcon); 
 	}        
 
         inp.onchange = (function(id, input) {
