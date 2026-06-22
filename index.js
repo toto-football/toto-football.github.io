@@ -1514,6 +1514,31 @@ function renderTable() {
     if (adminModeEnabled) {
         updateAdminUI();
     }
+
+    // Прокручиваем к выделенной строке при загрузке/обновлении
+    scrollToSelectedMatchOnLoad();
+}
+
+// ========== ПРОКРУТКА К ВЫДЕЛЕННОЙ СТРОКЕ ПРИ ЗАГРУЗКЕ ==========
+function scrollToSelectedMatchOnLoad() {
+    if (selectedMatchId === null) return;
+    
+    const selectedRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
+    if (!selectedRow) return;
+    
+    const wrapper = document.getElementById('table-wrapper');
+    if (!wrapper) return;
+    
+    // Находим высоту одной строки
+    const firstRow = wrapper.querySelector('tbody tr');
+    if (!firstRow) return;
+    const rowHeight = firstRow.offsetHeight;
+    
+    // Вычисляем позицию для прокрутки (строка должна быть 4-й сверху)
+    const targetScroll = selectedRow.offsetTop - (4 * rowHeight);
+    
+    // Прокручиваем
+    wrapper.scrollTop = Math.max(0, targetScroll);
 }
 
 async function init() {
