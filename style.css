@@ -710,6 +710,25 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     -webkit-tap-highlight-color: rgba(230, 180, 34, 0.3);
 }
 
+/* ===== АНИМАЦИЯ МИКРОФОНА ===== */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+.admin-icon {
+    display: inline-block;
+    transition: all 0.3s ease;
+    padding: 0;
+    border-radius: 0;
+    background: transparent !important;
+}
+
+.admin-icon:hover {
+    background: transparent !important;
+}
+
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
 /* ####################################################################################################### */

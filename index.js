@@ -9,6 +9,11 @@ let tournamentParams = {};
 let selectedUserName = localStorage.getItem('selectedUserName') || null;
 let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localStorage.getItem('selectedMatchId')) : null;
 
+// ========== ПЕРЕМЕННЫЕ ДЛЯ АДМИН-РЕЖИМА ==========
+let adminModeEnabled = localStorage.getItem('adminMode') === 'true' || false;
+let adminClickSequence = []; // для отслеживания нажатий на заголовки
+let isSpeechSupported = false;
+
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
 async function loadTournamentParams() {
     try {
@@ -189,6 +194,482 @@ function getParticipantColor(name) {
         participantColors[name] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
     return participantColors[name];
+}
+
+// ========== ЗВУКОВОЕ СОПРОВОЖДЕНИЕ ==========
+function playSound(type) {
+    const sounds = {
+        on: 'images/admin-on.mp3',
+        off: 'images/admin-off.mp3',
+        error: 'images/error.mp3'
+    };
+    
+    const audio = new Audio(sounds[type] || sounds.error);
+    audio.volume = 0.5;
+    audio.play().catch(() => {
+        // Если звук не воспроизвёлся (например, автозапрет) — игнорируем
+    });
+}
+
+// ========== ПРОВЕРКА ДОСТУПНЫХ ЯЧЕЕК ДЛЯ ВВОДА СЧЕТА ==========
+function getAvailableMatches() {
+    const now = new Date();
+    const available = [];
+    
+    for (let i = 0; i < matchesData.length; i++) {
+        const m = matchesData[i];
+        
+        // Проверяем, есть ли уже счёт
+        if (m.result && m.result !== '—' && m.result !== '') {
+            continue; // счёт уже есть — пропускаем
+        }
+        
+        // Проверяем, начался ли матч
+        let matchStarted = false;
+        if (m.date && m.date !== '—' && m.time && m.time !== '—') {
+            try {
+                let year = tournamentParams.турнир_год ? parseInt(tournamentParams.турнир_год) : new Date().getFullYear();
+                let months = {
+                    'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3, 'мая': 4, 'июня': 5,
+                    'июля': 6, 'августа': 7, 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
+                };
+                let dateParts = m.date.trim().split(' ');
+                if (dateParts.length === 2) {
+                    let day = parseInt(dateParts[0]);
+                    let monthName = dateParts[1];
+                    let month = months[monthName];
+                    if (!isNaN(day) && month !== undefined) {
+                        let timeParts = m.time.split(':');
+                        let hours = parseInt(timeParts[0]);
+                        let minutes = parseInt(timeParts[1]);
+                        let matchDateTime = new Date(year, month, day, hours, minutes);
+                        matchStarted = now >= matchDateTime;
+                    }
+                }
+            } catch(e) {
+                matchStarted = false;
+            }
+        }
+        
+        if (matchStarted) {
+            available.push(i);
+        }
+    }
+    
+    return available;
+}
+
+// ========== ВКЛЮЧЕНИЕ / ВЫКЛЮЧЕНИЕ РЕЖИМА АДМИНА ==========
+function toggleAdminMode() {
+    if (adminModeEnabled) {
+        // === ВЫКЛЮЧЕНИЕ ===
+        adminModeEnabled = false;
+        localStorage.removeItem('adminMode');
+        playSound('off');
+        updateAdminUI();
+        return;
+    }
+    
+    // === ВКЛЮЧЕНИЕ ===
+    // Проверяем, есть ли доступные ячейки
+    const available = getAvailableMatches();
+    if (available.length === 0) {
+        playSound('error');
+        return;
+    }
+    
+    // Проверяем поддержку голоса
+    isSpeechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    
+    adminModeEnabled = true;
+    localStorage.setItem('adminMode', 'true');
+    playSound('on');
+    updateAdminUI();
+}
+
+// ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА В РЕЖИМЕ АДМИНА ==========
+function updateAdminUI() {
+    // Меняем фон заголовка «Результат»
+    const resultHeader = document.querySelector('th:nth-child(8)');
+    if (resultHeader) {
+        if (adminModeEnabled) {
+            resultHeader.style.backgroundColor = '#a8d5a2';
+        } else {
+            resultHeader.style.backgroundColor = '';
+        }
+    }
+    
+    // Обновляем ячейки с результатами
+    const resultCells = document.querySelectorAll('tbody td:nth-child(8)');
+    const available = getAvailableMatches();
+    
+    resultCells.forEach((cell, index) => {
+        // Проверяем, есть ли уже счёт (только если там цифры)
+        const cellText = cell.textContent.trim();
+	const hasScore = /^\d+\s*[:–\-]\s*\d+$/.test(cellText); // проверка на счёт вида "2:1"
+        if (hasScore) return;
+        
+        // Проверяем, доступен ли этот матч для ввода
+        const isAvailable = available.includes(index);
+        
+	if (adminModeEnabled && isAvailable) {
+	    // Удаляем старую иконку, если она есть
+	    const oldIcon = cell.querySelector('.admin-icon');
+	    if (oldIcon) {
+        	if (oldIcon._clickHandler) {
+	            oldIcon.removeEventListener('click', oldIcon._clickHandler);
+        	}
+	        oldIcon.remove();
+	    }
+    
+	    // Создаём новую иконку
+	    const icon = isSpeechSupported ? '🎤' : '✏️';
+	    const iconSpan = document.createElement('span');
+	    iconSpan.className = 'admin-icon';
+	    iconSpan.style.cssText = 'cursor:pointer; font-size:0.8rem; display:inline-block; width:1.2em; text-align:center;';
+	    iconSpan.dataset.matchIndex = index;
+	    iconSpan.textContent = icon;
+    
+	    const handler = function(e) {
+        	e.stopPropagation();
+	        const matchIndex = parseInt(this.dataset.matchIndex);
+        	if (!adminModeEnabled) {
+	            alert('Режим администратора выключен. Ввод счёта недоступен.');
+        	    return;
+	        }
+        	openScoreInput(matchIndex);
+	    };
+	    iconSpan._clickHandler = handler;
+	    iconSpan.addEventListener('click', handler);
+    
+	    cell.innerHTML = '';
+	    cell.appendChild(iconSpan);
+	} else {
+	    // Очищаем ячейку и вставляем прочерк
+	    while (cell.firstChild) {
+        	cell.removeChild(cell.firstChild);
+	    }
+	    cell.textContent = '—';
+	}
+
+    });
+}
+
+// ========== ОТКРЫТИЕ ВВОДА СЧЁТА (ГОЛОС ИЛИ РУЧНОЙ) ==========
+function openScoreInput(matchIndex) {
+    // Проверяем, включён ли режим админа
+    if (!adminModeEnabled) {
+        alert('Режим администратора выключен. Ввод счёта недоступен.');
+        return;
+    }
+
+    const match = matchesData[matchIndex];
+    if (!match) return;
+    
+    if (isSpeechSupported) {
+        // === ГОЛОСОВОЙ ВВОД ===
+        startVoiceRecognition(matchIndex);
+    } else {
+        // === РУЧНОЙ ВВОД ===
+        showManualInputModal(matchIndex);
+    }
+}
+
+
+// ========== ГОЛОСОВОЙ ВВОД СЧЁТА ==========
+function startVoiceRecognition(matchIndex) {
+    const match = matchesData[matchIndex];
+    if (!match) return;
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showManualInputModal(matchIndex);
+        return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    // Изменяем иконку на "слушаю..."
+    const iconEl = document.querySelector(`.admin-icon[data-match-index="${matchIndex}"]`);
+    if (iconEl) {
+        iconEl.textContent = '🎤';
+        iconEl.style.color = 'red';
+        iconEl.style.animation = 'pulse 0.5s infinite';
+    }
+    
+    recognition.start();
+    
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        // Парсим счёт из речи (например, "два один" → "2:1")
+        const score = parseScoreFromSpeech(transcript);
+        if (score) {
+            showConfirmModal(matchIndex, score);
+        } else {
+            alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
+            resetIcon(matchIndex);
+            showManualInputModal(matchIndex);
+        }
+    };
+    
+    recognition.onerror = function() {
+        resetIcon(matchIndex);
+        alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
+        showManualInputModal(matchIndex);
+    };
+    
+    recognition.onend = function() {
+        resetIcon(matchIndex);
+    };
+    
+    function resetIcon(index) {
+        const el = document.querySelector(`.admin-icon[data-match-index="${index}"]`);
+        if (el) {
+            el.textContent = isSpeechSupported ? '🎤' : '✏️';
+            el.style.color = '';
+            el.style.animation = '';
+        }
+    }
+}
+
+// ========== ПАРСИНГ СЧЁТА ИЗ РЕЧИ ==========
+function parseScoreFromSpeech(text) {
+    // Убираем лишние пробелы и приводим к нижнему регистру
+    text = text.toLowerCase().trim();
+    
+    // Заменяем слова на цифры
+    const numberMap = {
+        'ноль': '0', 'нуль': '0', 'один': '1', 'два': '2', 'три': '3',
+        'четыре': '4', 'пять': '5', 'шесть': '6', 'семь': '7', 'восемь': '8',
+        'девять': '9', 'десять': '10'
+    };
+    
+    let result = text;
+    for (const [word, digit] of Object.entries(numberMap)) {
+        result = result.replace(new RegExp(word, 'g'), digit);
+    }
+    
+    // Ищем паттерн "цифра:цифра" или "цифра цифра"
+    let match = result.match(/(\d+)\s*[:\-]\s*(\d+)/);
+    if (!match) {
+        match = result.match(/(\d+)\s+(\d+)/);
+    }
+    if (!match) {
+        match = result.match(/(\d+)\s*(к|на)\s*(\d+)/);
+    }
+    
+    if (match) {
+        return `${match[1]}:${match[2]}`;
+    }
+    
+    return null;
+}
+
+// ========== РУЧНОЙ ВВОД СЧЁТА (МОДАЛЬНОЕ ОКНО) ==========
+function showManualInputModal(matchIndex) {
+    const match = matchesData[matchIndex];
+    if (!match) return;
+    
+    // Создаём модальное окно
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #fef9e8; border-radius: 16px; padding: 20px; max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    modal.innerHTML = `
+        <h3 style="margin-top:0; color:#1e4620;">Введите счёт</h3>
+        <p><strong>${match.team1} – ${match.team2}</strong></p>
+        <input type="text" id="manualScoreInput" placeholder="Например: 2:1" style="
+            width: 100%; padding: 8px 12px; font-size: 1.2rem; border: 2px solid #cddba8;
+            border-radius: 10px; text-align: center; font-family: monospace;
+        ">
+        <div style="display:flex; gap:12px; margin-top:16px; justify-content:center;">
+            <button id="manualSendBtn" style="
+                background: #2c7840; color: white; border: none; border-radius: 20px;
+                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
+            ">Отправить</button>
+            <button id="manualCancelBtn" style="
+                background: #ccc; color: #333; border: none; border-radius: 20px;
+                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
+            ">Отмена</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Фокусируем поле ввода
+    const input = modal.querySelector('#manualScoreInput');
+    input.focus();
+    
+    // Обработчик отправки
+    modal.querySelector('#manualSendBtn').addEventListener('click', function() {
+        const score = input.value.trim();
+        if (score && /^\d+\s*[:–\-]\s*\d+$/.test(score)) {
+            const formattedScore = score.replace(/[–\-]/g, ':');
+            closeModal();
+            showConfirmModal(matchIndex, formattedScore);
+        } else {
+            alert('Пожалуйста, введите счёт в формате "2:1" или "2-1"');
+        }
+    });
+    
+    // Обработчик отмены
+    modal.querySelector('#manualCancelBtn').addEventListener('click', closeModal);
+    
+    // Закрытие по клику на оверлей
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal();
+    });
+    
+    // Enter в поле ввода
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            modal.querySelector('#manualSendBtn').click();
+        }
+    });
+    
+    function closeModal() {
+        if (overlay.parentNode) overlay.remove();
+    }
+}
+
+// ========== ОКНО ПОДТВЕРЖДЕНИЯ СЧЁТА ==========
+function showConfirmModal(matchIndex, score) {
+    const match = matchesData[matchIndex];
+    if (!match) return;
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #fef9e8; border-radius: 16px; padding: 20px; max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    modal.innerHTML = `
+        <h3 style="margin-top:0; color:#1e4620;">Подтвердите ввод счёта</h3>
+        <p><strong>${match.team1} – ${match.team2}</strong></p>
+        <p style="font-size: 1.8rem; font-weight: bold; text-align: center; margin: 12px 0;">${score}</p>
+        <div style="display:flex; gap:12px; margin-top:16px; justify-content:center;">
+            <button id="confirmSendBtn" style="
+                background: #2c7840; color: white; border: none; border-radius: 20px;
+                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
+            ">Отправить</button>
+            <button id="confirmRetryBtn" style="
+                background: #e67e22; color: white; border: none; border-radius: 20px;
+                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
+            ">Исправить</button>
+            <button id="confirmCancelBtn" style="
+                background: #ccc; color: #333; border: none; border-radius: 20px;
+                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
+            ">Отмена</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Отправить
+    modal.querySelector('#confirmSendBtn').addEventListener('click', function() {
+        closeModal();
+        sendScoreToSheet(matchIndex, score);
+    });
+    
+    // Исправить
+    modal.querySelector('#confirmRetryBtn').addEventListener('click', function() {
+        closeModal();
+        openScoreInput(matchIndex);
+    });
+    
+    // Отмена
+    modal.querySelector('#confirmCancelBtn').addEventListener('click', closeModal);
+    
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal();
+    });
+    
+    function closeModal() {
+        if (overlay.parentNode) overlay.remove();
+    }
+}
+
+// ========== ОТПРАВКА СЧЁТА В НОВЫЙ СЦЕНАРИЙ ==========
+async function sendScoreToSheet(matchIndex, score) {
+    // Проверяем, включён ли режим админа
+    if (!adminModeEnabled) {
+        alert('Режим администратора выключен. Отправка счёта недоступна.');
+        return;
+    }
+
+    const match = matchesData[matchIndex];
+    if (!match) return;
+    
+    // Показываем индикатор загрузки на иконке
+    const iconEl = document.querySelector(`.admin-icon[data-match-index="${matchIndex}"]`);
+    if (iconEl) {
+        iconEl.textContent = '⏳';
+        iconEl.style.color = '#888';
+    }
+    
+    try {
+        const response = await fetch(`${APPS_SCRIPT_UPDATE_URL}?action=updateScore&matchId=${match.id}&score=${encodeURIComponent(score)}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            // Успешно — обновляем ячейку
+            matchesData[matchIndex].result = score;
+            updateMatchCell(matchIndex, score);
+            
+            // Проверяем, остались ли ещё доступные ячейки
+            const available = getAvailableMatches();
+            if (available.length === 0) {
+                // Все счета введены — выключаем режим
+                adminModeEnabled = false;
+                localStorage.removeItem('adminMode');
+                playSound('off');
+                updateAdminUI();
+            }
+        } else {
+            throw new Error(result.error || 'Неизвестная ошибка');
+        }
+    } catch (err) {
+        alert(`Ошибка при отправке: ${err.message}`);
+        // Возвращаем иконку
+        if (iconEl) {
+            iconEl.textContent = isSpeechSupported ? '🎤' : '✏️';
+            iconEl.style.color = '';
+        }
+    }
+}
+
+// ========== ОБНОВЛЕНИЕ ЯЧЕЙКИ НА СТРАНИЦЕ ==========
+function updateMatchCell(matchIndex, score) {
+    const rows = document.querySelectorAll('tbody tr');
+    if (rows[matchIndex]) {
+        const cells = rows[matchIndex].querySelectorAll('td');
+        if (cells.length >= 8) {
+            const resultCell = cells[7];
+            resultCell.textContent = score;
+            
+            resultCell.style.fontWeight = 'bold';
+            resultCell.classList.remove('pulse-result-missed');
+        }
+    }
 }
 
 // ========== АКТИВАЦИЯ КНОПОК ==========
@@ -807,9 +1288,42 @@ function renderTable() {
     for (const h of mainHeaders) {
         const th = document.createElement('th');
         th.textContent = h;
+    
+        // ===== ОБРАБОТЧИК АДМИН-РЕЖИМА (ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАГОЛОВКОВ) =====
+        th.addEventListener('click', function(e) {
+            const headerText = this.textContent.trim();
+            const cellIndex = this.cellIndex;
+        
+            const isHome = headerText === 'Хозяева' || cellIndex === 4;
+            const isAway = headerText === 'Гости' || cellIndex === 6;
+            const isResult = cellIndex === 7;
+        
+            if (isHome || isAway || isResult) {
+                let clickType = '';
+                if (isHome) clickType = 'Хозяева';
+                else if (isAway) clickType = 'Гости';
+                else if (isResult) clickType = 'Результат';
+            
+                adminClickSequence.push(clickType);
+            
+                if (adminClickSequence.length > 3) {
+                    adminClickSequence.shift();
+                }
+            
+                const expectedSequence = ['Хозяева', 'Гости', 'Результат'];
+                const isMatch = adminClickSequence.length === 3 && 
+                        adminClickSequence.every((val, idx) => val === expectedSequence[idx]);
+            
+                if (isMatch) {
+                    adminClickSequence = [];
+                    toggleAdminMode();
+                }
+            }
+        });
+    
         headerRow.appendChild(th);
     }
-    
+
     const resultHeaderCell = headerRow.children[7];
     if (resultHeaderCell) {
         resultHeaderCell.innerHTML = `
@@ -934,8 +1448,11 @@ function renderTable() {
             resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
         } else {
             if (matchStarted) {
-                resultCell.classList.add('pulse-result-missed');
-                resultCell.style.backgroundColor = '#B7E2FA';
+	        // Матч начался, но счёта нет — пульсация с фоном в зависимости от дня
+        	resultCell.classList.add('pulse-result-missed');
+	        // Устанавливаем правильный фон в зависимости от дня
+        	const isLightDay = bg === 'transparent';
+	        resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
             } else {
                 resultCell.style.backgroundColor = bg;
             }
@@ -986,6 +1503,11 @@ function renderTable() {
     wrapper.appendChild(table);
     
     activateButtons();
+    
+    // Восстанавливаем режим админа после перерисовки таблицы
+    if (adminModeEnabled) {
+        updateAdminUI();
+    }
 }
 
 async function init() {
