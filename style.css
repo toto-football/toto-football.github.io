@@ -443,6 +443,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     padding: 4px;
     border: 1px solid #cddba8;
     border-radius: 10px;
+/*    background-color: transparent; */
 }
 
 .score-input::placeholder {
@@ -732,25 +733,29 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 /* ===== АКТИВНЫЙ ВВОД С КЛАВИАТУРЫ ===== */
 @keyframes pulse-keyboard {
     0% { background-color: #fff3cd; }
-    50% { background-color: #ffe69c; }
+    50% { background-color: #ffc107; }
     100% { background-color: #fff3cd; }
 }
 
 .input-active-keyboard {
-    animation: pulse-keyboard 0.8s ease-in-out infinite;
-    background-color: #fff3cd !important;
+    animation: pulse-keyboard 0.8s ease-in-out infinite !important;
 }
 
 /* ===== АКТИВНЫЙ ВВОД С МИКРОФОНА ===== */
 @keyframes pulse-microphone {
     0% { background-color: #fce4ec; }
-    50% { background-color: #f8bbd0; }
+    50% { background-color: #f06292; }
     100% { background-color: #fce4ec; }
 }
 
 .input-active-microphone {
-    animation: pulse-microphone 0.8s ease-in-out infinite;
-    background-color: #fce4ec !important;
+    animation: pulse-microphone 0.8s ease-in-out infinite !important;
+}
+
+/* Увеличение шрифта в активной ячейке */
+.input-active-keyboard,
+.input-active-microphone {
+    font-size: 1.3rem !important;
 }
 
 /* ####################################################################################################### */
