@@ -394,6 +394,9 @@ function startVoiceRecognition(matchId, inputElement) {
 function renderTable() {
     const w = document.getElementById('table-wrapper');
     if (!w || !matchesData.length) return;
+
+    const speechSupported = isSpeechSupported();
+
     w.innerHTML = '';
     const t = document.createElement('table');
     t.classList.add('fill-table');
@@ -454,7 +457,6 @@ function renderTable() {
         const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
         
 	// Иконка слева от поля (без лишних стилей)
-	const speechSupported = isSpeechSupported();
 	if (speechSupported) {
 	    const iconBtn = document.createElement('span');
 	    iconBtn.textContent = '🎤 ';
