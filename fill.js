@@ -452,33 +452,10 @@ function renderTable() {
 
         const now = new Date();
         const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
-        // Временно отключаем блокировку для теста
-        // if (isAlreadySent || isDeadlinePassed) inp.disabled = true;
         
+	// Иконка слева от поля (без лишних стилей)
 	const speechSupported = isSpeechSupported();
-	if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
-	    inp.style.paddingRight = '28px';
-    
-	    // Создаем иконку микрофона
-	   const micIcon = document.createElement('span');
-	    micIcon.textContent = '🎤';
-	    micIcon.style.cssText = `
-	        position: absolute;
-	        right: 6px;
-	        top: 50%;
-	        transform: translateY(-50%);
-	        cursor: pointer;
-	        font-size: 14px;
-	        opacity: 0.7;
-	        z-index: 5;
-	        pointer-events: auto;
-	        user-select: none;
-	    `;
-	    micIcon.onclick = function(e) {
-	        e.stopPropagation();
-	        startVoiceRecognition(m.id, inp);
-	    };
-
+	if (speechSupported) {
 	    const iconBtn = document.createElement('span');
 	    iconBtn.textContent = '🎤 ';
 	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
@@ -492,7 +469,7 @@ function renderTable() {
 	        startVoiceRecognition(m.id, inp);
 	    };
 	    td.insertBefore(iconBtn, inp);
-	}        
+	}
 
         inp.onchange = (function(id, input) {
             return function() {
