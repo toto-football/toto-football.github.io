@@ -455,24 +455,12 @@ function renderTable() {
 
         const now = new Date();
         const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
-        
-	// Иконка слева от поля (без лишних стилей)
-	if (speechSupported) {
-	    const iconBtn = document.createElement('span');
-	    iconBtn.textContent = '🎤 ';
-	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
-	    iconBtn.title = 'Ввести счёт голосом';
-	    iconBtn.onclick = function(e) {
-	        e.stopPropagation();
-	        if (isAlreadySent) {
-	            alert('Прогноз уже отправлен.');
-	            return;
-	        }
-	        startVoiceRecognition(m.id, inp);
-	    };
-	    td.insertBefore(iconBtn, inp);
-	}
 
+        const speechSupported = isSpeechSupported();
+        if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
+            inp.style.paddingRight = '28px';
+        }
+        
         inp.onchange = (function(id, input) {
             return function() {
                 if (isAlreadySent) return;
@@ -503,6 +491,23 @@ function renderTable() {
         })(m.id, inp);
         
         td.appendChild(inp);
+
+	// Иконка слева от поля (без лишних стилей)
+	if (speechSupported) {
+	    const iconBtn = document.createElement('span');
+	    iconBtn.textContent = '🎤 ';
+	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
+	    iconBtn.title = 'Ввести счёт голосом';
+	    iconBtn.onclick = function(e) {
+	        e.stopPropagation();
+	        if (isAlreadySent) {
+	            alert('Прогноз уже отправлен.');
+	            return;
+	        }
+	        startVoiceRecognition(m.id, inp);
+	    };
+	    td.insertBefore(iconBtn, inp);
+	}
         
     }
     w.innerHTML = '';
