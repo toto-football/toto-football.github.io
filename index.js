@@ -402,11 +402,15 @@ function startVoiceRecognition(matchIndex) {
     
     recognition.start();
     
+    let isScoreRecognized = false; // добавляем флаг
+
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
         // Парсим счёт из речи (например, "два один" → "2:1")
         const score = parseScoreFromSpeech(transcript);
         if (score) {
+	    isScoreRecognized = true; // <-- УСТАНАВЛИВАЕМ ФЛАГ
+	    recognition.stop(); // <-- ОСТАНАВЛИВАЕМ РАСПОЗНАВАНИЕ
             showConfirmModal(matchIndex, score);
         } else {
             alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
@@ -416,12 +420,14 @@ function startVoiceRecognition(matchIndex) {
     };
     
     recognition.onerror = function() {
+        if (isScoreRecognized) return; // <-- ЕСЛИ УЖЕ РАСПОЗНАЛИ — ИГНОРИРУЕМ
         resetIcon(matchIndex);
         alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
         showManualInputModal(matchIndex);
     };
     
     recognition.onend = function() {
+        if (isScoreRecognized) return; // <-- ЕСЛИ УЖЕ РАСПОЗНАЛИ — ИГНОРИРУЕМ
         resetIcon(matchIndex);
     };
     
