@@ -433,6 +433,7 @@ function renderTable() {
         inp.placeholder = 'x:x';
         inp.classList.add('score-input');
         inp.value = predictions[m.id] ? formatScore(predictions[m.id]) : '';
+	inp.style.display = 'inline-block';
         
         const now = new Date();
         const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
@@ -475,11 +476,11 @@ function renderTable() {
         
         td.appendChild(inp);
         
-	// Иконка справа внутри ячейки (временно для теста — без проверки дедлайна)
+	// Иконка слева от поля (без лишних стилей)
 	if (speechSupported) {
 	    const iconBtn = document.createElement('span');
-	    iconBtn.textContent = '🎤';
-	    iconBtn.style.cssText = 'position:absolute; right:4px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:0.85rem; z-index:1; user-select:none;';
+	    iconBtn.textContent = '🎤 ';
+	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
 	    iconBtn.title = 'Ввести счёт голосом';
 	    iconBtn.onclick = function(e) {
 	        e.stopPropagation();
@@ -489,7 +490,8 @@ function renderTable() {
 	        }
 	        startVoiceRecognition(m.id, inp);
 	    };
-	    td.appendChild(iconBtn);
+	    // Вставляем ДО поля ввода
+	    td.insertBefore(iconBtn, inp);
 	}
     }
     w.innerHTML = '';
