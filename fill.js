@@ -343,6 +343,9 @@ function startVoiceRecognition(matchId, inputElement) {
      // Активируем микрофонный режим
     inputElement.classList.remove('input-active-keyboard');
     inputElement.classList.add('input-active-microphone');
+
+    // УБИРАЕМ ФОКУС С ПОЛЯ, ЧТОБЫ БРАУЗЕР НЕ ПОКАЗЫВАЛ СВОЙ МИКРОФОН!
+    inputElement.blur();
     
     const recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
@@ -441,6 +444,7 @@ function renderTable() {
         
         const inp = document.createElement('input');
         inp.type = 'text';
+	inp.inputMode = 'none';
         inp.placeholder = 'x:x';
         inp.classList.add('score-input');
         inp.value = predictions[m.id] ? formatScore(predictions[m.id]) : '';
