@@ -344,7 +344,8 @@ function startVoiceRecognition(matchId, inputElement) {
     inputElement.classList.remove('input-active-keyboard');
     inputElement.classList.add('input-active-microphone');
 
-    // УБИРАЕМ ФОКУС С ПОЛЯ, ЧТОБЫ БРАУЗЕР НЕ ПОКАЗЫВАЛ СВОЙ МИКРОФОН!
+    // ДЕЛАЕМ ПОЛЕ НЕАКТИВНЫМ, ЧТОБЫ НЕ ПОЛУЧАЛО ФОКУС
+    inputElement.disabled = true;
     inputElement.blur();
     
     const recognition = new SpeechRecognition();
@@ -368,6 +369,7 @@ function startVoiceRecognition(matchId, inputElement) {
             inputElement.value = score;
             inputElement.style.borderColor = '#cddba8';
             inputElement.placeholder = 'x:x';
+	    inputElement.disabled = false;
             // Убираем микрофонный режим
             inputElement.classList.remove('input-active-microphone');
             inputElement.dispatchEvent(new Event('change'));
@@ -375,6 +377,7 @@ function startVoiceRecognition(matchId, inputElement) {
             alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
             inputElement.style.borderColor = '#cddba8';
             inputElement.placeholder = 'x:x';
+	    inputElement.disabled = false;
         }
     };
     
@@ -382,6 +385,7 @@ function startVoiceRecognition(matchId, inputElement) {
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
         inputElement.placeholder = 'x:x';
+	inputElement.disabled = false;
 	inputElement.classList.remove('input-active-microphone');
         alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
     };
@@ -390,6 +394,7 @@ function startVoiceRecognition(matchId, inputElement) {
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
         inputElement.placeholder = 'x:x';
+	inputElement.disabled = false;
 	inputElement.classList.remove('input-active-microphone');
     };
 }
