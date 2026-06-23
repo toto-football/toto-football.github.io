@@ -266,7 +266,7 @@ function toggleAdminMode() {
         adminModeEnabled = false;
         localStorage.removeItem('adminMode');
         playSound('off');
-        updateAdminUI();
+        renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
         return;
     }
     
@@ -284,161 +284,187 @@ function toggleAdminMode() {
     adminModeEnabled = true;
     localStorage.setItem('adminMode', 'true');
     playSound('on');
-    updateAdminUI();
+    renderTable();
 }
 
-// ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА В РЕЖИМЕ АДМИНА ==========
-function updateAdminUI() {
-    // Меняем фон заголовка «Результат»
-    const resultHeader = document.querySelector('th:nth-child(8)');
-    if (resultHeader) {
-        if (adminModeEnabled) {
-            resultHeader.style.backgroundColor = '#a8d5a2';
-        } else {
-            resultHeader.style.backgroundColor = '';
-        }
-    }
-    
-    // Обновляем ячейки с результатами
-    const resultCells = document.querySelectorAll('tbody td:nth-child(8)');
-    const available = getAvailableMatches();
-    
-    resultCells.forEach((cell, index) => {
-        // Проверяем, есть ли уже счёт (только если там цифры)
-        const cellText = cell.textContent.trim();
-	const hasScore = /^\d+\s*[:–\-]\s*\d+$/.test(cellText); // проверка на счёт вида "2:1"
-        if (hasScore) return;
-        
-        // Проверяем, доступен ли этот матч для ввода
-        const isAvailable = available.includes(index);
-        
-	if (adminModeEnabled && isAvailable) {
-	    // Удаляем старую иконку, если она есть
-	    const oldIcon = cell.querySelector('.admin-icon');
-	    if (oldIcon) {
-        	if (oldIcon._clickHandler) {
-	            oldIcon.removeEventListener('click', oldIcon._clickHandler);
-        	}
-	        oldIcon.remove();
-	    }
-    
-	    // Создаём новую иконку
-	    const icon = isSpeechSupported ? '🎤' : '✏️';
-	    const iconSpan = document.createElement('span');
-	    iconSpan.className = 'admin-icon';
-	    iconSpan.style.cssText = 'cursor:pointer; font-size:0.8rem; display:inline-block; width:1.2em; text-align:center;';
-	    iconSpan.dataset.matchIndex = index;
-	    iconSpan.textContent = icon;
-    
-	    const handler = function(e) {
-        	e.stopPropagation();
-	        const matchIndex = parseInt(this.dataset.matchIndex);
-        	if (!adminModeEnabled) {
-	            alert('Режим администратора выключен. Ввод счёта недоступен.');
-        	    return;
-	        }
-        	openScoreInput(matchIndex);
-	    };
-	    iconSpan._clickHandler = handler;
-	    iconSpan.addEventListener('click', handler);
-    
-	    cell.innerHTML = '';
-	    cell.appendChild(iconSpan);
-	} else {
-	    // Очищаем ячейку и вставляем прочерк
-	    while (cell.firstChild) {
-        	cell.removeChild(cell.firstChild);
-	    }
-	    cell.textContent = '—';
-	}
+// ========== МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА СЧЕТА (INDEX) ==========
+let activeScoreMatchId = null;
+let activeScoreCell = null;
 
-    });
-}
-
-// ========== ОТКРЫТИЕ ВВОДА СЧЁТА (ГОЛОС ИЛИ РУЧНОЙ) ==========
 function openScoreInput(matchIndex) {
-    // Проверяем, включён ли режим админа
     if (!adminModeEnabled) {
-        alert('Режим администратора выключен. Ввод счёта недоступен.');
+        alert('Режим администратора выключен.');
         return;
     }
-
+    
     const match = matchesData[matchIndex];
     if (!match) return;
     
-    if (isSpeechSupported) {
-        // === ГОЛОСОВОЙ ВВОД ===
-        startVoiceRecognition(matchIndex);
-    } else {
-        // === РУЧНОЙ ВВОД ===
-        showManualInputModal(matchIndex);
+    // Находим ячейку
+    const rows = document.querySelectorAll('tbody tr');
+    const row = rows[matchIndex];
+    if (!row) return;
+    const cells = row.querySelectorAll('td');
+    const resultCell = cells[7];
+    if (!resultCell) return;
+    
+    activeScoreMatchId = matchIndex;
+    activeScoreCell = resultCell;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'scoreModalOverlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #fef9e8; border-radius: 12px; padding: 12px 16px; max-width: 260px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    
+    const speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    const currentScore = (matchesData[matchIndex].result && matchesData[matchIndex].result !== '—') ? matchesData[matchIndex].result : '';
+    
+    modal.innerHTML = `
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Введите счёт</h3>
+        <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;"><strong>${match.team1} – ${match.team2}</strong></p>
+        <div style="display:flex; align-items:center; gap:0; justify-content:center;">
+            <input type="text" id="scoreInput" placeholder="х:х" style="
+                padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
+                border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
+            " value="${currentScore}">
+            ${speechSupported ? `
+            <button id="scoreVoiceBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 2px;" title="Ввести голосом">🎙️</button>
+            ` : ''}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
+            <button id="scoreSendBtn" style="background: #2c7840; color: white; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Сохранить</button>
+            <button id="scoreCancelBtn" style="background: #ccc; color: #333; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Отмена</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    const input = modal.querySelector('#scoreInput');
+    input.focus();
+    input.select();
+    
+    const voiceBtn = modal.querySelector('#scoreVoiceBtn');
+    if (voiceBtn) {
+        voiceBtn.onclick = function() {
+            startVoiceRecognitionInScoreModal(matchIndex, input);
+        };
+    }
+    
+    modal.querySelector('#scoreSendBtn').onclick = function() {
+        const score = input.value.trim();
+        if (score === '') {
+            // Пустое поле — удаляем счет
+            matchesData[matchIndex].result = '—';
+            if (activeScoreCell) {
+                activeScoreCell.textContent = '—';
+                // Сбрасываем фон и стили
+                activeScoreCell.style.backgroundColor = '';
+                activeScoreCell.style.fontWeight = '';
+                activeScoreCell.classList.remove('pulse-result-missed');
+            }
+            closeModal();
+            return;
+        }
+        
+        if (/^\d+\s*[:–\-]\s*\d+$/.test(score)) {
+            const formattedScore = score.replace(/[–\-]/g, ':');
+            // Отправляем на сервер
+            sendScoreToSheet(matchIndex, formattedScore);
+            closeModal();
+        } else {
+            input.style.borderColor = 'red';
+            setTimeout(() => {
+                input.style.borderColor = '#cddba8';
+                input.focus();
+                input.select();
+            }, 800);
+        }
+    };
+    
+    modal.querySelector('#scoreCancelBtn').onclick = closeModal;
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) closeModal();
+    };
+    
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const sendBtn = modal.querySelector('#scoreSendBtn');
+            sendBtn.focus();
+            sendBtn.click();
+        }
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    };
+    
+    function closeModal() {
+        if (overlay.parentNode) overlay.remove();
+        activeScoreMatchId = null;
+        activeScoreCell = null;
     }
 }
 
-
-// ========== ГОЛОСОВОЙ ВВОД СЧЁТА ==========
-function startVoiceRecognition(matchIndex) {
-    const match = matchesData[matchIndex];
-    if (!match) return;
-    
+// ========== ГОЛОС В МОДАЛЬНОМ ОКНЕ (INDEX) ==========
+function startVoiceRecognitionInScoreModal(matchIndex, inputElement) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        showManualInputModal(matchIndex);
-        return;
-    }
+    if (!SpeechRecognition) return;
+    
+    inputElement.readOnly = true;
+    inputElement.blur();
+    inputElement.style.borderColor = 'red';
+    inputElement.placeholder = 'Говорите...';
     
     const recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
     recognition.continuous = false;
     recognition.interimResults = false;
     
-    // Изменяем иконку на "слушаю..."
-    const iconEl = document.querySelector(`.admin-icon[data-match-index="${matchIndex}"]`);
-    if (iconEl) {
-        iconEl.textContent = '🎤';
-        iconEl.style.color = 'red';
-        iconEl.style.animation = 'pulse 0.5s infinite';
-    }
-    
     recognition.start();
     
-    let isScoreRecognized = false; // добавляем флаг
-
+    let isScoreRecognized = false;
+    
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
-        // Парсим счёт из речи (например, "два один" → "2:1")
         const score = parseScoreFromSpeech(transcript);
         if (score) {
-	    isScoreRecognized = true; // <-- УСТАНАВЛИВАЕМ ФЛАГ
-	    recognition.stop(); // <-- ОСТАНАВЛИВАЕМ РАСПОЗНАВАНИЕ
-            showConfirmModal(matchIndex, score);
+            isScoreRecognized = true;
+            recognition.stop();
+            inputElement.value = score;
+            inputElement.style.borderColor = '#cddba8';
+            inputElement.placeholder = 'х:х';
+            inputElement.readOnly = false;
         } else {
-            alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
-            resetIcon(matchIndex);
-            showManualInputModal(matchIndex);
+            inputElement.style.borderColor = '#cddba8';
+            inputElement.placeholder = 'х:х';
+            inputElement.readOnly = false;
         }
     };
     
     recognition.onerror = function() {
-        if (isScoreRecognized) return; // <-- ЕСЛИ УЖЕ РАСПОЗНАЛИ — ИГНОРИРУЕМ
-        resetIcon(matchIndex);
-        alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
-        showManualInputModal(matchIndex);
+        if (isScoreRecognized) return;
+        inputElement.style.borderColor = '#cddba8';
+        inputElement.placeholder = 'х:х';
+        inputElement.readOnly = false;
     };
     
     recognition.onend = function() {
-        if (isScoreRecognized) return; // <-- ЕСЛИ УЖЕ РАСПОЗНАЛИ — ИГНОРИРУЕМ
-        resetIcon(matchIndex);
+        if (isScoreRecognized) return;
+        inputElement.style.borderColor = '#cddba8';
+        inputElement.placeholder = 'х:х';
+        inputElement.readOnly = false;
     };
-    
-    function resetIcon(index) {
-        const el = document.querySelector(`.admin-icon[data-match-index="${index}"]`);
-        if (el) {
-            el.textContent = isSpeechSupported ? '🎤' : '✏️';
-            el.style.color = '';
-            el.style.animation = '';
-        }
-    }
 }
 
 // ========== ПАРСИНГ СЧЁТА ИЗ РЕЧИ ==========
@@ -472,146 +498,6 @@ function parseScoreFromSpeech(text) {
     }
     
     return null;
-}
-
-// ========== РУЧНОЙ ВВОД СЧЁТА (МОДАЛЬНОЕ ОКНО) ==========
-function showManualInputModal(matchIndex) {
-    const match = matchesData[matchIndex];
-    if (!match) return;
-    
-    // Создаём модальное окно
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #fef9e8; border-radius: 16px; padding: 20px; max-width: 400px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
-    modal.innerHTML = `
-        <h3 style="margin-top:0; color:#1e4620;">Введите счёт</h3>
-        <p><strong>${match.team1} – ${match.team2}</strong></p>
-        <input type="text" id="manualScoreInput" placeholder="Например: 2:1" style="
-            width: 100%; padding: 8px 12px; font-size: 1.2rem; border: 2px solid #cddba8;
-            border-radius: 10px; text-align: center; font-family: monospace;
-        ">
-        <div style="display:flex; gap:12px; margin-top:16px; justify-content:center;">
-            <button id="manualSendBtn" style="
-                background: #2c7840; color: white; border: none; border-radius: 20px;
-                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
-            ">Отправить</button>
-            <button id="manualCancelBtn" style="
-                background: #ccc; color: #333; border: none; border-radius: 20px;
-                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
-            ">Отмена</button>
-        </div>
-    `;
-    
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    // Фокусируем поле ввода
-    const input = modal.querySelector('#manualScoreInput');
-    input.focus();
-    
-    // Обработчик отправки
-    modal.querySelector('#manualSendBtn').addEventListener('click', function() {
-        const score = input.value.trim();
-        if (score && /^\d+\s*[:–\-]\s*\d+$/.test(score)) {
-            const formattedScore = score.replace(/[–\-]/g, ':');
-            closeModal();
-            showConfirmModal(matchIndex, formattedScore);
-        } else {
-            alert('Пожалуйста, введите счёт в формате "2:1" или "2-1"');
-        }
-    });
-    
-    // Обработчик отмены
-    modal.querySelector('#manualCancelBtn').addEventListener('click', closeModal);
-    
-    // Закрытие по клику на оверлей
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) closeModal();
-    });
-    
-    // Enter в поле ввода
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            modal.querySelector('#manualSendBtn').click();
-        }
-    });
-    
-    function closeModal() {
-        if (overlay.parentNode) overlay.remove();
-    }
-}
-
-// ========== ОКНО ПОДТВЕРЖДЕНИЯ СЧЁТА ==========
-function showConfirmModal(matchIndex, score) {
-    const match = matchesData[matchIndex];
-    if (!match) return;
-    
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #fef9e8; border-radius: 16px; padding: 20px; max-width: 400px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
-    modal.innerHTML = `
-        <h3 style="margin-top:0; color:#1e4620;">Подтвердите ввод счёта</h3>
-        <p><strong>${match.team1} – ${match.team2}</strong></p>
-        <p style="font-size: 1.8rem; font-weight: bold; text-align: center; margin: 12px 0;">${score}</p>
-        <div style="display:flex; gap:12px; margin-top:16px; justify-content:center;">
-            <button id="confirmSendBtn" style="
-                background: #2c7840; color: white; border: none; border-radius: 20px;
-                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
-            ">Отправить</button>
-            <button id="confirmRetryBtn" style="
-                background: #e67e22; color: white; border: none; border-radius: 20px;
-                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
-            ">Исправить</button>
-            <button id="confirmCancelBtn" style="
-                background: #ccc; color: #333; border: none; border-radius: 20px;
-                padding: 8px 24px; font-size: 0.9rem; cursor: pointer;
-            ">Отмена</button>
-        </div>
-    `;
-    
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    // Отправить
-    modal.querySelector('#confirmSendBtn').addEventListener('click', function() {
-        closeModal();
-        sendScoreToSheet(matchIndex, score);
-    });
-    
-    // Исправить
-    modal.querySelector('#confirmRetryBtn').addEventListener('click', function() {
-        closeModal();
-        openScoreInput(matchIndex);
-    });
-    
-    // Отмена
-    modal.querySelector('#confirmCancelBtn').addEventListener('click', closeModal);
-    
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) closeModal();
-    });
-    
-    function closeModal() {
-        if (overlay.parentNode) overlay.remove();
-    }
 }
 
 // ========== ОТПРАВКА СЧЁТА В НОВЫЙ СЦЕНАРИЙ ==========
@@ -648,7 +534,6 @@ async function sendScoreToSheet(matchIndex, score) {
                 adminModeEnabled = false;
                 localStorage.removeItem('adminMode');
                 playSound('off');
-                updateAdminUI();
             }
         } else {
             throw new Error(result.error || 'Неизвестная ошибка');
@@ -1295,43 +1180,40 @@ function renderTable() {
         const th = document.createElement('th');
         th.textContent = h;
     
-        // ===== ОБРАБОТЧИК АДМИН-РЕЖИМА (ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАГОЛОВКОВ) =====
-        th.addEventListener('click', function(e) {
-            const headerText = this.textContent.trim();
-            const cellIndex = this.cellIndex;
+	// ===== ОБРАБОТЧИК АДМИН-РЕЖИМА (ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАГОЛОВКОВ) =====
+	th.addEventListener('click', function(e) {
+	    const cellIndex = this.cellIndex;
+    
+	    // Колонка 6 = "Гости", колонка 7 = "Счет"
+	    if (cellIndex === 6 || cellIndex === 7) {
+	        adminClickSequence.push(cellIndex);
         
-            const isHome = headerText === 'Хозяева' || cellIndex === 4;
-            const isAway = headerText === 'Гости' || cellIndex === 6;
-            const isResult = cellIndex === 7;
+	        if (adminClickSequence.length > 3) {
+	            adminClickSequence.shift();
+	        }
         
-            if (isHome || isAway || isResult) {
-                let clickType = '';
-                if (isHome) clickType = 'Хозяева';
-                else if (isAway) clickType = 'Гости';
-                else if (isResult) clickType = 'Результат';
-            
-                adminClickSequence.push(clickType);
-            
-                if (adminClickSequence.length > 3) {
-                    adminClickSequence.shift();
-                }
-            
-                const expectedSequence = ['Хозяева', 'Гости', 'Результат'];
-                const isMatch = adminClickSequence.length === 3 && 
-                        adminClickSequence.every((val, idx) => val === expectedSequence[idx]);
-            
-                if (isMatch) {
-                    adminClickSequence = [];
-                    toggleAdminMode();
-                }
-            }
-        });
+	        const expectedSequence = [6, 7, 6];
+	        const isMatch = adminClickSequence.length === 3 && 
+	                adminClickSequence.every((val, idx) => val === expectedSequence[idx]);
+        
+	        if (isMatch) {
+	            adminClickSequence = [];
+        	    toggleAdminMode();
+	        }
+	    }
+	});
     
         headerRow.appendChild(th);
     }
 
     const resultHeaderCell = headerRow.children[7];
     if (resultHeaderCell) {
+	if (adminModeEnabled) {
+            resultHeaderCell.style.backgroundColor = '#a8d5a2';
+	} else {
+            resultHeaderCell.style.backgroundColor = '';
+    	}
+
         resultHeaderCell.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:2px;">
                 <div style="font-size:0.6rem;color:#d4af37;text-align:right;">Место</div>
@@ -1397,30 +1279,37 @@ function renderTable() {
         tr.appendChild(createCell('–', false, '', true));
         tr.appendChild(createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name'));
         
-        const resultCell = createCell(m.result, false, 'result-cell');
+	const resultCell = createCell(m.result, false, 'result-cell');
 
-        resultCell.style.cursor = 'pointer';
-        resultCell.title = 'Нажатие выделяет/освобождает строку матча';
+	resultCell.style.cursor = 'pointer';
+	resultCell.title = 'Нажатие выделяет/освобождает строку матча';
 
-        resultCell.onclick = (function(matchId, rowElement) {
-            return function() {
-                if (selectedMatchId === matchId) {
-                    selectedMatchId = null;
-                    localStorage.removeItem('selectedMatchId');
-                    rowElement.classList.remove('selected-match-row');
-                    console.log('❌ Выбор матча отменён');
-                } else {
-                    if (selectedMatchId !== null) {
-                        const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
-                        if (prevRow) prevRow.classList.remove('selected-match-row');
-                    }
-                    selectedMatchId = matchId;
-                    localStorage.setItem('selectedMatchId', selectedMatchId);
-                    rowElement.classList.add('selected-match-row');
-                    console.log('✅ Выбран матч:', matchId);
-                }
-            };
-        })(m.id, tr);
+	resultCell.onclick = (function(matchId, rowElement, matchIndex) {
+	    return function() {
+        	const isAvailable = getAvailableMatches().includes(matchIndex);
+        
+	        // Если админ-режим включен и ячейка доступна (матч начался, счета нет)
+        	if (adminModeEnabled && isAvailable) {
+	            openScoreInput(matchIndex);
+        	    return;
+	        }
+        
+        	// Иначе - логика выделения строки
+	        if (selectedMatchId === matchId) {
+        	    selectedMatchId = null;
+	            localStorage.removeItem('selectedMatchId');
+        	    rowElement.classList.remove('selected-match-row');
+	        } else {
+        	    if (selectedMatchId !== null) {
+                	const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
+	                if (prevRow) prevRow.classList.remove('selected-match-row');
+        	    }
+	            selectedMatchId = matchId;
+        	    localStorage.setItem('selectedMatchId', selectedMatchId);
+	            rowElement.classList.add('selected-match-row');
+	        }
+	    };
+	})(m.id, tr, i);
 
         let matchStarted = false;
         if (m.date && m.date !== '—' && m.time && m.time !== '—') {
@@ -1510,11 +1399,6 @@ function renderTable() {
     
     activateButtons();
     
-    // Восстанавливаем режим админа после перерисовки таблицы
-    if (adminModeEnabled) {
-        updateAdminUI();
-    }
-
     // Прокручиваем к выделенной строке при загрузке/обновлении
     scrollToSelectedMatchOnLoad();
 }
