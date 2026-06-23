@@ -7,6 +7,27 @@ let firstMatchDeadline = null;
 let tournamentParams = {};
 let teamsData = {};
 
+// ========== РАБОТА С LOCALSTORAGE ==========
+function loadPredictionsFromStorage() {
+    try {
+        const saved = localStorage.getItem('fillPredictions');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+    } catch(e) {
+        console.warn('Ошибка загрузки прогнозов:', e);
+    }
+    return {};
+}
+
+function savePredictionsToStorage() {
+    try {
+        localStorage.setItem('fillPredictions', JSON.stringify(predictions));
+    } catch(e) {
+        console.warn('Ошибка сохранения прогнозов:', e);
+    }
+}
+
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
 async function loadTournamentParams() {
     try {
@@ -14,15 +35,13 @@ async function loadTournamentParams() {
         if (!response.ok) throw new Error('Ошибка загрузки параметров');
         const params = await response.json();
         tournamentParams = params;
-        console.log('🏆 Параметры турнира загружены:', tournamentParams);
+        /* console.log('🏆 Параметры турнира загружены:', tournamentParams); */
         
-	// Обновляем логотип
-	const logoContainer = document.getElementById('logoContainer');
-	if (logoContainer && tournamentParams.логотип_файл) {
-	    logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
-	}
+        const logoContainer = document.getElementById('logoContainer');
+        if (logoContainer && tournamentParams.логотип_файл) {
+            logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
+        }
 
-        // Обновляем подзаголовок на странице
         const subElements = document.querySelectorAll('.sub');
         if (subElements.length > 0 && tournamentParams.подзаголовок) {
             subElements.forEach(el => {
@@ -52,7 +71,7 @@ async function loadTeamsData() {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=teams`);
         if (!response.ok) throw new Error();
         teamsData = await response.json();
-        console.log('🏆 Данные о сборных загружены');
+        /* console.log('🏆 Данные о сборных загружены'); */
         return true;
     } catch (err) {
         console.error('Ошибка загрузки сборных:', err);
@@ -60,13 +79,12 @@ async function loadTeamsData() {
     }
 }
 
-// ========== ОПРЕДЕЛЕНИЕ ДЕДЛАЙНА (УНИВЕРСАЛЬНЫЙ ПАРСИНГ) ==========
+// ========== ОПРЕДЕЛЕНИЕ ДЕДЛАЙНА ==========
 function getFirstMatchDeadline() {
     if (!tournamentParams.первый_матч_дата || !tournamentParams.первый_матч_время) return null;
     
     let year, month, day, hour, minute;
     
-    // Парсим первый_матч_дата
     if (typeof tournamentParams.первый_матч_дата === 'string') {
         const dateParts = tournamentParams.первый_матч_дата.split('.');
         if (dateParts.length === 3) {
@@ -93,7 +111,6 @@ function getFirstMatchDeadline() {
         day = d.getDate();
     }
     
-    // Парсим первый_матч_время
     if (typeof tournamentParams.первый_матч_время === 'string') {
         const timeParts = tournamentParams.первый_матч_время.split(':');
         if (timeParts.length === 2) {
@@ -210,7 +227,7 @@ async function loadMatches() {
             team2: row.team2 || '—'
         })).sort((a,b) => a.id - b.id);
         
-        console.log(`Загружено матчей: ${matchesData.length}`);
+        /* console.log(`Загружено матчей: ${matchesData.length}`); */
         return true;
     } catch(e) {
         console.error('Ошибка загрузки матчей:', e);
@@ -333,34 +350,180 @@ function parseScoreFromSpeech(text) {
     return null;
 }
 
-// ========== ГОЛОСОВОЙ ВВОД СЧЁТА ==========
-function startVoiceRecognition(matchId, inputElement) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+// ========== МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА ==========
+let activeModalMatchId = null;
+let modalResultCell = null;
+
+function openInputModal(matchId, cellElement) {
+    if (isAlreadySent) {
+        alert('Прогноз уже отправлен.');
         return;
     }
+    
+    const match = matchesData.find(m => m.id === matchId);
+    if (!match) return;
+    
+    activeModalMatchId = matchId;
+    modalResultCell = cellElement;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'inputModalOverlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
 
-     // Активируем микрофонный режим
-    inputElement.classList.remove('input-active-keyboard');
-    inputElement.classList.add('input-active-microphone');
+    overlay.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #fef9e8; border-radius: 12px; padding: 12px 16px; max-width: 260px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    
+    const speechSupported = isSpeechSupported();
+    
+    modal.innerHTML = `
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Введите прогноз на матч</h3>
+        <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;"><strong>${match.team1} – ${match.team2}</strong></p>
 
-    // ДЕЛАЕМ ПОЛЕ НЕАКТИВНЫМ, ЧТОБЫ НЕ ПОЛУЧАЛО ФОКУС
-    inputElement.disabled = true;
+	<div style="display:flex; align-items:center; gap:0; justify-content:center;">
+	    <input type="text" id="modalScoreInput" placeholder="х:х" style="
+        	padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
+	        border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
+	    ">
+	    ${speechSupported ? `
+	    <button id="modalVoiceBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;
+	        padding: 0 2px;" title="Ввести голосом">🎙️</button>
+	    ` : ''}
+	</div>
+
+	<div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
+	    <button id="modalSendBtn" style="
+        	background: #2c7840; color: white; border: none; border-radius: 20px;
+	        padding: 4px 16px; font-size: 0.8rem; cursor: pointer;
+	    ">Сохранить</button>
+	    <button id="modalCancelBtn" style="
+        	background: #ccc; color: #333; border: none; border-radius: 20px;
+	        padding: 4px 16px; font-size: 0.8rem; cursor: pointer;
+	    ">Отмена</button>
+	</div>
+    `;    
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    const input = modal.querySelector('#modalScoreInput');
+    // Если в ячейке уже есть счет - показываем его в поле
+    const currentScore = predictions[matchId] ? formatScore(predictions[matchId]) : '';
+    if (currentScore) {
+        input.value = currentScore;
+    }
+    input.focus();
+    input.select(); // выделяет текст для быстрого перезаписывания
+    
+    const voiceBtn = modal.querySelector('#modalVoiceBtn');
+    if (voiceBtn) {
+        voiceBtn.onclick = function() {
+            startVoiceRecognitionInModal(matchId, input);
+        };
+    }
+    
+    modal.querySelector('#modalSendBtn').onclick = function() {
+        const score = input.value.trim();
+        if (score === '') {
+            // Если поле пустое - удаляем прогноз
+            delete predictions[matchId];
+            savePredictionsToStorage();
+            // Обновляем ячейку
+            if (modalResultCell) {
+                const span = modalResultCell.querySelector('span');
+                if (span) {
+                    span.textContent = '-';
+                    span.classList.remove('score-input-filled');
+                    span.classList.add('score-input-empty');
+                }
+            }
+            updateSubmitButtonState();
+            showStatus(`✅ Очищено (${Object.keys(predictions).length}/${matchesData.length})`);
+            closeModal();
+            return;
+        }
+    
+        if (/^\d+\s*[:–\-]\s*\d+$/.test(score)) {
+            const formattedScore = score.replace(/[–\-]/g, ':');
+            savePrediction(matchId, formattedScore);
+            closeModal();
+        } else {
+	    /* console.log('Enter нажат'); */
+            /* showNotification('Пожалуйста, введите счёт в формате "х:х" или "х-х"', true); */
+	    input.style.borderColor = 'red';
+	    setTimeout(() => {
+	        input.style.borderColor = '#cddba8';
+        	input.focus(); // Возвращаем фокус в поле
+	    }, 800);
+        }
+    };
+    
+    modal.querySelector('#modalCancelBtn').onclick = closeModal;
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) closeModal();
+    };
+    
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+	    e.preventDefault();
+            const sendBtn = modal.querySelector('#modalSendBtn');
+	    sendBtn.focus(); // Переносим фокус на кнопку
+            sendBtn.click();
+        }
+    };
+    
+    function closeModal() {
+        if (overlay.parentNode) overlay.remove();
+        activeModalMatchId = null;
+        modalResultCell = null;
+    }
+}
+
+// ========== ГОЛОС В МОДАЛЬНОМ ОКНЕ ==========
+function startVoiceRecognitionInModal(matchId, inputElement) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    
+    inputElement.readOnly = true;
     inputElement.blur();
+    inputElement.style.borderColor = 'red';
+    inputElement.placeholder = 'Говорите...';
     
     const recognition = new SpeechRecognition();
     recognition.lang = 'ru-RU';
     recognition.continuous = false;
     recognition.interimResults = false;
     
-    inputElement.style.borderColor = 'red';
-    inputElement.placeholder = '🎤 Слушаю...';
-    
     recognition.start();
+
+    // Авто-отмена через 5 секунд
+    const timeoutId = setTimeout(function() {
+        if (!isScoreRecognized) {
+            recognition.stop();
+            inputElement.style.borderColor = '#cddba8';
+            inputElement.placeholder = 'х:х';
+            inputElement.readOnly = false;
+            /* alert('Время ожидания истекло. Попробуйте ещё раз.'); */
+        }
+    }, 5000); // 5000 = 5 секунд
     
     let isScoreRecognized = false;
     
     recognition.onresult = function(event) {
+	clearTimeout(timeoutId); 
         const transcript = event.results[0][0].transcript;
         const score = parseScoreFromSpeech(transcript);
         if (score) {
@@ -368,42 +531,61 @@ function startVoiceRecognition(matchId, inputElement) {
             recognition.stop();
             inputElement.value = score;
             inputElement.style.borderColor = '#cddba8';
-            inputElement.placeholder = 'x:x';
-	    inputElement.disabled = false;
-            // Убираем микрофонный режим
-            inputElement.classList.remove('input-active-microphone');
-            inputElement.dispatchEvent(new Event('change'));
+            inputElement.placeholder = 'х:х';
+            inputElement.readOnly = false;
         } else {
-            alert('Не удалось распознать счёт. Попробуйте ещё раз или введите вручную.');
+            /* alert('Не удалось распознать счёт. Попробуйте ещё раз.'); */
             inputElement.style.borderColor = '#cddba8';
-            inputElement.placeholder = 'x:x';
-	    inputElement.disabled = false;
+            inputElement.placeholder = 'х:х';
+            inputElement.readOnly = false;
         }
     };
     
     recognition.onerror = function() {
+	clearTimeout(timeoutId); 
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
-        inputElement.placeholder = 'x:x';
-	inputElement.disabled = false;
-	inputElement.classList.remove('input-active-microphone');
-        alert('Ошибка распознавания. Попробуйте ещё раз или введите вручную.');
+        inputElement.placeholder = 'х:х';
+        inputElement.readOnly = false;
+        /* alert('Ошибка распознавания. Попробуйте ещё раз.'); */
     };
     
     recognition.onend = function() {
+	clearTimeout(timeoutId); 
         if (isScoreRecognized) return;
         inputElement.style.borderColor = '#cddba8';
-        inputElement.placeholder = 'x:x';
-	inputElement.disabled = false;
-	inputElement.classList.remove('input-active-microphone');
+        inputElement.placeholder = 'х:х';
+        inputElement.readOnly = false;
     };
 }
 
+// ========== СОХРАНЕНИЕ ПРОГНОЗА ==========
+function savePrediction(matchId, score) {
+    predictions[matchId] = score;
+
+    savePredictionsToStorage();    
+
+    // Обновляем ячейку в таблице
+    if (modalResultCell) {
+	// Ищем span внутри td
+        const span = modalResultCell.querySelector('span');
+        if (span) {
+	    span.textContent = score;
+	    span.classList.remove('score-input-empty');
+	    span.classList.add('score-input-filled');
+        } else {
+            modalResultCell.textContent = score;
+        }
+    }
+    
+    updateSubmitButtonState();
+    showStatus(`✅ Заполнено (${Object.keys(predictions).length}/${matchesData.length})`);
+}
+
+// ========== ОТРИСОВКА ТАБЛИЦЫ ==========
 function renderTable() {
     const w = document.getElementById('table-wrapper');
     if (!w || !matchesData.length) return;
-
-    const speechSupported = isSpeechSupported();
 
     w.innerHTML = '';
     const t = document.createElement('table');
@@ -444,80 +626,33 @@ function renderTable() {
         tr.insertCell().textContent = '–';
         tr.insertCell().innerHTML = formatTeamWithFlagAndRank(m.team2, 'away');
         
-        const td = tr.insertCell();
-        td.style.position = 'relative';
-        
-        const inp = document.createElement('input');
-        inp.type = 'text';
-	inp.inputMode = 'none';
-        inp.placeholder = 'x:x';
-        inp.classList.add('score-input');
-        inp.value = predictions[m.id] ? formatScore(predictions[m.id]) : '';
-	inp.style.display = 'inline-block';
 
-	inp.addEventListener('focus', function() {
-	    this.classList.add('input-active-keyboard');
-	});
-	inp.addEventListener('blur', function() {
-	    this.classList.remove('input-active-keyboard');
-	});
+	const td = tr.insertCell();
+	td.style.position = 'relative';
+	td.style.textAlign = 'center';
+	td.style.padding = '4px 2px';
 
-        const now = new Date();
-        const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
-
-        const speechSupported = isSpeechSupported();
-        if (speechSupported && !isAlreadySent && !isDeadlinePassed) {
-            inp.style.paddingRight = '28px';
-        }
-        
-        inp.onchange = (function(id, input) {
-            return function() {
-                if (isAlreadySent) return;
-                const nowCheck = new Date();
-                const isDeadlinePassedCheck = firstMatchDeadline ? (nowCheck >= firstMatchDeadline) : false;
-                // Временно отключаем проверку для теста
-                // if (isDeadlinePassedCheck) {
-                //     alert('❌ Дедлайн прошёл, прогнозы больше не принимаются.');
-                //     input.disabled = true;
-                //     return;
-                // }
-                let v = input.value.trim();
-                if (v === '') {
-                    delete predictions[id];
-                } else {
-                    let parsed = parseScore(v);
-                    if (!parsed) {
-                        input.style.borderColor = 'red';
-                        showStatus('⚠️ Формат 2:1 или 3:0', true);
-                        return;
-                    }
-                    input.style.borderColor = '#cddba8';
-                    predictions[id] = formatScore(v);
-                }
-                updateSubmitButtonState();
-                showStatus(`✅ Заполнено  (${Object.keys(predictions).length}/${matchesData.length})`);
-            };
-        })(m.id, inp);
-        
-        td.appendChild(inp);
-
-	// Иконка слева от поля (без лишних стилей)
-	if (speechSupported) {
-	    const iconBtn = document.createElement('span');
-	    iconBtn.textContent = '🎤 ';
-	    iconBtn.style.cssText = 'cursor:pointer; font-size:0.85rem; user-select:none;';
-	    iconBtn.title = 'Ввести счёт голосом';
-	    iconBtn.onclick = function(e) {
-	        e.stopPropagation();
-	        if (isAlreadySent) {
-	            alert('Прогноз уже отправлен.');
-	            return;
-	        }
-	        startVoiceRecognition(m.id, inp);
-	    };
-	    td.insertBefore(iconBtn, inp);
+	const span = document.createElement('span');
+	span.className = 'score-input';
+	span.style.display = 'inline-block';
+	span.style.cursor = 'pointer';
+	// Вместо inline-стилей используем классы
+	if (predictions[m.id]) {
+	    span.classList.add('score-input-filled');
+	} else {
+	    span.classList.add('score-input-empty');
 	}
-        
+
+	const predictionText = predictions[m.id] ? formatScore(predictions[m.id]) : '-';
+	span.textContent = predictionText;
+
+	span.onclick = function() {
+	    openInputModal(m.id, td);
+	};
+
+	td.appendChild(span);
+	tr.appendChild(td);
+
     }
     w.innerHTML = '';
     w.appendChild(t);
@@ -533,11 +668,6 @@ function fillRandom() {
     if (isAlreadySent) return;
     const now = new Date();
     const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
-    // Временно отключаем проверку для теста
-    // if (isDeadlinePassed) {
-    //     alert('❌ Дедлайн прошёл, прогнозы больше нельзя заполнять.');
-    //     return;
-    // }
     for (const m of matchesData) if (!predictions[m.id]) { predictions[m.id] = randomScore(); }
     renderTable();
     updateSubmitButtonState();
@@ -545,7 +675,13 @@ function fillRandom() {
 }
 
 function resetAll() {
-    if (confirm('Очистить все прогнозы?')) { predictions = {}; renderTable(); updateSubmitButtonState(); showStatus(`✅ Очищено!`); }
+    if (confirm('Очистить все прогнозы?')) { 
+	predictions = {}; 
+	localStorage.removeItem('fillPredictions');
+	renderTable(); 
+	updateSubmitButtonState(); 
+	showStatus(`✅ Очищено!`); 
+    }
 }
 
 async function submitAll() {
@@ -598,6 +734,8 @@ async function submitAll() {
         document.getElementById('submitBtn').disabled = true;
         showStatus(`✅ Отправлено!`);
         alert(`✅ Отправлено! Имя: ${username}`);
+	
+	localStorage.removeItem('fillPredictions');
         renderTable();
     } catch(e) {
         progressContainer.style.display = 'none';
@@ -610,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadTournamentParams();
     
     firstMatchDeadline = getFirstMatchDeadline();
-    console.log(`🎯 Дедлайн первого матча: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`);
+    /* console.log(`🎯 Дедлайн первого матча: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`); */
     
     const subElement = document.querySelector('.sub');
     if (subElement && tournamentParams.подзаголовок) {
@@ -635,7 +773,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (!await loadMatches()) return;
     
-    predictions = {};
+    predictions = loadPredictionsFromStorage();
     document.getElementById('username').value = '';
     isAlreadySent = false;
     document.getElementById('sentBadge').style.display = 'none';
@@ -647,9 +785,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const now = new Date();
     if (firstMatchDeadline && now >= firstMatchDeadline) {
-        // document.getElementById('username').disabled = true;        // ← Временно отключаем
-        // document.getElementById('resetBtn').disabled = true;        // ← Временно отключаем
-        // document.getElementById('randomBtn').disabled = true;       // ← Временно отключаем
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) submitBtn.disabled = true;
     }

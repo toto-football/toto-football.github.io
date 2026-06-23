@@ -758,6 +758,30 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     font-size: 1.3rem !important;
 }
 
+/* ===== INDEX: ПЕРЕОПРЕДЕЛЕНИЕ ФОНА ДЛЯ ПУЛЬСАЦИИ ===== */
+#table-wrapper .input-active-keyboard {
+    background-color: #fff3cd !important;
+    animation: pulse-keyboard 0.8s ease-in-out infinite !important;
+}
+
+#table-wrapper .input-active-microphone {
+    background-color: #fce4ec !important;
+    animation: pulse-microphone 0.8s ease-in-out infinite !important;
+}
+
+/* ===== FILL: СОСТОЯНИЯ ЯЧЕЕК ПРОГНОЗОВ ===== */
+.score-input-empty {
+    background-color: #FFFFFF;
+    border-color: #cddba8;
+}
+
+.score-input-filled {
+    background-color: #8ba88a;
+    border-color: #2c7840;
+    color: white;
+    font-weight: bold;
+}
+
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
 /* ####################################################################################################### */
