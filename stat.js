@@ -7,14 +7,21 @@ let teamsData = {};
 let totalMatches = 0;
 let lastPlayedMatchIndex = -1;
 
-// ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
-async function loadTournamentParams() {
+// ========== ЗАГРУЗКА ДАННЫХ ==========
+async function loadAllData() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=params`);
-        if (!response.ok) throw new Error('Ошибка загрузки параметров');
-        const params = await response.json();
-        tournamentParams = params;
-
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+        const data = await response.json();
+        
+        // Проверяем, что данные пришли
+        if (!data || !data.params || !data.headers || !data.rows) {
+            throw new Error('Неполные данные');
+        }
+        
+        // 1. ПАРАМЕТРЫ (как в loadTournamentParams)
+        tournamentParams = data.params;
+        
         const logoContainer = document.getElementById('logoContainer');
         if (logoContainer && tournamentParams.логотип_файл) {
             logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
@@ -44,23 +51,50 @@ async function loadTournamentParams() {
         if (tournamentParams.турнир_год) {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Статистика`;
         }
+        
+        // 2. ДАННЫЕ О СБОРНЫХ (как в loadTeamsData)
+        if (data.teams) {
+            teamsData = data.teams;
+        }
+        
+        // 3. МАТЧИ И ПРОГНОЗЫ (как в loadData)
+        const headers = data.headers;
+        const rows = data.rows;
+        const resultHeader = headers[6];
 
-        return true;
-    } catch (err) {
-        console.error('Ошибка загрузки параметров:', err);
-        return false;
-    }
-}
+        allMatchesData = rows.map(row => ({
+            id: parseInt(row.id),
+            date: row.date || '—',
+            time: row.time || '—',
+            group: row.group || '?',
+            team1: row.team1 || '—',
+            team2: row.team2 || '—',
+            result: normalizeScore(row[resultHeader] || '—')
+        })).sort((a, b) => a.id - b.id);
 
-// ========== ЗАГРУЗКА ДАННЫХ О СБОРНЫХ ==========
-async function loadTeamsData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=teams`);
-        if (!response.ok) throw new Error('Ошибка загрузки данных о сборных');
-        teamsData = await response.json();
+        participantsData = [];
+        for (let i = 7; i < headers.length; i++) {
+            const key = headers[i];
+            if (!key || key === '' || key.startsWith('Участник')) continue;
+            let hasData = false;
+            const predictions = [];
+            for (const row of rows) {
+                let pred = row[key] || '—';
+                pred = normalizeScore(pred);
+                predictions.push(pred);
+                if (pred !== '—' && pred !== '') hasData = true;
+            }
+            if (hasData) participantsData.push({ name: key, predictions: predictions });
+        }
+
+        totalMatches = allMatchesData.length;
+        const played = getPlayedMatches();
+        lastPlayedMatchIndex = played.length > 0 ? played[played.length - 1].index : -1;
+        
         return true;
+        
     } catch (err) {
-        console.error('Ошибка загрузки сборных:', err);
+        console.error('Ошибка загрузки:', err);
         return false;
     }
 }
@@ -258,57 +292,18 @@ function formatMatchWithFlagsAndScore(match) {
     return `${match.team1}${flagHtml1} – ${flagHtml2}${match.team2}${score}`;
 }
 
-// ========== ЗАГРУЗКА ДАННЫХ ==========
-async function loadData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=full`);
-        if (!response.ok) throw new Error('Ошибка загрузки данных');
-        const data = await response.json();
-        const headers = data.headers;
-        const rows = data.rows;
-        const resultHeader = headers[6];
-
-        allMatchesData = rows.map(row => ({
-            id: parseInt(row.id),
-            date: row.date || '—',
-            time: row.time || '—',
-            group: row.group || '?',
-            team1: row.team1 || '—',
-            team2: row.team2 || '—',
-            result: normalizeScore(row[resultHeader] || '—')
-        })).sort((a, b) => a.id - b.id);
-
-        participantsData = [];
-        for (let i = 7; i < headers.length; i++) {
-            const key = headers[i];
-            if (!key || key === '' || key.startsWith('Участник')) continue;
-            let hasData = false;
-            const predictions = [];
-            for (const row of rows) {
-                let pred = row[key] || '—';
-                pred = normalizeScore(pred);
-                predictions.push(pred);
-                if (pred !== '—' && pred !== '') hasData = true;
-            }
-            if (hasData) participantsData.push({ name: key, predictions: predictions });
-        }
-
-        totalMatches = allMatchesData.length;
-        const played = getPlayedMatches();
-        lastPlayedMatchIndex = played.length > 0 ? played[played.length - 1].index : -1;
-        
-        return true;
-    } catch (err) {
-        console.error('Ошибка загрузки:', err);
-        return false;
-    }
-}
-
 // ========== РАСЧЕТ СТАТИСТИКИ ==========
 function calculateStatistics() {
     const playedMatches = getPlayedMatches();
     if (playedMatches.length === 0 || lastPlayedMatchIndex < 0) {
         return { matches: {}, participants: {} };
+    }
+
+    // ===== КЕШИРОВАНИЕ ТАБЛИЦ =====
+    // Один раз вычисляем таблицу после каждого матча
+    const cachedStandings = {};
+    for (const pm of playedMatches) {
+        cachedStandings[pm.index] = getStandingsAfterMatches(pm.index);
     }
 
     const stats = {
@@ -537,7 +532,7 @@ function calculateStatistics() {
             matchCount++;
             if (matchCount <= SKIP_MATCHES) continue;
         
-            const standings = getStandingsAfterMatches(pm.index);
+            const standings = cachedStandings[pm.index];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—') {
                 const { min, max } = getRankPosition(s.rank);
@@ -563,12 +558,54 @@ function calculateStatistics() {
         };
     }
 
+    // 3b. Самый маленький диапазон занимаемых мест (первые 5 матчей не учитываются)
+    let minRankRanges = {};
+    const totalParticipantsMin = participantsData.length;
+    const SKIP_MATCHES_MIN = 5;
+
+    for (const p of participantsData) {
+        let minRank = Infinity;
+        let maxRank = -Infinity;
+        let hasRealData = false;
+        let matchCount = 0;
+
+        for (const pm of playedMatches) {
+            matchCount++;
+            if (matchCount <= SKIP_MATCHES_MIN) continue;
+
+            const standings = cachedStandings[pm.index];
+            const s = standings.find(s => s.name === p.name);
+            if (s && s.rank && s.rank !== '—') {
+                const { min, max } = getRankPosition(s.rank);
+                if (min === 1 && max === totalParticipantsMin) continue;
+                hasRealData = true;
+                if (min < minRank) minRank = min;
+                if (max > maxRank) maxRank = max;
+            }
+        }
+
+        if (hasRealData && minRank !== Infinity && maxRank !== -Infinity) {
+            minRankRanges[p.name] = { min: minRank, max: maxRank, diff: maxRank - minRank };
+        }
+    }
+
+    // Находим минимальный диапазон
+    const sortedMinRanges = Object.entries(minRankRanges).sort((a, b) => a[1].diff - b[1].diff);
+    if (sortedMinRanges.length > 0) {
+        const minDiff = sortedMinRanges[0][1].diff;
+        const bestMinRanges = sortedMinRanges.filter(r => r[1].diff === minDiff);
+        stats.participants.smallestRankRange = {
+            winners: bestMinRanges.map(r => ({ name: r[0], min: r[1].min, max: r[1].max })),
+            value: minDiff
+        };
+    }
+
     // 4. Самый впечатляющий рывок (с бонусами)
     let bestComebacks = [];
     for (const p of participantsData) {
         let prevRank = null;
         for (const pm of playedMatches) {
-            const standings = getStandingsAfterMatches(pm.index);
+            const standings = cachedStandings[pm.index];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—') {
                 const currentRank = getMinRankValue(s.rank);
@@ -630,7 +667,7 @@ function calculateStatistics() {
         let streak = 0;
         let maxStreak = 0;
         for (const pm of playedMatches) {
-            const standings = getStandingsAfterMatches(pm.index);
+            const standings = cachedStandings[pm.index];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—' && getMinRankValue(s.rank) === 1) {
                 streak++;
@@ -657,7 +694,7 @@ function calculateStatistics() {
     for (const p of participantsData) {
         let count = 0;
         for (const pm of playedMatches) {
-            const standings = getStandingsAfterMatches(pm.index);
+            const standings = cachedStandings[pm.index];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—' && getMinRankValue(s.rank) === 1) {
                 count++;
@@ -828,6 +865,25 @@ function renderStats(stats) {
 	    `;
 	}
 
+	if (stats.participants.smallestRankRange && stats.participants.smallestRankRange.winners.length > 0) {
+	    const m = stats.participants.smallestRankRange;
+	    const winnersHtml = m.winners.map(w => `
+        	<div style="margin-bottom: 4px;">
+	            <strong>${w.name}</strong><br>
+        	    самое высокое - ${w.min}<br>
+	            самое низкое - ${w.max}
+        	</div>
+	    `).join('');
+	    html += `
+        	<div class="stat-nomination">
+	            <h3>Самый маленький диапазон занимаемых мест</h3>
+        	    <div class="explanation">(участник, который занимал минимально далекие места, первые 5 матчей не учитываются)</div>
+	            <div class="winners" style="padding-left: 20px;">${winnersHtml}</div>
+        	    <div class="value" style="padding-left: 20px;">Диапазон: <strong>${m.value} мест</strong></div>
+	        </div>
+	    `;
+	}
+
 	if (stats.participants.bestComeback && stats.participants.bestComeback.winners.length > 0) {
 	    const m = stats.participants.bestComeback;
 	    const winnerNames = m.winners.map(w => `<strong>${w.name}</strong>`).join(', ');
@@ -905,24 +961,17 @@ function setupTabs() {
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 async function init() {
-    const paramsLoaded = await loadTournamentParams();
-    if (!paramsLoaded) {
-        document.getElementById('matchesStats').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки параметров</div>';
+    const success = await loadAllData();
+    
+    if (!success) {
+        document.getElementById('matchesStats').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки данных</div>';
         document.getElementById('participantsStats').innerHTML = '';
         return;
     }
-
-    await loadTeamsData();
-
-    const success = await loadData();
-    if (success) {
-        const stats = calculateStatistics();
-        renderStats(stats);
-        setupTabs();
-    } else {
-        document.getElementById('matchesStats').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки данных</div>';
-        document.getElementById('participantsStats').innerHTML = '';
-    }
+    
+    const stats = calculateStatistics();
+    renderStats(stats);
+    setupTabs();
 }
 
 init();

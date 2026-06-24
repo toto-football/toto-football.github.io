@@ -15,19 +15,28 @@ let adminClickSequence = []; // для отслеживания нажатий �
 let isSpeechSupported = false;
 
 // ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
-async function loadTournamentParams() {
+async function loadAllData() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=params`);
-        if (!response.ok) throw new Error('Ошибка загрузки параметров');
-        const params = await response.json();
-        tournamentParams = params;
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+        const data = await response.json();
+        
+        // Проверяем, что данные пришли
+        if (!data || !data.params || !data.headers || !data.rows) {
+            throw new Error('Неполные данные');
+        }
+        
+        // 1. СОХРАНЯЕМ ПАРАМЕТРЫ (как в loadTournamentParams)
+        tournamentParams = data.params;
         console.log('🏆 Параметры турнира загружены:', tournamentParams);
-
+        
+        // Обновляем логотип
         const logoContainer = document.getElementById('logoContainer');
         if (logoContainer && tournamentParams.логотип_файл) {
             logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
         }
         
+        // Обновляем подзаголовок
         const subElement = document.querySelector('.sub');
         if (subElement && tournamentParams.подзаголовок) {
             let linkParam = null;
@@ -39,34 +48,58 @@ async function loadTournamentParams() {
             } else {
                 linkParam = tournamentParams.ссылка_подзаголовка_index;
             }
-    
+            
             if (linkParam && linkParam !== '') {
                 subElement.innerHTML = `<a href="${linkParam}" target="_blank" rel="noopener noreferrer" style="color: #2c5a2a; text-decoration: none;">${tournamentParams.подзаголовок}</a>`;
             } else {
                 subElement.innerHTML = tournamentParams.подзаголовок;
             }
-        }        
+        }
+        
         if (tournamentParams.турнир_год) {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Таблица прогнозов`;
         }
         
+        // 2. СОХРАНЯЕМ ДАННЫЕ О СБОРНЫХ (как в loadTeamsData)
+        if (data.teams) {
+            teamsData = data.teams;
+            console.log('🏆 Данные о сборных загружены:', Object.keys(teamsData).length, 'стран');
+        }
+        
+        // 3. СОХРАНЯЕМ МАТЧИ И ПРОГНОЗЫ (как в loadAllData)
+        const headers = data.headers;
+        const rows = data.rows;
+        const resultHeader = headers[6];
+        
+        matchesData = rows.map(row => ({
+            id: parseInt(row.id),
+            date: row.date || '—',
+            time: row.time || '—',
+            group: row.group || '?',
+            team1: row.team1 || '—',
+            team2: row.team2 || '—',
+            result: normalizeScore(row[resultHeader] || '—')
+        })).sort((a,b) => a.id - b.id);
+        
+        participantsData = [];
+        for (let i = 7; i < headers.length; i++) {
+            const key = headers[i];
+            if (!key || key === '' || key.startsWith('Участник')) continue;
+            let hasData = false;
+            const predictions = [];
+            for (const row of rows) {
+                let pred = row[key] || '—';
+                pred = normalizeScore(pred);
+                predictions.push(pred);
+                if (pred !== '—' && pred !== '') hasData = true;
+            }
+            if (hasData) participantsData.push({ name: key, predictions: predictions });
+        }
+        
         return true;
+        
     } catch (err) {
-        console.error('Ошибка загрузки параметров:', err);
-        return false;
-    }
-}
-
-// ========== ЗАГРУЗКА ДАННЫХ О СБОРНЫХ ==========
-async function loadTeamsData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=teams`);
-        if (!response.ok) throw new Error('Ошибка загрузки данных о сборных');
-        teamsData = await response.json();
-        console.log('🏆 Данные о сборных загружены:', Object.keys(teamsData).length, 'стран');
-        return true;
-    } catch (err) {
-        console.error('Ошибка загрузки сборных:', err);
+        console.error('Ошибка загрузки данных:', err);
         return false;
     }
 }
@@ -624,18 +657,15 @@ function activateButtons() {
             }
         }
         
-        battleBtn.classList.remove('disabled');
         if (hasFinished) {
+  	    battleBtn.style.display = '';
+	    battleBtn.classList.remove('hidden', 'disabled');
             battleBtn.classList.add('active');
-            battleBtn.style.pointerEvents = 'auto';
-            battleBtn.style.background = '#2ecc71';
             battleBtn.title = '⚔️ Перейти к ходу борьбы';
             battleBtn.onclick = null;
         } else {
+	    battleBtn.classList.add('hidden', 'disabled');
             battleBtn.classList.remove('active');
-            battleBtn.style.pointerEvents = 'none';
-            battleBtn.style.opacity = '0.5';
-            battleBtn.style.background = '#7f8c8d';
             battleBtn.title = '🔒 Доступно после первого завершённого матча';
             battleBtn.onclick = (e) => {
                 e.preventDefault();
@@ -643,6 +673,21 @@ function activateButtons() {
                 return false;
             };
         }
+    }
+
+    // ===== КНОПКА СТАТИСТИКА =====
+    const statBtn = document.getElementById('statBtn');
+    let playedMatches = 0;
+    for (const match of matchesData) {
+        if (match.result && match.result !== '—') playedMatches++;
+    }
+    
+    if (playedMatches >= 10) {
+        statBtn.style.display = 'inline-block';
+        fillBtn.style.display = 'none';
+    } else {
+        statBtn.style.display = 'none';
+        fillBtn.style.display = 'inline-block';
     }
 }
 
@@ -746,49 +791,6 @@ function createCell(content, isHtml = false, className = '') {
     if (isHtml) cell.innerHTML = content;
     else cell.textContent = content;
     return cell;
-}
-
-async function loadAllData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=full`);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        if (!data || !data.headers || !data.rows) throw new Error();
-        
-        const headers = data.headers;
-        const rows = data.rows;
-        const resultHeader = headers[6];
-        
-        matchesData = rows.map(row => ({
-            id: parseInt(row.id),
-            date: row.date || '—',
-            time: row.time || '—',
-            group: row.group || '?',
-            team1: row.team1 || '—',
-            team2: row.team2 || '—',
-            result: normalizeScore(row[resultHeader] || '—')
-        })).sort((a,b) => a.id - b.id);
-        
-        participantsData = [];
-        for (let i = 7; i < headers.length; i++) {
-            const key = headers[i];
-            if (!key || key === '' || key.startsWith('Участник')) continue;
-            let hasData = false;
-            const predictions = [];
-            for (const row of rows) {
-                let pred = row[key] || '—';
-                pred = normalizeScore(pred);
-                predictions.push(pred);
-                if (pred !== '—' && pred !== '') hasData = true;
-            }
-            if (hasData) participantsData.push({ name: key, predictions: predictions });
-        }
-        
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
-    }
 }
 
 // ========== КОНТЕКСТНОЕ МЕНЮ ==========
@@ -1428,29 +1430,27 @@ function scrollToSelectedMatchOnLoad() {
     }, 300);
 }
 
+// ========== НОВЫЙ init() ==========
 async function init() {
-    const paramsLoaded = await loadTournamentParams();
-    if (!paramsLoaded) {
-        document.getElementById('table-wrapper').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки параметров</div>';
-        return;
-    }
-    
-    firstMatchDeadline = getFirstMatchDeadlineFromParams();
-    REVEAL_DATE = firstMatchDeadline;
-    console.log(`🎯 Дедлайн: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`);
-    
-    await loadTeamsData();
-    
+    // Загружаем ВСЁ за один запрос
     const success = await loadAllData();
-    if (success) {
-        renderTable();
-    } else {
+    
+    if (!success) {
         document.getElementById('table-wrapper').innerHTML = '<div class="loading-overlay" style="color:#a00;">❌ Ошибка загрузки данных</div>';
         const fillBtn = document.getElementById('fillBtn');
         const battleBtn = document.getElementById('battleBtn');
         if (fillBtn) fillBtn.classList.remove('disabled');
         if (battleBtn) battleBtn.classList.remove('disabled');
+        return;
     }
+    
+    // Определяем дедлайн (из уже загруженных tournamentParams)
+    firstMatchDeadline = getFirstMatchDeadlineFromParams();
+    REVEAL_DATE = firstMatchDeadline;
+    console.log(`🎯 Дедлайн: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`);
+    
+    // Рендерим таблицу
+    renderTable();
 }
 
 init();

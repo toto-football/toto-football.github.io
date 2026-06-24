@@ -28,13 +28,20 @@ function savePredictionsToStorage() {
     }
 }
 
-// ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
-async function loadTournamentParams() {
+// ========== ЗАГРУЗКА ДАННЫХ ==========
+async function loadAllData() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=params`);
-        if (!response.ok) throw new Error('Ошибка загрузки параметров');
-        const params = await response.json();
-        tournamentParams = params;
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+        const data = await response.json();
+        
+        // Проверяем, что данные пришли
+        if (!data || !data.params || !data.headers || !data.rows) {
+            throw new Error('Неполные данные');
+        }
+        
+        // 1. ПАРАМЕТРЫ (как в loadTournamentParams)
+        tournamentParams = data.params;
         /* console.log('🏆 Параметры турнира загружены:', tournamentParams); */
         
         const logoContainer = document.getElementById('logoContainer');
@@ -58,23 +65,28 @@ async function loadTournamentParams() {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Заполнение прогнозов`;
         }
         
+        // 2. ДАННЫЕ О СБОРНЫХ (как в loadTeamsData)
+        if (data.teams) {
+            teamsData = data.teams;
+            /* console.log('🏆 Данные о сборных загружены'); */
+        }
+        
+        // 3. МАТЧИ (как в loadMatches)
+        const rows = data.rows;
+        matchesData = rows.map(row => ({
+            id: parseInt(row.id),
+            date: row.date || '—',
+            time: row.time || '—',
+            group: row.group || '?',
+            team1: row.team1 || '—',
+            team2: row.team2 || '—'
+        })).sort((a,b) => a.id - b.id);
+        
+        /* console.log(`Загружено матчей: ${matchesData.length}`); */
         return true;
+        
     } catch (err) {
-        console.error('Ошибка загрузки параметров:', err);
-        return false;
-    }
-}
-
-// ========== ЗАГРУЗКА ДАННЫХ О СБОРНЫХ ==========
-async function loadTeamsData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=teams`);
-        if (!response.ok) throw new Error();
-        teamsData = await response.json();
-        /* console.log('🏆 Данные о сборных загружены'); */
-        return true;
-    } catch (err) {
-        console.error('Ошибка загрузки сборных:', err);
+        console.error('Ошибка загрузки:', err);
         return false;
     }
 }
@@ -208,32 +220,6 @@ function formatUsername(rawName) {
     if (parts.length === 1) return firstName + '.';
     const lastInitial = parts[1].charAt(0);
     return `${firstName} ${lastInitial}.`;
-}
-
-async function loadMatches() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=full`);
-        if (!response.ok) throw new Error('Ошибка загрузки данных');
-        const data = await response.json();
-        if (!data || !data.headers || !data.rows) throw new Error('Нет данных');
-        
-        const rows = data.rows;
-        matchesData = rows.map(row => ({
-            id: parseInt(row.id),
-            date: row.date || '—',
-            time: row.time || '—',
-            group: row.group || '?',
-            team1: row.team1 || '—',
-            team2: row.team2 || '—'
-        })).sort((a,b) => a.id - b.id);
-        
-        /* console.log(`Загружено матчей: ${matchesData.length}`); */
-        return true;
-    } catch(e) {
-        console.error('Ошибка загрузки матчей:', e);
-        document.getElementById('table-wrapper').innerHTML = '<div class="loading-overlay" style="color:red;">❌ Ошибка загрузки</div>';
-        return false;
-    }
 }
 
 async function findTargetColumn() {
@@ -666,9 +652,19 @@ function showStatus(msg, isErr = false) {
 
 function fillRandom() {
     if (isAlreadySent) return;
+
+    if (!confirm('⚠️ Заполнить все незаполненные прогнозы случайными счетами?')) {
+        return;
+    }
+
     const now = new Date();
     const isDeadlinePassed = firstMatchDeadline ? (now >= firstMatchDeadline) : false;
-    for (const m of matchesData) if (!predictions[m.id]) { predictions[m.id] = randomScore(); }
+
+    for (const m of matchesData) {
+	if (!predictions[m.id]) { 
+	    predictions[m.id] = randomScore(); 
+	}
+    }
     renderTable();
     updateSubmitButtonState();
     showStatus(`✅ Заполнено!`);
@@ -745,7 +741,13 @@ async function submitAll() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadTournamentParams();
+    // Загружаем ВСЁ за один запрос
+    const success = await loadAllData();
+    
+    if (!success) {
+        document.getElementById('table-wrapper').innerHTML = '<div class="loading-overlay" style="color:red;">❌ Ошибка загрузки данных</div>';
+        return;
+    }
     
     firstMatchDeadline = getFirstMatchDeadline();
     /* console.log(`🎯 Дедлайн первого матча: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`); */
@@ -768,10 +770,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             subElement.innerHTML = tournamentParams.подзаголовок;
         }
     }
-    
-    await loadTeamsData();
-    
-    if (!await loadMatches()) return;
     
     predictions = loadPredictionsFromStorage();
     document.getElementById('username').value = '';

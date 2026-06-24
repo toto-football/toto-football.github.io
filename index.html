@@ -16,13 +16,14 @@
 
             <div class="sub"></div>
         </div>
-	<div class="index-actions">
-	    <div class="index-actions__row index-actions__buttons">
-	        <a href="#" id="rulesLink" class="btn-rules">Правила</a>
-	        <a href="fill.html" id="fillBtn" class="btn-fill disabled">Сделать прогноз</a>
-	        <a href="battle.html" id="battleBtn" class="btn-battle disabled">Ход борьбы</a>
+	    <div class="index-actions">
+	        <div class="index-actions__row index-actions__buttons">
+	            <a href="#" id="rulesLink" class="btn-rules">Правила</a>
+	            <a href="fill.html" id="fillBtn" class="btn-fill disabled" style="display:none;">Сделать прогноз</a>
+	            <a href="stat.html" id="statBtn" class="btn-stat" style="display:none;">Статистика</a>
+	            <a href="battle.html" id="battleBtn" class="btn-battle disabled" style="display:none;">Ход борьбы</a>
+	        </div>
 	    </div>
-	</div>
     </div>
 
     <div class="table-wrapper" id="table-wrapper">
@@ -44,14 +45,14 @@
             <p><strong>6)</strong> Примеры расчета результата матча:</p>
             <p><em>Пример №1:</em><br>
             - счет, на который поставил участник: 3:0, фактический счет: 2:1<br>
-            - количество ошибок в забитых голах (покомандно): |2-3| + |1-0| = 2<br>
+            - количество ошибок в забитых голах (покомандно): |3-2| + |0-1| = 2<br>
             - бонусные баллы: угадан ИСХОД (победила первая команда), но не угадан СЧЕТ, итого 1 бонусный балл<br>
-            - результат участника: 2-1 = 1</p>
+            - результат участника: 2-1 = <strong>1</strong></p>
             <p><em>Пример №2:</em><br>
             - счет, на который поставил участник: 3:0, фактический счет: 3:0<br>
             - количество ошибок в забитых голах (покомандно): |3-3| + |0-0| = 0<br>
             - бонусные баллы: угадан ИСХОД+СЧЕТ, итого 2 бонусных балла<br>
-            - результат участника: 0-2 = -2</p>
+            - результат участника: 0-2 = <strong>-2</strong></p>
         </div>
     </div>
 </div>

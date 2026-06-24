@@ -13,38 +13,44 @@ let tournamentParams = {};
 let selectedBattleUserName = localStorage.getItem('selectedBattleUserName') || null;
 let savedMatchIndex = localStorage.getItem('battleCurrentMatchIndex') ? parseInt(localStorage.getItem('battleCurrentMatchIndex')) : 0;
 
-// ========== ЗАГРУЗКА ПАРАМЕТРОВ ==========
-async function loadTournamentParams() {
+// ========== ЗАГРУЗКА ДАННЫХ ==========
+async function loadAllData() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=params`);
-        if (!response.ok) throw new Error('Ошибка загрузки параметров');
-        const params = await response.json();
-        tournamentParams = params;
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+        const data = await response.json();
+        
+        // Проверяем, что данные пришли
+        if (!data || !data.params || !data.headers || !data.rows) {
+            throw new Error('Неполные данные');
+        }
+        
+        // 1. ПАРАМЕТРЫ
+        tournamentParams = data.params;
         console.log('🏆 Параметры турнира загружены:', tournamentParams);
         
-	// Обновляем логотип
-	const logoContainer = document.getElementById('logoContainer');
-	if (logoContainer && tournamentParams.логотип_файл) {
-	    logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: 	middle; margin-right: 1px;">`;
-	}
-
-        // Обновляем подзаголовок на странице
-	const subElement = document.querySelector('.sub');
-	if (subElement && tournamentParams.подзаголовок) {
-             // Определяем, какая страница открыта
+        // Обновляем логотип
+        const logoContainer = document.getElementById('logoContainer');
+        if (logoContainer && tournamentParams.логотип_файл) {
+            logoContainer.innerHTML = `<img src="images/${tournamentParams.логотип_файл}" style="height: 2.4rem; width: auto; vertical-align: middle; margin-right: 1px;">`;
+        }
+        
+        // Обновляем подзаголовок
+        const subElement = document.querySelector('.sub');
+        if (subElement && tournamentParams.подзаголовок) {
             let linkParam = null;
             const path = window.location.pathname;
-             if (path.includes('fill.html')) {
-                 linkParam = tournamentParams.ссылка_подзаголовка_fill;
-              } else if (path.includes('battle.html')) {
-                 linkParam = tournamentParams.ссылка_подзаголовка_battle;
-              } else {
+            if (path.includes('fill.html')) {
+                linkParam = tournamentParams.ссылка_подзаголовка_fill;
+            } else if (path.includes('battle.html')) {
+                linkParam = tournamentParams.ссылка_подзаголовка_battle;
+            } else {
                 linkParam = tournamentParams.ссылка_подзаголовка_index;
             }
-    
-          if (linkParam && linkParam !== '') {
-              subElement.innerHTML = `<a href="${linkParam}" target="_blank" rel="noopener noreferrer" style="color: #2c5a2a; text-decoration: none;">${tournamentParams.подзаголовок}</a>`;
-	    } else {
+            
+            if (linkParam && linkParam !== '') {
+                subElement.innerHTML = `<a href="${linkParam}" target="_blank" rel="noopener noreferrer" style="color: #2c5a2a; text-decoration: none;">${tournamentParams.подзаголовок}</a>`;
+            } else {
                 subElement.innerHTML = tournamentParams.подзаголовок;
             }
         }
@@ -53,9 +59,50 @@ async function loadTournamentParams() {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Ход борьбы`;
         }
         
+        // 2. МАТЧИ И ПРОГНОЗЫ (как в loadData)
+        const headers = data.headers;
+        const rows = data.rows;
+        const resultHeader = headers[6];
+        
+        allMatchesData = rows.map(row => ({
+            id: parseInt(row.id),
+            date: row.date || '—',
+            time: row.time || '—',
+            group: row.group || '?',
+            team1: row.team1 || '—',
+            team2: row.team2 || '—',
+            result: normalizeScore(row[resultHeader] || '—')
+        })).sort((a,b) => a.id - b.id);
+        
+        participantsData = [];
+        for (let i = 7; i < headers.length; i++) {
+            const key = headers[i];
+            if (!key || key === '' || key.startsWith('Участник')) continue;
+            let hasData = false;
+            const predictions = [];
+            for (const row of rows) {
+                let pred = row[key] || '—';
+                pred = normalizeScore(pred);
+                predictions.push(pred);
+                if (pred !== '—' && pred !== '') hasData = true;
+            }
+            if (hasData) participantsData.push({ name: key, predictions: predictions });
+        }
+        
+        playedMatches = getPlayedMatches();
+        
+        // Восстанавливаем сохранённый матч
+        let savedIndex = localStorage.getItem('battleCurrentMatchIndex');
+        if (savedIndex !== null && parseInt(savedIndex) < playedMatches.length) {
+            currentMatchIndex = parseInt(savedIndex);
+        } else {
+            currentMatchIndex = 0;
+        }
+        
         return true;
+        
     } catch (err) {
-        console.error('Ошибка загрузки параметров:', err);
+        console.error('Ошибка загрузки:', err);
         return false;
     }
 }
@@ -263,56 +310,6 @@ function calculateProgressWidth(totalSum, allSums) {
     return Math.max(5, percent);
 }
 
-async function loadData() {
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=full`);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        const headers = data.headers;
-        const rows = data.rows;
-        const resultHeader = headers[6];
-        
-        allMatchesData = rows.map(row => ({
-            id: parseInt(row.id),
-            date: row.date || '—',
-            time: row.time || '—',
-            group: row.group || '?',
-            team1: row.team1 || '—',
-            team2: row.team2 || '—',
-            result: normalizeScore(row[resultHeader] || '—')
-        })).sort((a,b) => a.id - b.id);
-        
-        participantsData = [];
-        for (let i = 7; i < headers.length; i++) {
-            const key = headers[i];
-            if (!key || key === '' || key.startsWith('Участник')) continue;
-            let hasData = false;
-            const predictions = [];
-            for (const row of rows) {
-                let pred = row[key] || '—';
-                pred = normalizeScore(pred);
-                predictions.push(pred);
-                if (pred !== '—' && pred !== '') hasData = true;
-            }
-            if (hasData) participantsData.push({ name: key, predictions: predictions });
-        }
-        
-        playedMatches = getPlayedMatches();
-	// Восстанавливаем сохранённый матч, если он существует
-	let savedIndex = localStorage.getItem('battleCurrentMatchIndex');
-	if (savedIndex !== null && parseInt(savedIndex) < playedMatches.length) {
-	    currentMatchIndex = parseInt(savedIndex);
-	} else {
-	    currentMatchIndex = 0;
-	}
-
-        return true;
-    } catch (err) {
-        console.error('Ошибка загрузки:', err);
-        return false;
-    }
-}
-
 function updateProgressBar() {
     const total = playedMatches.length - 1;
     const current = currentMatchIndex;
@@ -330,6 +327,29 @@ function updateProgressBar() {
         if (progressContainer) progressContainer.style.display = 'none';
     }
 }
+
+// ========== ВЫБОР УЧАСТНИКА НА СТРАНИЦЕ BATTLE ==========
+window.selectBattleUser = function(userName, rowElement) {
+    if (selectedBattleUserName === userName) {
+        // Отменяем выбор
+        selectedBattleUserName = null;
+        localStorage.removeItem('selectedBattleUserName');
+        rowElement.classList.remove('selected-battle-row');
+        console.log('❌ Выбор участника отменён');
+    } else {
+        // Убираем подсветку с предыдущего выбранного участника
+        if (selectedBattleUserName !== null) {
+            const prevRow = document.querySelector(`.standings-table tr[data-name="${selectedBattleUserName}"]`);
+            if (prevRow) prevRow.classList.remove('selected-battle-row');
+        }
+        // Выбираем нового участника
+        selectedBattleUserName = userName;
+        localStorage.setItem('selectedBattleUserName', selectedBattleUserName);
+        rowElement.classList.add('selected-battle-row');
+        console.log('✅ Выбран участник:', userName);
+    }
+};
+
 
 function updateAnimateAllButton() {
     const animateAllBtn = document.getElementById('animateAllBtn');
@@ -739,9 +759,8 @@ async function init() {
     isDataLoaded = false;
     updateNavButtons();
     
-    await loadTournamentParams();
+    const success = await loadAllData();
     
-    const success = await loadData();
     if (success) {
         isDataLoaded = true;
         renderMatchSelector();
@@ -749,33 +768,26 @@ async function init() {
         setupNavigation();
         updateNavButtons();
         updateProgressBar();
+
+        // ===== КНОПКА СТАТИСТИКА =====
+        const statBtn = document.getElementById('statBtnBattle');
+        let playedMatches = 0;
+        for (const match of allMatchesData) {
+            if (match.result && match.result !== '—') playedMatches++;
+        }
+        
+        if (playedMatches >= 10) {
+            statBtn.style.display = 'inline-block';
+            statBtn.classList.add('active');
+        } else {
+            statBtn.style.display = 'none';
+        }
+
     } else {
         document.getElementById('standingsTable').innerHTML = '<div class="loading-overlay" style="color:red;">❌ Не удалось загрузить данные</div>';
         isDataLoaded = true;
         updateNavButtons();
     }
 }
-
-// ========== ВЫБОР УЧАСТНИКА НА СТРАНИЦЕ BATTLE ==========
-window.selectBattleUser = function(userName, rowElement) {
-    if (selectedBattleUserName === userName) {
-        // Отменяем выбор
-        selectedBattleUserName = null;
-        localStorage.removeItem('selectedBattleUserName');
-        rowElement.classList.remove('selected-battle-row');
-        console.log('❌ Выбор участника отменён');
-    } else {
-        // Убираем подсветку с предыдущего выбранного участника
-        if (selectedBattleUserName !== null) {
-            const prevRow = document.querySelector(`.standings-table tr[data-name="${selectedBattleUserName}"]`);
-            if (prevRow) prevRow.classList.remove('selected-battle-row');
-        }
-        // Выбираем нового участника
-        selectedBattleUserName = userName;
-        localStorage.setItem('selectedBattleUserName', selectedBattleUserName);
-        rowElement.classList.add('selected-battle-row');
-        console.log('✅ Выбран участник:', userName);
-    }
-};
 
 init();
