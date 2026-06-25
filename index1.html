@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Таблица результатов</title>
+    <link rel="icon" type="image/png" href="images/world-cup.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="fill-header">
+        <div class="fill-header__title">
+	    
+	    <h1><span id="logoContainer"></span>Таблица результатов</h1>
+
+            <div class="sub"></div>
+        </div>
+	    <div class="index-actions">
+	        <div class="index-actions__row index-actions__buttons">
+	            <a href="#" id="rulesLink" class="btn-rules">Правила</a>
+	            <a href="fill.html" id="fillBtn" class="btn-fill disabled" style="display:none;">Сделать прогноз</a>
+	            <a href="stat.html" id="statBtn" class="btn-stat" style="display:none;">Статистика</a>
+	            <a href="battle.html" id="battleBtn" class="btn-battle disabled" style="display:none;">Ход борьбы</a>
+	        </div>
+	    </div>
+    </div>
+
+    <div class="table-wrapper" id="table-wrapper">
+        <div class="loading-overlay">⏳ Загрузка данных...<br><span style="font-size:0.75rem; color:#888;">(если не грузится, включите VPN)</span></div>
+    </div>
+    <div id="statusMsg" class="status-msg">⚡ Загрузка таблицы...</div>
+</div>
+
+<div id="rulesModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #fef9e8; max-width: 500px; max-height: 80vh; overflow-y: auto; border-radius: 20px; padding: 20px; box-shadow: 0 12px 24px rgba(0,0,0,0.3); position: relative;">
+        <button id="closeModalBtn" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        <h2 style="color: #1e4620; margin-top: 0;">📋 Правила участия</h2>
+        <div style="font-size: 0.85rem; line-height: 1.5; color: #2c5a2a;">
+            <p><strong>1)</strong> Принять участие можно путем заполнения своего прогноза ВСЕХ матчей турнира до момента начала первого матча. После отправки прогноза данные появятся в Таблице результатов и прогнозов, но ваши счета не будут видны до начала первого матча.</p>
+            <p><strong>2)</strong> По окончании очередного матча турнира организатор вносит в Таблицу фактический счет матча, результаты участников по итогам матча вычисляются и появляются в Таблице автоматически.</p>
+            <p><strong>3)</strong> Чтобы стать победителем (победителями), необходимо по окончании всех матчей турнира иметь минимальное количество баллов в графе "Сумма ошибок".</p>
+            <p><strong>4)</strong> Результат участника по итогам матча равен количеству ошибок в угадывании забитых голов каждой из команд (без учета знака) за вычетом бонусных баллов.</p>
+            <p><strong>5)</strong> Бонусные баллы: за угаданный ИСХОД (победа, ничья, проигрыш) — 1 балл, за угаданный ИСХОД+СЧЕТ — 2 балла.</p>
+            <p><strong>6)</strong> Примеры расчета результата матча:</p>
+            <p><em>Пример №1:</em><br>
+            - счет, на который поставил участник: 3:0, фактический счет: 2:1<br>
+            - количество ошибок в забитых голах (покомандно): |3-2| + |0-1| = 2<br>
+            - бонусные баллы: угадан ИСХОД (победила первая команда), но не угадан СЧЕТ, итого 1 бонусный балл<br>
+            - результат участника: 2-1 = <strong>1</strong></p>
+            <p><em>Пример №2:</em><br>
+            - счет, на который поставил участник: 3:0, фактический счет: 3:0<br>
+            - количество ошибок в забитых голах (покомандно): |3-3| + |0-0| = 0<br>
+            - бонусные баллы: угадан ИСХОД+СЧЕТ, итого 2 бонусных балла<br>
+            - результат участника: 0-2 = <strong>-2</strong></p>
+        </div>
+    </div>
+</div>
+
+<script src="config.js"></script>
+<script src="index1.js"></script>
+<script>
+    const modal = document.getElementById('rulesModal');
+    const rulesLink = document.getElementById('rulesLink');
+    const closeBtn = document.getElementById('closeModalBtn');
+    
+    function openModal() { modal.style.display = 'flex'; }
+    function closeModal() { modal.style.display = 'none'; }
+    
+    if (rulesLink) rulesLink.onclick = (e) => { e.preventDefault(); openModal(); };
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (modal) modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+</script>
+</body>
+</html>
