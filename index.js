@@ -299,7 +299,13 @@ function toggleAdminMode() {
         adminModeEnabled = false;
         localStorage.removeItem('adminMode');
         playSound('off');
-        renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
+        // renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
+
+        // Убираем зелёный фон у заголовка "Результат"
+        const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(8)');
+        if (resultHeader) {
+            resultHeader.style.backgroundColor = '';
+        }
         return;
     }
     
@@ -317,7 +323,13 @@ function toggleAdminMode() {
     adminModeEnabled = true;
     localStorage.setItem('adminMode', 'true');
     playSound('on');
-    renderTable();
+    // renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
+
+    // Ставим зелёный фон у заголовка "Результат"
+    const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(8)');
+    if (resultHeader) {
+        resultHeader.style.backgroundColor = '#a8d5a2';
+    }
 }
 
 // ========== МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА СЧЕТА (INDEX) ==========
@@ -533,7 +545,7 @@ function parseScoreFromSpeech(text) {
     return null;
 }
 
-// ========== ОТПРАВКА СЧЁТА В НОВЫЙ СЦЕНАРИЙ ==========
+// ========== ОТПРАВКА СЧЁТА В ТАБЛИЦУ ЧЕРЕЗ СЦЕНАРИЙ ==========
 async function sendScoreToSheet(matchIndex, score) {
     // Проверяем, включён ли режим админа
     if (!adminModeEnabled) {
@@ -543,13 +555,6 @@ async function sendScoreToSheet(matchIndex, score) {
 
     const match = matchesData[matchIndex];
     if (!match) return;
-    
-    // Показываем индикатор загрузки на иконке
-    const iconEl = document.querySelector(`.admin-icon[data-match-index="${matchIndex}"]`);
-    if (iconEl) {
-        iconEl.textContent = '⏳';
-        iconEl.style.color = '#888';
-    }
     
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=updateScore&matchId=${match.id}&score=${encodeURIComponent(score)}`);
@@ -564,20 +569,13 @@ async function sendScoreToSheet(matchIndex, score) {
             const available = getAvailableMatches();
             if (available.length === 0) {
                 // Все счета введены — выключаем режим
-                adminModeEnabled = false;
-                localStorage.removeItem('adminMode');
-                playSound('off');
+                toggleAdminMode();
             }
         } else {
             throw new Error(result.error || 'Неизвестная ошибка');
         }
     } catch (err) {
         alert(`Ошибка при отправке: ${err.message}`);
-        // Возвращаем иконку
-        if (iconEl) {
-            iconEl.textContent = isSpeechSupported ? '🎤' : '✏️';
-            iconEl.style.color = '';
-        }
     }
 }
 
@@ -1448,6 +1446,14 @@ async function init() {
     firstMatchDeadline = getFirstMatchDeadlineFromParams();
     REVEAL_DATE = firstMatchDeadline;
     console.log(`🎯 Дедлайн: ${firstMatchDeadline ? formatDateTime(firstMatchDeadline) : 'не определён'}`);
+
+    // ===== ПРОВЕРКА АДМИН-РЕЖИМА (СЧЕТА МОГЛИ БЫТЬ ПОСТАВЛЕНЫ В ДРУГОМ БРАУЗЕРЕ) ПЕРЕД РЕНДЕРОМ =====
+    if (adminModeEnabled) {
+        const available = getAvailableMatches();
+        if (available.length === 0) {
+            toggleAdminMode();
+        }
+    }
     
     // Рендерим таблицу
     renderTable();

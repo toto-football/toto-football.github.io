@@ -388,10 +388,6 @@ td {
     text-align: center;
 }
 
-.match-row:hover td {
-    background-color: #fff3cf;
-}
-
 .group-badge {
     background: #d0dfb0;
     padding: 2px 8px;
@@ -498,10 +494,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     text-align: center;
     margin-top: 4px;
     color: #1e4620;
-}
-
-.fill-container .user-section {
-    display: none;
 }
 
 /* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
@@ -713,64 +705,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 .standings-table td:nth-child(2) {
     user-select: none;
     -webkit-tap-highlight-color: rgba(230, 180, 34, 0.3);
-}
-
-/* ===== АНИМАЦИЯ МИКРОФОНА ===== */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1; }
-}
-
-.admin-icon {
-    display: inline-block;
-    transition: all 0.3s ease;
-    padding: 0;
-    border-radius: 0;
-    background: transparent !important;
-}
-
-.admin-icon:hover {
-    background: transparent !important;
-}
-
-/* ===== АКТИВНЫЙ ВВОД С КЛАВИАТУРЫ ===== */
-@keyframes pulse-keyboard {
-    0% { background-color: #fff3cd; }
-    50% { background-color: #ffc107; }
-    100% { background-color: #fff3cd; }
-}
-
-.input-active-keyboard {
-    animation: pulse-keyboard 0.8s ease-in-out infinite !important;
-}
-
-/* ===== АКТИВНЫЙ ВВОД С МИКРОФОНА ===== */
-@keyframes pulse-microphone {
-    0% { background-color: #fce4ec; }
-    50% { background-color: #f06292; }
-    100% { background-color: #fce4ec; }
-}
-
-.input-active-microphone {
-    animation: pulse-microphone 0.8s ease-in-out infinite !important;
-}
-
-/* Увеличение шрифта в активной ячейке */
-.input-active-keyboard,
-.input-active-microphone {
-    font-size: 1.3rem !important;
-}
-
-/* ===== INDEX: ПЕРЕОПРЕДЕЛЕНИЕ ФОНА ДЛЯ ПУЛЬСАЦИИ ===== */
-#table-wrapper .input-active-keyboard {
-    background-color: #fff3cd !important;
-    animation: pulse-keyboard 0.8s ease-in-out infinite !important;
-}
-
-#table-wrapper .input-active-microphone {
-    background-color: #fce4ec !important;
-    animation: pulse-microphone 0.8s ease-in-out infinite !important;
 }
 
 /* ===== FILL: СОСТОЯНИЯ ЯЧЕЕК ПРОГНОЗОВ ===== */
