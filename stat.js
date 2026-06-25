@@ -19,7 +19,7 @@ async function loadAllData() {
             throw new Error('Неполные данные');
         }
         
-        // 1. ПАРАМЕТРЫ (как в loadTournamentParams)
+        // 1. ПАРАМЕТРЫ
         tournamentParams = data.params;
         
         const logoContainer = document.getElementById('logoContainer');
@@ -52,12 +52,12 @@ async function loadAllData() {
             document.title = `ЧМ-${tournamentParams.турнир_год} · Статистика`;
         }
         
-        // 2. ДАННЫЕ О СБОРНЫХ (как в loadTeamsData)
+        // 2. ДАННЫЕ О СБОРНЫХ
         if (data.teams) {
             teamsData = data.teams;
         }
         
-        // 3. МАТЧИ И ПРОГНОЗЫ (как в loadData)
+        // 3. МАТЧИ И ПРОГНОЗЫ
         const headers = data.headers;
         const rows = data.rows;
         const resultHeader = headers[6];
@@ -88,8 +88,16 @@ async function loadAllData() {
         }
 
         totalMatches = allMatchesData.length;
-        const played = getPlayedMatches();
-        lastPlayedMatchIndex = played.length > 0 ? played[played.length - 1].index : -1;
+        
+        // ===== ВЫЧИСЛЯЕМ ПОСЛЕДНИЙ СЫГРАННЫЙ МАТЧ (СЧЕТА МАТЧЕЙ НЕ ДОЛЖНЫ ВВОДИТЬСЯ ОРГАНИЗАТОРОМ С ПРОПУСКАМИ МАТЧЕЙ) =====
+        lastPlayedMatchIndex = -1;
+        for (let i = 0; i < allMatchesData.length; i++) {
+            if (allMatchesData[i].result && allMatchesData[i].result !== '—') {
+                lastPlayedMatchIndex = i;
+            } else {
+                break;
+            }
+        }
         
         return true;
         
@@ -146,22 +154,6 @@ function calculateMatchResult(actualScore, predictedScore) {
     const bonus = calculateBonus(actualScore, predictedScore);
     if (error === null) return null;
     return error - bonus;
-}
-
-function getPlayedMatches() {
-    const played = [];
-    for (let i = 0; i < allMatchesData.length; i++) {
-        const match = allMatchesData[i];
-        if (match.result && match.result !== '—') {
-            played.push({
-                index: i,
-                id: match.id,
-                match: match,
-                result: match.result
-            });
-        }
-    }
-    return played;
 }
 
 function getStandingsAfterMatches(upToMatchIndex) {
@@ -294,16 +286,15 @@ function formatMatchWithFlagsAndScore(match) {
 
 // ========== РАСЧЕТ СТАТИСТИКИ ==========
 function calculateStatistics() {
-    const playedMatches = getPlayedMatches();
-    if (playedMatches.length === 0 || lastPlayedMatchIndex < 0) {
+    if (lastPlayedMatchIndex < 0) {
         return { matches: {}, participants: {} };
     }
 
     // ===== КЕШИРОВАНИЕ ТАБЛИЦ =====
     // Один раз вычисляем таблицу после каждого матча
     const cachedStandings = {};
-    for (const pm of playedMatches) {
-        cachedStandings[pm.index] = getStandingsAfterMatches(pm.index);
+    for (let i = 0; i <= lastPlayedMatchIndex; i++) {
+        cachedStandings[i] = getStandingsAfterMatches(i);
     }
 
     const stats = {
@@ -318,9 +309,8 @@ function calculateStatistics() {
     let maxErrorMatches = [];
     let teamErrors = {};
 
-    for (const pm of playedMatches) {
-        const match = pm.match;
-        const matchIndex = pm.index;
+    for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+        const match = allMatchesData[matchIndex];
         let totalError = 0;
         let validPredictions = 0;
 
@@ -375,9 +365,8 @@ function calculateStatistics() {
     // ===== НОВЫЕ НОМИНАЦИИ: Команды по исходам =====
     let teamOutcomeErrors = {};
 
-    for (const pm of playedMatches) {
-        const match = pm.match;
-        const matchIndex = pm.index;
+    for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+        const match = allMatchesData[matchIndex];
     
         // Фактический исход для каждой команды в матче
         const actualScore = parseScoreToArray(match.result);
@@ -462,11 +451,62 @@ function calculateStatistics() {
         value: minTotal
     };
 
-    // 2. Самый уникальный прогноз (с бонусами)
+    // ===== 2. Самый лучший предсказатель исходов (НОВАЯ) =====
+    let outcomeErrors = {};
+    for (const p of participantsData) {
+        let errors = 0;
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+            const match = allMatchesData[matchIndex];
+            const pred = p.predictions[matchIndex];
+            if (pred && pred !== '—') {
+                const actualOutcome = getOutcome(parseScoreToArray(match.result));
+                const predOutcome = getOutcome(parseScoreToArray(pred));
+                if (actualOutcome !== null && predOutcome !== null && actualOutcome !== predOutcome) {
+                    errors++;
+                }
+            }
+        }
+        outcomeErrors[p.name] = errors;
+    }
+    
+    const minOutcomeErrors = Math.min(...Object.values(outcomeErrors));
+    const bestOutcomePredictors = Object.entries(outcomeErrors)
+        .filter(([name, errors]) => errors === minOutcomeErrors)
+        .map(([name]) => ({ name: name }));
+    stats.participants.bestOutcomePredictor = {
+        winners: bestOutcomePredictors,
+        value: minOutcomeErrors
+    };
+
+    // ===== 3. Самый лучший предсказатель счетов (бывшая "Самый частый угадыватель счета") =====
+    let exactScoreCounts = {};
+    for (const p of participantsData) {
+        let count = 0;
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+            const match = allMatchesData[matchIndex];
+            const pred = p.predictions[matchIndex];
+            if (pred && pred !== '—') {
+                const error = calculateError(match.result, pred);
+                if (error === 0) count++;
+            }
+        }
+        if (count > 0) exactScoreCounts[p.name] = count;
+    }
+
+    const sortedExact = Object.entries(exactScoreCounts).sort((a, b) => b[1] - a[1]);
+    if (sortedExact.length > 0) {
+        const maxExact = sortedExact[0][1];
+        const bestExact = sortedExact.filter(e => e[1] === maxExact);
+        stats.participants.mostExactScore = {
+            winners: bestExact.map(e => ({ name: e[0] })),
+            value: maxExact
+        };
+    }
+
+    // 4. Самый уникальный прогноз (с бонусами)
     let uniquePredictions = [];
-    for (const pm of playedMatches) {
-        const matchIndex = pm.index;
-        const match = pm.match;
+    for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+        const match = allMatchesData[matchIndex];
         const correctPredictions = [];
         
         // Находим всех участников, которые угадали счет
@@ -517,7 +557,7 @@ function calculateStatistics() {
         };
     }
 
-    // 3. Самый большой диапазон занимаемых мест (с бонусами)
+    // 5. Самый большой диапазон занимаемых мест (с бонусами)
     let rankRanges = {};
     const totalParticipants = participantsData.length;
     const SKIP_MATCHES = 5;
@@ -528,11 +568,11 @@ function calculateStatistics() {
         let hasRealData = false;
         let matchCount = 0;
     
-        for (const pm of playedMatches) {
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
             matchCount++;
             if (matchCount <= SKIP_MATCHES) continue;
         
-            const standings = cachedStandings[pm.index];
+            const standings = cachedStandings[matchIndex];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—') {
                 const { min, max } = getRankPosition(s.rank);
@@ -558,7 +598,7 @@ function calculateStatistics() {
         };
     }
 
-    // 3b. Самый маленький диапазон занимаемых мест (первые 5 матчей не учитываются)
+    // 6. Самый маленький диапазон занимаемых мест (первые 5 матчей не учитываются)
     let minRankRanges = {};
     const totalParticipantsMin = participantsData.length;
     const SKIP_MATCHES_MIN = 5;
@@ -569,11 +609,11 @@ function calculateStatistics() {
         let hasRealData = false;
         let matchCount = 0;
 
-        for (const pm of playedMatches) {
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
             matchCount++;
             if (matchCount <= SKIP_MATCHES_MIN) continue;
 
-            const standings = cachedStandings[pm.index];
+            const standings = cachedStandings[matchIndex];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—') {
                 const { min, max } = getRankPosition(s.rank);
@@ -600,12 +640,12 @@ function calculateStatistics() {
         };
     }
 
-    // 4. Самый впечатляющий рывок (с бонусами)
+    // 7. Самый впечатляющий рывок (с бонусами)
     let bestComebacks = [];
     for (const p of participantsData) {
         let prevRank = null;
-        for (const pm of playedMatches) {
-            const standings = cachedStandings[pm.index];
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+            const standings = cachedStandings[matchIndex];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—') {
                 const currentRank = getMinRankValue(s.rank);
@@ -614,7 +654,7 @@ function calculateStatistics() {
                     if (improvement > 0) {
                         bestComebacks.push({
                             name: p.name,
-                            match: allMatchesData[pm.index],
+                            match: allMatchesData[matchIndex],
                             from: prevRank,
                             to: currentRank,
                             improvement: improvement
@@ -636,38 +676,37 @@ function calculateStatistics() {
         };
     }
 
-    // 5. Самый частый угадыватель счета (без бонусов)
-    let exactScoreCounts = {};
+    // 8. Самое частое пребывание на первом месте (считаем общее количество матчей на первом месте)
+    let firstPlaceCounts = {};
     for (const p of participantsData) {
         let count = 0;
-        for (const pm of playedMatches) {
-            const matchIndex = pm.index;
-            const pred = p.predictions[matchIndex];
-            if (pred && pred !== '—') {
-                const error = calculateError(pm.match.result, pred);
-                if (error === 0) count++;
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+            const standings = cachedStandings[matchIndex];
+            const s = standings.find(s => s.name === p.name);
+            if (s && s.rank && s.rank !== '—' && getMinRankValue(s.rank) === 1) {
+                count++;
             }
         }
-        if (count > 0) exactScoreCounts[p.name] = count;
+        if (count > 0) firstPlaceCounts[p.name] = count;
     }
 
-    const sortedExact = Object.entries(exactScoreCounts).sort((a, b) => b[1] - a[1]);
-    if (sortedExact.length > 0) {
-        const maxExact = sortedExact[0][1];
-        const bestExact = sortedExact.filter(e => e[1] === maxExact);
-        stats.participants.mostExactScore = {
-            winners: bestExact.map(e => ({ name: e[0] })),
-            value: maxExact
+    const sortedCounts = Object.entries(firstPlaceCounts).sort((a, b) => b[1] - a[1]);
+    if (sortedCounts.length > 0) {
+        const maxCount = sortedCounts[0][1];
+        const bestCount = sortedCounts.filter(s => s[1] === maxCount);
+        stats.participants.mostFrequentFirstPlace = {
+            winners: bestCount.map(s => ({ name: s[0] })),
+            value: maxCount
         };
     }
 
-    // 6. Самое долгое пребывание на первом месте (с бонусами)
+    // 9. Самое долгое пребывание на первом месте (с бонусами)
     let firstPlaceStreaks = {};
     for (const p of participantsData) {
         let streak = 0;
         let maxStreak = 0;
-        for (const pm of playedMatches) {
-            const standings = cachedStandings[pm.index];
+        for (let matchIndex = 0; matchIndex <= lastPlayedMatchIndex; matchIndex++) {
+            const standings = cachedStandings[matchIndex];
             const s = standings.find(s => s.name === p.name);
             if (s && s.rank && s.rank !== '—' && getMinRankValue(s.rank) === 1) {
                 streak++;
@@ -689,43 +728,19 @@ function calculateStatistics() {
         };
     }
 
-    // 7. Самое частое пребывание на первом месте (считаем общее количество матчей на первом месте)
-    let firstPlaceCounts = {};
-    for (const p of participantsData) {
-        let count = 0;
-        for (const pm of playedMatches) {
-            const standings = cachedStandings[pm.index];
-            const s = standings.find(s => s.name === p.name);
-            if (s && s.rank && s.rank !== '—' && getMinRankValue(s.rank) === 1) {
-                count++;
-            }
-        }
-        if (count > 0) firstPlaceCounts[p.name] = count;
-    }
-
-    const sortedCounts = Object.entries(firstPlaceCounts).sort((a, b) => b[1] - a[1]);
-    if (sortedCounts.length > 0) {
-        const maxCount = sortedCounts[0][1];
-        const bestCount = sortedCounts.filter(s => s[1] === maxCount);
-        stats.participants.mostFrequentFirstPlace = {
-            winners: bestCount.map(s => ({ name: s[0] })),
-            value: maxCount
-        };
-    }
-
     return stats;
 }
 
 // ========== ОТРИСОВКА СТАТИСТИКИ ==========
 function renderStats(stats) {
     const subtitle = document.getElementById('statSubtitle');
-    const playedMatches = getPlayedMatches();
+    const playedMatchesCount = lastPlayedMatchIndex + 1;
     const totalMatchesCount = allMatchesData.length;
     
-    if (playedMatches.length === totalMatchesCount) {
+    if (playedMatchesCount === totalMatchesCount) {
         subtitle.innerHTML = `Номинации "самый-самый" по итогам турнира (${totalMatchesCount} матчей):`;
     } else {
-        subtitle.innerHTML = `Номинации "самый-самый" по ходу турнира (${playedMatches.length} из ${totalMatchesCount} матчей):`;
+        subtitle.innerHTML = `Номинации "самый-самый" по ходу турнира (${playedMatchesCount} из ${totalMatchesCount} матчей):`;
     }
 
     // Вкладка "Матчи"
@@ -805,9 +820,8 @@ function renderStats(stats) {
 	    `;
 	}
 
-
         if (!html) {
-            html = `<div class="stat-nomination-empty">Нет данных для отображения</div>`;
+            html = `<div class="stat-nomination-empty">Нет данных для отображения номинаций</div>`;
         }
         matchesContainer.innerHTML = html;
     }
@@ -817,14 +831,41 @@ function renderStats(stats) {
     if (stats.participants) {
         let html = '';
 
+        // 1. Самый лучший предсказатель (с бонусами)
         if (stats.participants.bestPredictor && stats.participants.bestPredictor.winners.length > 0) {
             const m = stats.participants.bestPredictor;
             html += `
                 <div class="stat-nomination">
                     <h3>Самый лучший предсказатель</h3>
-                    <div class="explanation">(участник, занявший первое место)</div>
+                    <div class="explanation">(участник с наименьшей суммой ошибок)</div>
                     <div class="winners" style="padding-left: 20px;"><strong>${m.winners.map(w => w.name).join(', ')}</strong></div>
                     <div class="value" style="padding-left: 20px;">Сумма ошибок: <strong>${m.value}</strong></div>
+                </div>
+            `;
+        }
+
+        // 2. Самый лучший предсказатель исходов
+        if (stats.participants.bestOutcomePredictor && stats.participants.bestOutcomePredictor.winners.length > 0) {
+            const m = stats.participants.bestOutcomePredictor;
+            html += `
+                <div class="stat-nomination">
+                    <h3>Самый лучший предсказатель исходов</h3>
+                    <div class="explanation">(участник, который чаще всех угадывал исход матча)</div>
+                    <div class="winners" style="padding-left: 20px;"><strong>${m.winners.map(w => w.name).join(', ')}</strong></div>
+                    <div class="value" style="padding-left: 20px;">Точных попаданий: <strong>${playedMatchesCount - m.value}</strong></div>
+                </div>
+            `;
+        }
+
+        // 3. Самый лучший предсказатель счетов
+        if (stats.participants.mostExactScore && stats.participants.mostExactScore.winners.length > 0) {
+            const m = stats.participants.mostExactScore;
+            html += `
+                <div class="stat-nomination">
+                    <h3>Самый лучший предсказатель счетов</h3>
+                    <div class="explanation">(участник, который чаще всех угадывал счет матча)</div>
+                    <div class="winners" style="padding-left: 20px;"><strong>${m.winners.map(w => w.name).join(', ')}</strong></div>
+                    <div class="value" style="padding-left: 20px;">Точных попаданий: <strong>${m.value}</strong></div>
                 </div>
             `;
         }
@@ -888,7 +929,7 @@ function renderStats(stats) {
 	    const m = stats.participants.bestComeback;
 	    const winnerNames = m.winners.map(w => `<strong>${w.name}</strong>`).join(', ');
 	    const matchDetails = m.winners.map(w => 
-        	`после матча <span style="background: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: normal;">${w.match.id}. 	${formatMatchWithFlagsAndScore(w.match)}</span>: ${w.from} → ${w.to}`
+        	`после матча <span style="background: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: normal;">${w.match.id}. ${formatMatchWithFlagsAndScore(w.match)}</span>: ${w.from} → ${w.to}`
 	    ).join('<br>');
 	    html += `
         	<div class="stat-nomination">
@@ -901,29 +942,17 @@ function renderStats(stats) {
 	    `;
 	}
 
-        if (stats.participants.mostExactScore && stats.participants.mostExactScore.winners.length > 0) {
-            const m = stats.participants.mostExactScore;
+        if (stats.participants.mostFrequentFirstPlace && stats.participants.mostFrequentFirstPlace.winners.length > 0) {
+            const m = stats.participants.mostFrequentFirstPlace;
             html += `
                 <div class="stat-nomination">
-                    <h3>Самый частый угадыватель счета</h3>
-                    <div class="explanation">(участник, который чаще всего точно угадывал счет матча)</div>
+                    <h3>Самое частое пребывание на первом месте</h3>
+                    <div class="explanation">(участник, чаще всех находившийся на первой позиции)</div>
                     <div class="winners" style="padding-left: 20px;"><strong>${m.winners.map(w => w.name).join(', ')}</strong></div>
-                    <div class="value" style="padding-left: 20px;">Точных попаданий: <strong>${m.value}</strong></div>
+                    <div class="value" style="padding-left: 20px;">Матчей: <strong>${m.value}</strong></div>
                 </div>
             `;
         }
-
-	if (stats.participants.mostFrequentFirstPlace && stats.participants.mostFrequentFirstPlace.winners.length > 0) {
-	    const m = stats.participants.mostFrequentFirstPlace;
-	    html += `
-        	<div class="stat-nomination">
-	            <h3>Самое частое пребывание на первом месте</h3>
-        	    <div class="explanation">(участник, чаще всех находившийся на первой позиции)</div>
-	            <div class="winners" style="padding-left: 20px;"><strong>${m.winners.map(w => w.name).join(', ')}</strong></div>
-        	    <div class="value" style="padding-left: 20px;">Матчей: <strong>${m.value}</strong></div>
-	        </div>
-	    `;
-	}
 
         if (stats.participants.longestFirstPlace && stats.participants.longestFirstPlace.winners.length > 0) {
             const m = stats.participants.longestFirstPlace;
@@ -938,7 +967,7 @@ function renderStats(stats) {
         }
 
         if (!html) {
-            html = `<div class="stat-nomination-empty">Нет данных для отображения</div>`;
+            html = `<div class="stat-nomination-empty">Нет данных для отображения номинаций</div>`;
         }
         participantsContainer.innerHTML = html;
     }
