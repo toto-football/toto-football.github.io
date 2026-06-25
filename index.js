@@ -552,7 +552,7 @@ async function sendScoreToSheet(matchIndex, score) {
     }
     
     try {
-        const response = await fetch(`${APPS_SCRIPT_UPDATE_URL}?action=updateScore&matchId=${match.id}&score=${encodeURIComponent(score)}`);
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=updateScore&matchId=${match.id}&score=${encodeURIComponent(score)}`);
         const result = await response.json();
         
         if (result.success) {
