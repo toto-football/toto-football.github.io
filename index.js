@@ -812,6 +812,156 @@ function createCell(content, isHtml = false, className = '') {
     return cell;
 }
 
+// ========== РАСЧЁТ STANDINGS ПОСЛЕ МАТЧА (ДЛЯ МЕСТ) ==========
+function calculateStandingsAfterMatch(upToMatchIndex) {
+    if (upToMatchIndex < 0) {
+        return participantsData.map(p => ({
+            name: p.name,
+            totalSum: 0,
+            rank: '—'
+        }));
+    }
+    
+    const participantStats = [];
+    for (let p of participantsData) {
+        let totalSum = 0;
+
+        for (let i = 0; i <= upToMatchIndex; i++) {
+            const result = matchesData[i].result;
+            const pred = p.predictions[i];
+            if (result && result !== '—' && pred && pred !== '—') {
+                const matchRes = calculateTotalScore(result, pred);
+                if (matchRes !== null) {
+                    totalSum += matchRes;
+                }
+            }
+        }
+
+        participantStats.push({
+            name: p.name,
+            totalSum: totalSum
+        });
+    }
+
+    const sorted = [...participantStats].sort((a, b) => a.totalSum - b.totalSum);
+    const rankMap = new Map();
+    let i = 0;
+    while (i < sorted.length) {
+        let j = i + 1;
+        while (j < sorted.length && sorted[j].totalSum === sorted[i].totalSum) j++;
+        const rankDisplay = i + 1 === j ? `${i+1}` : `${i+1}-${j}`;
+        for (let k = i; k < j; k++) rankMap.set(sorted[k].name, { rank: rankDisplay });
+        i = j;
+    }
+
+    return participantStats.map(s => ({
+        name: s.name,
+        totalSum: s.totalSum,
+        rank: rankMap.get(s.name).rank
+    }));
+}
+
+// ========== ПОЛУЧЕНИЕ ПОЗИЦИИ РАНГА ==========
+function getRankPosition(rankStr) {
+    if (!rankStr || rankStr === '—') return { min: 0, max: 0 };
+    if (rankStr.includes('-')) {
+        const parts = rankStr.split('-');
+        return { min: parseInt(parts[0]), max: parseInt(parts[1]) };
+    }
+    return { min: parseInt(rankStr), max: parseInt(rankStr) };
+}
+
+// ========== РАСЧЁТ РАСШИРЕННОЙ СТАТИСТИКИ УЧАСТНИКА ==========
+function calculateParticipantExtendedStats(participantName) {
+    const results = matchesData.map(m => m.result);
+    const participant = participantsData.find(p => p.name === participantName);
+    if (!participant) return null;
+
+    let correctOutcomes = 0;
+    let totalMatches = 0;
+
+    // 1. Считаем угаданные исходы
+    for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const pred = participant.predictions[i];
+        
+        if (result && result !== '—' && pred && pred !== '—') {
+            const actualOutcome = getOutcome(parseScoreToArray(result));
+            const predOutcome = getOutcome(parseScoreToArray(pred));
+            
+            if (actualOutcome !== null && predOutcome !== null) {
+                totalMatches++;
+                if (actualOutcome === predOutcome) {
+                    correctOutcomes++;
+                }
+            }
+        }
+    }
+
+    // 2. Считаем отставание от лидера по угаданным исходам
+    let leaderCorrectOutcomes = 0;
+    for (const p of participantsData) {
+        let outcomes = 0;
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            const pred = p.predictions[i];
+            if (result && result !== '—' && pred && pred !== '—') {
+                const actualOutcome = getOutcome(parseScoreToArray(result));
+                const predOutcome = getOutcome(parseScoreToArray(pred));
+                if (actualOutcome !== null && predOutcome !== null && actualOutcome === predOutcome) {
+                    outcomes++;
+                }
+            }
+        }
+        if (outcomes > leaderCorrectOutcomes) {
+            leaderCorrectOutcomes = outcomes;
+        }
+    }
+
+    const diffFromLeader = leaderCorrectOutcomes - correctOutcomes;
+
+    // 3. Считаем места (после матча №5)
+    let minRank = null;
+    let maxRank = null;
+    
+    // Определяем индекс последнего сыгранного матча
+    let lastPlayedMatchIndex = -1;
+    for (let i = 0; i < matchesData.length; i++) {
+        if (matchesData[i].result && matchesData[i].result !== '—') {
+            lastPlayedMatchIndex = i;
+        } else {
+            break;
+        }
+    }
+
+    if (lastPlayedMatchIndex >= 0) {
+        const cachedStandings = {};
+        for (let i = 0; i <= lastPlayedMatchIndex; i++) {
+            cachedStandings[i] = calculateStandingsAfterMatch(i);
+        }
+
+        // Начинаем с 6-го матча (индекс 5, так как нумерация с 0)
+        for (let i = 5; i <= lastPlayedMatchIndex; i++) {
+            const standings = cachedStandings[i];
+            const s = standings.find(s => s.name === participantName);
+            if (s && s.rank && s.rank !== '—') {
+                const { min, max } = getRankPosition(s.rank);
+                if (minRank === null || min < minRank) minRank = min;
+                if (maxRank === null || max > maxRank) maxRank = max;
+            }
+        }
+    }
+
+    return {
+        correctOutcomes: correctOutcomes,
+        totalMatches: totalMatches,
+        minRank: minRank,
+        maxRank: maxRank,
+        diffFromLeader: diffFromLeader,
+        leaderCorrectOutcomes: leaderCorrectOutcomes
+    };
+}
+
 // ========== КОНТЕКСТНОЕ МЕНЮ ==========
 let contextMenuVisible = false;
 let contextMenuTarget = null;
@@ -940,8 +1090,9 @@ function showContextMenu(event, participantName, targetElement) {
         font-size: 0.7rem;
         color: #555;
         margin-bottom: 4px;
-        padding: 0;
+        padding: 0 0 6px 0;
         gap: 12px;
+        border-bottom: 1px solid #dde8c0;
     `;
     subHeader.innerHTML = `
         <span style="white-space: nowrap; text-align: left;">участник: <strong>${participantName}</strong></span>
@@ -949,17 +1100,18 @@ function showContextMenu(event, participantName, targetElement) {
     `;
     menu.appendChild(subHeader);
 
-    // Место (из)
+    // Место __ (из __)
     const rankRow = document.createElement('div');
     rankRow.style.cssText = `
         font-size: 0.7rem;
         color: #555;
-        margin-bottom: 4px;
-        padding: 0;
-	text-align: center;
+        margin-bottom: 3px;
+        padding: 0 0 0 6px;
+        text-align: left;
     `;
     rankRow.innerHTML = `
-        <span>место: <strong>${rankDisplay}</strong> (из ${totalParticipants})</span>
+        <span style="display: inline-block; width: 100px;">место:</span>
+        <span><strong>${rankDisplay}</strong> (из ${totalParticipants})</span>
     `;
     menu.appendChild(rankRow);
 
@@ -968,16 +1120,52 @@ function showContextMenu(event, participantName, targetElement) {
     diffRow.style.cssText = `
         font-size: 0.7rem;
         color: #555;
-        margin-bottom: 8px;
-        padding: 0;
-	text-align: center;
+        margin-bottom: 3px;
+        padding: 0 0 0 6px;
+        text-align: left;
     `;
     diffRow.innerHTML = `
-        <span>сумма ошибок: <strong>${totalMatches > 0 ? sumResults : '-'}</strong>${totalMatches > 0 ? ` (${leaderDiff})` : ''}</span>
+        <span style="display: inline-block; width: 100px;">сумма ошибок:</span>
+        <span><strong>${totalMatches > 0 ? sumResults : '-'}</strong>${totalMatches > 0 ? ` (${leaderDiff})` : ''}</span>
     `;
-
     menu.appendChild(diffRow);
-    
+
+    // Угадал исход (отставание от лидера)
+    const extendedStats = calculateParticipantExtendedStats(participantName);
+    if (extendedStats) {
+	const outcomeDiv = document.createElement('div');
+	outcomeDiv.style.cssText = 'font-size: 0.7rem; color: #1e4620; padding: 0 0 0 6px; margin-bottom: 3px; text-align: left;';
+	const diffText = extendedStats.diffFromLeader > 0 ? `(-${extendedStats.diffFromLeader})` : '(-)';
+	outcomeDiv.innerHTML = `
+	    <span style="display: inline-block; width: 100px;">угадал исход:</span>
+	    <span><strong>${extendedStats.correctOutcomes}</strong> ${diffText}</span>
+	`;
+	menu.appendChild(outcomeDiv);
+
+        // Занимал места 
+        const rankRangeDiv = document.createElement('div');
+        rankRangeDiv.style.cssText = 'font-size: 0.7rem; color: #1e4620; padding: 0 0 6px 6px; margin-bottom: 4px; text-align: left; border-bottom: 1px solid #dde8c0;';
+        
+        // Проверяем, сыграно ли 5 матчей
+        let playedMatches = 0;
+        for (const match of matchesData) {
+            if (match.result && match.result !== '—') playedMatches++;
+        }
+        
+        if (playedMatches < 5 || extendedStats.minRank === null || extendedStats.maxRank === null) {
+            rankRangeDiv.innerHTML = `
+	        <span style="display: inline-block; width: 100px;">места (после №5):</span>
+	        <span><strong>—</strong></span>
+	    `;
+        } else {
+            rankRangeDiv.innerHTML = `
+	        <span style="display: inline-block; width: 100px;">места (после №5):</span>
+	        <span><strong>${extendedStats.minRank}-${extendedStats.maxRank}</strong></span>
+	    `;
+        }
+        menu.appendChild(rankRangeDiv);
+    }
+
     // Статистика
     if (totalMatches === 0) {
         const empty = document.createElement('div');
@@ -986,7 +1174,7 @@ function showContextMenu(event, participantName, targetElement) {
         menu.appendChild(empty);
     } else {
         const statsDiv = document.createElement('div');
-        statsDiv.style.cssText = 'margin-bottom: 6px;';
+        statsDiv.style.cssText = 'margin-bottom: 6px; margin-top: 8px;';
         
 	// Находим максимальное значение ошибки
 	const maxError = Math.max(...Object.keys(stats).map(Number));
