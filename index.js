@@ -1110,7 +1110,7 @@ function showContextMenu(event, participantName, targetElement) {
         text-align: left;
     `;
     rankRow.innerHTML = `
-        <span style="display: inline-block; width: 100px;">место:</span>
+        <span style="display: inline-block; width: 110px;">место:</span>
         <span><strong>${rankDisplay}</strong> (из ${totalParticipants})</span>
     `;
     menu.appendChild(rankRow);
@@ -1125,7 +1125,7 @@ function showContextMenu(event, participantName, targetElement) {
         text-align: left;
     `;
     diffRow.innerHTML = `
-        <span style="display: inline-block; width: 100px;">сумма ошибок:</span>
+        <span style="display: inline-block; width: 110px;">сумма ошибок:</span>
         <span><strong>${totalMatches > 0 ? sumResults : '-'}</strong>${totalMatches > 0 ? ` (${leaderDiff})` : ''}</span>
     `;
     menu.appendChild(diffRow);
@@ -1137,7 +1137,7 @@ function showContextMenu(event, participantName, targetElement) {
 	outcomeDiv.style.cssText = 'font-size: 0.7rem; color: #1e4620; padding: 0 0 0 6px; margin-bottom: 3px; text-align: left;';
 	const diffText = extendedStats.diffFromLeader > 0 ? `(-${extendedStats.diffFromLeader})` : '(-)';
 	outcomeDiv.innerHTML = `
-	    <span style="display: inline-block; width: 100px;">угадал исход:</span>
+	    <span style="display: inline-block; width: 110px;">угадал исход:</span>
 	    <span><strong>${extendedStats.correctOutcomes}</strong> ${diffText}</span>
 	`;
 	menu.appendChild(outcomeDiv);
@@ -1154,12 +1154,12 @@ function showContextMenu(event, participantName, targetElement) {
         
         if (playedMatches < 5 || extendedStats.minRank === null || extendedStats.maxRank === null) {
             rankRangeDiv.innerHTML = `
-	        <span style="display: inline-block; width: 100px;">места (после №5):</span>
+	        <span style="display: inline-block; width: 110px;">места (после №5):</span>
 	        <span><strong>—</strong></span>
 	    `;
         } else {
             rankRangeDiv.innerHTML = `
-	        <span style="display: inline-block; width: 100px;">места (после №5):</span>
+	        <span style="display: inline-block; width: 110px;">места (после №5):</span>
 	        <span><strong>${extendedStats.minRank}-${extendedStats.maxRank}</strong></span>
 	    `;
         }
