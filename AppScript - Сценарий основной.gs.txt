@@ -1,0 +1,239 @@
+// ========== ГЛАВНЫЙ doGet (ЧТЕНИЕ + ЗАПИСЬ) ==========
+function doGet(e) {
+  const action = e?.parameter?.action;
+  
+  // Чтение данных
+  if (action === 'all') return getAllData();
+  
+  // Запись счёта матча
+  if (action === 'updateScore') return updateMatchScore(e);
+  
+  return ContentService.createTextOutput(JSON.stringify({ 
+    error: 'Unknown action. Available: all, updateScore' 
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ========== ЧТЕНИЕ ВСЕХ ДАННЫХ ИЗ ГУГЛ-ТАБЛИЦЫ ==========
+function getAllData() {
+  // 1. ЧИТАЕМ ПАРАМЕТРЫ С ЛИСТА ПАРАМЕТРЫ
+  const paramSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Параметры');
+  const paramData = paramSheet.getDataRange().getValues();
+  
+  const params = {};
+  let activeSheetName = null;
+  let tournamentYear = null;
+  
+  for (let i = 1; i < paramData.length; i++) {
+    const key = paramData[i][0];
+    const value = paramData[i][1];
+    if (key && value) {
+      params[key] = value;
+      if (key === 'активный_лист') activeSheetName = value;
+      if (key === 'турнир_год') tournamentYear = parseInt(value);
+    }
+  }
+  
+  if (activeSheetName) {
+    params['активный_лист'] = activeSheetName;
+  }
+  
+  // 2. ЧИТАЕМ ДАННЫЕ О СБОРНЫХ С ЛИСТА СБОРНЫЕ
+  let teamsData = {};
+  if (tournamentYear) {
+    const teamsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Сборные');
+    const allTeamsData = teamsSheet.getDataRange().getValues();
+    const headers = allTeamsData[0];
+    const rows = allTeamsData.slice(1);
+    
+    const rankColumnName = `Рейтинг ${tournamentYear}`;
+    let rankColumnIndex = -1;
+    for (let i = 0; i < headers.length; i++) {
+      if (headers[i] === rankColumnName) {
+        rankColumnIndex = i;
+        break;
+      }
+    }
+    
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const name = row[0];
+      const flagCode = row[1];
+      const rank = (rankColumnIndex !== -1) ? row[rankColumnIndex] : null;
+      if (name) {
+        teamsData[name] = {
+          flagCode: flagCode,
+          rank: rank ? parseInt(rank) : null
+        };
+      }
+    }
+  }
+  
+  // 3. ЧИТАЕМ МАТЧИ С ЛИСТА ЧМ-20...
+  let headers = [];
+  let rows = [];
+  
+  if (activeSheetName) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName);
+    if (sheet) {
+      const lastRow = sheet.getLastRow();
+      const lastCol = sheet.getLastColumn();
+      const allData = sheet.getRange(1, 1, lastRow, lastCol).getDisplayValues();
+      
+      headers = allData[0];
+      rows = [];
+      for (let i = 1; i < allData.length; i++) {
+        const row = {};
+        for (let j = 0; j < headers.length; j++) {
+          row[headers[j]] = allData[i][j];
+        }
+        rows.push(row);
+      }
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    params: params,
+    teams: teamsData,
+    headers: headers,
+    rows: rows
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ========== ЗАПИСЬ СЧЁТА МАТЧА ==========
+function updateMatchScore(e) {
+  try {
+    const matchId = parseInt(e?.parameter?.matchId);
+    const score = e?.parameter?.score;
+    
+    if (!matchId || !score) {
+      throw new Error('Параметры: matchId и score обязательны');
+    }
+    
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+    const paramSheet = spreadsheet.getSheetByName('Параметры');
+    const paramData = paramSheet.getDataRange().getValues();
+    
+    let activeSheetName = null;
+    for (let i = 1; i < paramData.length; i++) {
+      if (paramData[i][0] === 'активный_лист') {
+        activeSheetName = paramData[i][1];
+        break;
+      }
+    }
+    
+    if (!activeSheetName) {
+      throw new Error('Не указан активный_лист в параметрах');
+    }
+    
+    const sheet = spreadsheet.getSheetByName(activeSheetName);
+    if (!sheet) {
+      throw new Error('Лист ' + activeSheetName + ' не найден');
+    }
+    
+    const lastRow = sheet.getLastRow();
+    const idRange = sheet.getRange(2, 1, lastRow - 1, 1);
+    const idValues = idRange.getValues();
+    
+    let targetRow = null;
+    for (let i = 0; i < idValues.length; i++) {
+      if (idValues[i][0] == matchId) {
+        targetRow = i + 2;
+        break;
+      }
+    }
+    
+    if (!targetRow) {
+      throw new Error('Матч с ID ' + matchId + ' не найден');
+    }
+    
+    sheet.getRange(targetRow, 7).setValue(score);
+    
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: true, 
+      matchId: matchId, 
+      score: score,
+      message: 'Счёт обновлён'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: false, 
+      error: err.toString() 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ========== ЗАПИСЬ ПРОГНОЗОВ (POST) ==========
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const username = data.username;
+    const predictions = data.predictions;
+    const targetCol = data.targetCol;
+    
+    const paramSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Параметры');
+    const paramData = paramSheet.getDataRange().getValues();
+    
+    let activeSheetName = null;
+    for (let i = 1; i < paramData.length; i++) {
+      if (paramData[i][0] === 'активный_лист') {
+        activeSheetName = paramData[i][1];
+        break;
+      }
+    }
+    
+    if (!activeSheetName) {
+      throw new Error('Не указан активный_лист в параметрах');
+    }
+    
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName);
+    if (!sheet) throw new Error('Лист ' + activeSheetName + ' не найден');
+    
+    let finalCol = (targetCol && targetCol >= 7) ? targetCol : null;
+    
+    if (!finalCol) {
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      for (let i = 6; i < headers.length; i++) {
+        if (headers[i] && headers[i].toString().startsWith('Участник')) {
+          finalCol = i + 1;
+          break;
+        }
+      }
+    }
+    
+    if (!finalCol || finalCol < 7) {
+      throw new Error('Не найдена колонка с "Участник"');
+    }
+    
+    sheet.getRange(1, finalCol).setValue(username);
+    
+    const lastRow = sheet.getLastRow();
+    const idRange = sheet.getRange(2, 1, lastRow - 1, 1);
+    const idValues = idRange.getValues();
+    
+    const rowMap = {};
+    for (let i = 0; i < idValues.length; i++) {
+      const matchId = idValues[i][0];
+      if (matchId) {
+        rowMap[matchId] = i + 2;
+      }
+    }
+    
+    for (let i = 0; i < predictions.length; i++) {
+      const matchId = predictions[i].match_id;
+      const prediction = predictions[i].prediction;
+      const rowIndex = rowMap[matchId];
+      if (rowIndex) {
+        sheet.getRange(rowIndex, finalCol).setValue(prediction);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true, targetCol: finalCol }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}

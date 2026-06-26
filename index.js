@@ -244,6 +244,20 @@ function playSound(type) {
     });
 }
 
+// ========== ПРОВЕРКА ВОЗМОЖНОСТИ ВВОДА СЧЁТА ДЛЯ КОНКРЕТНОГО МАТЧА (ОНИ ДОЛЖНЫ ИДТИ БЕЗ ПРОПУСКОВ!) ==========
+function canEnterScore(matchIndex) {
+    // Первый матч всегда можно вводить
+    if (matchIndex === 0) return true;
+    
+    // Проверяем все предыдущие матчи
+    for (let i = 0; i < matchIndex; i++) {
+        if (!matchesData[i].result || matchesData[i].result === '—') {
+            return false; // есть пропуск — нельзя
+        }
+    }
+    return true; // все матчи до этого имеют счёт
+}
+
 // ========== ПРОВЕРКА ДОСТУПНЫХ ЯЧЕЕК ДЛЯ ВВОДА СЧЕТА ==========
 function getAvailableMatches() {
     const now = new Date();
@@ -337,6 +351,13 @@ let activeScoreMatchId = null;
 let activeScoreCell = null;
 
 function openScoreInput(matchIndex) {
+
+    // ===== ПРОВЕРКА НА ПРОПУСКИ =====
+    if (!canEnterScore(matchIndex)) {
+        alert('⚠️ Не заполнены счета всех предыдущих матчей!');
+        return;
+    }
+
     if (!adminModeEnabled) {
         alert('Режим администратора выключен.');
         return;
