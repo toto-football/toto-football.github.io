@@ -738,9 +738,9 @@ function renderStats(stats) {
     const totalMatchesCount = allMatchesData.length;
     
     if (playedMatchesCount === totalMatchesCount) {
-        subtitle.innerHTML = `Номинации "самый-самый" по итогам турнира (${totalMatchesCount} матчей):`;
+        subtitle.innerHTML = `Номинации "самый-самый" по итогам турнира (матчей: ${totalMatchesCount}):`;
     } else {
-        subtitle.innerHTML = `Номинации "самый-самый" по ходу турнира (${playedMatchesCount} из ${totalMatchesCount} матчей):`;
+        subtitle.innerHTML = `Номинации "самый-самый" по ходу турнира (матчей: ${playedMatchesCount} из ${totalMatchesCount}):`;
     }
 
     // Вкладка "Матчи"
