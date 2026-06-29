@@ -9,6 +9,9 @@ let tournamentParams = {};
 let selectedUserName = localStorage.getItem('selectedUserName') || null;
 let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localStorage.getItem('selectedMatchId')) : null;
 
+let fantasyModeEnabled = false;
+let fantasyData = null; // { matches: [], participants: [] }
+
 // ========== ПЕРЕМЕННЫЕ ДЛЯ АДМИН-РЕЖИМА ==========
 let adminModeEnabled = localStorage.getItem('adminMode') === 'true' || false;
 let adminClickSequence = []; // для отслеживания нажатий на заголовки
@@ -352,6 +355,10 @@ let activeScoreCell = null;
 
 function openScoreInput(matchIndex) {
 
+    const data = getCurrentData();
+    const matches = data.matches;
+    const match = matches[matchIndex];
+
     // ===== ПРОВЕРКА НА ПРОПУСКИ =====
     if (!canEnterScore(matchIndex)) {
         alert('⚠️ Не заполнены счета всех предыдущих матчей!');
@@ -363,7 +370,6 @@ function openScoreInput(matchIndex) {
         return;
     }
     
-    const match = matchesData[matchIndex];
     if (!match) return;
     
     // Находим ячейку
@@ -392,8 +398,8 @@ function openScoreInput(matchIndex) {
     `;
     
     const speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-    const currentScore = (matchesData[matchIndex].result && matchesData[matchIndex].result !== '—') ? matchesData[matchIndex].result : '';
-    
+    const currentScore = (matches[matchIndex].result && matches[matchIndex].result !== '—') ? matches[matchIndex].result : '';    
+
     modal.innerHTML = `
         <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Введите счёт</h3>
         <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;"><strong>${match.team1} – ${match.team2}</strong></p>
@@ -430,7 +436,7 @@ function openScoreInput(matchIndex) {
         const score = input.value.trim();
         if (score === '') {
             // Пустое поле — удаляем счет
-            matchesData[matchIndex].result = '—';
+            matches[matchIndex].result = '—';
             if (activeScoreCell) {
                 activeScoreCell.textContent = '—';
                 // Сбрасываем фон и стили
@@ -568,6 +574,17 @@ function parseScoreFromSpeech(text) {
 
 // ========== ОТПРАВКА СЧЁТА В ТАБЛИЦУ ЧЕРЕЗ СЦЕНАРИЙ ==========
 async function sendScoreToSheet(matchIndex, score) {
+
+    // Если режим фантазии — НЕ отправляем в Google Sheets!
+    if (fantasyModeEnabled) {
+        // Обновляем fantasyData
+        fantasyData.matches[matchIndex].result = score;
+        // Пересчитываем всё
+        recalculateFantasyStats();
+        renderTable();
+        return;
+    }
+
     // Проверяем, включён ли режим админа
     if (!adminModeEnabled) {
         alert('Режим администратора выключен. Отправка счёта недоступна.');
@@ -814,8 +831,9 @@ function createCell(content, isHtml = false, className = '') {
 
 // ========== РАСЧЁТ STANDINGS ПОСЛЕ МАТЧА (ДЛЯ МЕСТ) ==========
 function calculateStandingsAfterMatch(upToMatchIndex) {
+    const data = getCurrentData();
     if (upToMatchIndex < 0) {
-        return participantsData.map(p => ({
+        return data.participants.map(p => ({
             name: p.name,
             totalSum: 0,
             rank: '—'
@@ -823,11 +841,11 @@ function calculateStandingsAfterMatch(upToMatchIndex) {
     }
     
     const participantStats = [];
-    for (let p of participantsData) {
+    for (let p of data.participants) {
         let totalSum = 0;
 
         for (let i = 0; i <= upToMatchIndex; i++) {
-            const result = matchesData[i].result;
+            const result = data.matches[i].result;
             const pred = p.predictions[i];
             if (result && result !== '—' && pred && pred !== '—') {
                 const matchRes = calculateTotalScore(result, pred);
@@ -873,8 +891,10 @@ function getRankPosition(rankStr) {
 
 // ========== РАСЧЁТ РАСШИРЕННОЙ СТАТИСТИКИ УЧАСТНИКА ==========
 function calculateParticipantExtendedStats(participantName) {
-    const results = matchesData.map(m => m.result);
-    const participant = participantsData.find(p => p.name === participantName);
+    const data = getCurrentData();
+    const results = data.matches.map(m => m.result);
+    const participant = data.participants.find(p => p.name === participantName);
+
     if (!participant) return null;
 
     let correctOutcomes = 0;
@@ -900,7 +920,7 @@ function calculateParticipantExtendedStats(participantName) {
 
     // 2. Считаем отставание от лидера по угаданным исходам
     let leaderCorrectOutcomes = 0;
-    for (const p of participantsData) {
+    for (const p of data.participants) {
         let outcomes = 0;
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
@@ -926,8 +946,8 @@ function calculateParticipantExtendedStats(participantName) {
     
     // Определяем индекс последнего сыгранного матча
     let lastPlayedMatchIndex = -1;
-    for (let i = 0; i < matchesData.length; i++) {
-        if (matchesData[i].result && matchesData[i].result !== '—') {
+    for (let i = 0; i < data.matches.length; i++) {
+        if (data.matches[i].result && data.matches[i].result !== '—') {
             lastPlayedMatchIndex = i;
         } else {
             break;
@@ -990,11 +1010,13 @@ function showContextMenu(event, participantName, targetElement) {
     }
     
     // Находим участника
-    const participant = participantsData.find(p => p.name === participantName);
+    const data = getCurrentData();
+    const participant = data.participants.find(p => p.name === participantName);
+
     if (!participant) return;
     
     // Собираем статистику прогнозов
-    const results = matchesData.map(m => m.result);
+    const results = data.matches.map(m => m.result);
     const stats = {};
     let totalMatches = 0;
     let sumResults = 0;
@@ -1018,12 +1040,12 @@ function showContextMenu(event, participantName, targetElement) {
     // Расчет места и отставания от лидера
     let rankDisplay = '—';
     let leaderDiff = '—';
-    let totalParticipants = participantsData.length;
+    let totalParticipants = data.participants.length;
 
     if (totalMatches > 0) {
         // Считаем сумму ошибок для всех участников
-        const results = matchesData.map(m => m.result);
-        const allScores = participantsData.map(p => ({
+        const results = data.matches.map(m => m.result);
+        const allScores = data.participants.map(p => ({
             name: p.name,
             totalScore: calculateTotalParticipantScore(p.predictions, results)
         }));
@@ -1148,7 +1170,7 @@ function showContextMenu(event, participantName, targetElement) {
         
         // Проверяем, сыграно ли 5 матчей
         let playedMatches = 0;
-        for (const match of matchesData) {
+        for (const match of data.matches) {
             if (match.result && match.result !== '—') playedMatches++;
         }
         
@@ -1377,9 +1399,12 @@ function renderTable() {
         return;
     }
     
-    const results = matchesData.map(m => m.result);
-    const { ranks, totalScores } = calculateRanks(participantsData, results);
-    
+    const data = getCurrentData();
+    const matches = data.matches;
+    const participants = data.participants;
+    const results = matches.map(m => m.result);
+    const { ranks, totalScores } = calculateRanks(participants, results);
+
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
@@ -1432,8 +1457,8 @@ function renderTable() {
         `;
     }
     
-    for (let idx = 0; idx < participantsData.length; idx++) {
-        const p = participantsData[idx];
+    for (let idx = 0; idx < participants.length; idx++) {
+        const p = participants[idx];
         const rank = ranks[idx];
         const totalScore = totalScores.find(ts => ts.name === p.name)?.totalScore || 0;
         const th = document.createElement('th');
@@ -1466,13 +1491,13 @@ function renderTable() {
     const tbody = document.createElement('tbody');
     let lastBg = 'transparent';
     
-    for (let i = 0; i < matchesData.length; i++) {
-        const m = matchesData[i];
+    for (let i = 0; i < matches.length; i++) {
+        const m = matches[i];
         const tr = document.createElement('tr');
         tr.setAttribute('data-match-id', m.id);
         
         let bg = 'transparent';
-        if (i > 0 && m.date !== matchesData[i-1].date) {
+        if (i > 0 && m.date !== matches[i-1].date) {
             bg = lastBg === 'transparent' ? '#f0f0e8' : 'transparent';
             lastBg = bg;
         } else {
@@ -1480,22 +1505,88 @@ function renderTable() {
         }
         tr.style.backgroundColor = bg;
         
-        tr.appendChild(createCell(m.id));
-        tr.appendChild(createCell(m.date));
-        tr.appendChild(createCell(m.time));
-        tr.appendChild(createCell(`<span class="group-badge">${m.group}</span>`, true));
-        tr.appendChild(createCell(formatTeamWithFlag(m.team1, 'home'), true, 'team-name'));
-        tr.appendChild(createCell('–', false, '', true));
-        tr.appendChild(createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name'));
+	// Ячейка "№"
+	const idCell = createCell(m.id);
+	idCell.style.cursor = 'pointer';
+	idCell.title = 'Нажмите чтобы выделить строку';
+	idCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(idCell);
+
+	// Ячейка "Дата"
+	const dateCell = createCell(m.date);
+	dateCell.style.cursor = 'pointer';
+	dateCell.title = 'Нажмите чтобы выделить строку';
+	dateCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(dateCell);
+
+	// Ячейка "Время"
+	const timeCell = createCell(m.time);
+	timeCell.style.cursor = 'pointer';
+	timeCell.title = 'Нажмите чтобы выделить строку';
+	timeCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(timeCell);
+
+	// Ячейка "Группа"
+	const groupCell = createCell(`<span class="group-badge">${m.group}</span>`, true);
+	groupCell.style.cursor = 'pointer';
+	groupCell.title = 'Нажмите чтобы выделить строку';
+	groupCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(groupCell);
+
+	// Ячейка "Хозяева"
+	const homeCell = createCell(formatTeamWithFlag(m.team1, 'home'), true, 'team-name');
+	homeCell.style.cursor = 'pointer';
+	homeCell.title = 'Нажмите чтобы выделить строку';
+	homeCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(homeCell);
+
+	// Ячейка "–" (разделитель)
+	const dashCell = createCell('–', false, '', true);
+	dashCell.style.cursor = 'pointer';
+	dashCell.title = 'Нажмите чтобы выделить строку';
+	dashCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(dashCell);
+
+	// Ячейка "Гости"
+	const awayCell = createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name');
+	awayCell.style.cursor = 'pointer';
+	awayCell.title = 'Нажмите чтобы выделить строку';
+	awayCell.onclick = (function(matchId, rowElement) {
+	    return function() { toggleRowSelection(matchId, rowElement); };
+	})(m.id, tr);
+	tr.appendChild(awayCell);
         
 	const resultCell = createCell(m.result, false, 'result-cell');
 
-	resultCell.style.cursor = 'pointer';
-	resultCell.title = 'Нажатие выделяет/освобождает строку матча';
-
+	if (fantasyModeEnabled) {
+	    resultCell.style.cursor = 'pointer';
+	    resultCell.title = 'Нажмите чтобы изменить счёт матча (режим "А если...")';
+	} else {
+	    resultCell.style.cursor = adminModeEnabled ? 'pointer' : 'default';
+	    resultCell.title = 'Нажмите чтобы изменить счёт (админ-режим)';
+	}
+	
 	resultCell.onclick = (function(matchId, rowElement, matchIndex) {
 	    return function() {
-        	const isAvailable = getAvailableMatches().includes(matchIndex);
+        	// === РЕЖИМ ФАНТАЗИИ: изменяем счёт матча ===
+	        if (fantasyModeEnabled) {
+        	    openFantasyScoreInput(matchIndex);
+	            return;
+        	}
+        
+	        const isAvailable = getAvailableMatches().includes(matchIndex);
         
 	        // Если админ-режим включен и ячейка доступна (матч начался, счета нет)
         	if (adminModeEnabled && isAvailable) {
@@ -1503,20 +1594,7 @@ function renderTable() {
         	    return;
 	        }
         
-        	// Иначе - логика выделения строки
-	        if (selectedMatchId === matchId) {
-        	    selectedMatchId = null;
-	            localStorage.removeItem('selectedMatchId');
-        	    rowElement.classList.remove('selected-match-row');
-	        } else {
-        	    if (selectedMatchId !== null) {
-                	const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
-	                if (prevRow) prevRow.classList.remove('selected-match-row');
-        	    }
-	            selectedMatchId = matchId;
-        	    localStorage.setItem('selectedMatchId', selectedMatchId);
-	            rowElement.classList.add('selected-match-row');
-	        }
+	        // Если ничего не подошло — ничего не делаем (выделение строки теперь на других ячейках)
 	    };
 	})(m.id, tr, i);
 
@@ -1562,10 +1640,19 @@ function renderTable() {
             }
         }
         if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
+
+	if (fantasyModeEnabled) {
+	    resultCell.style.backgroundColor = '#ffe0e6';
+	    const originalMatch = matchesData[i];
+	    if (originalMatch && originalMatch.result !== m.result) {
+        	resultCell.style.backgroundColor = '#ff6b6b';
+	    }
+	}
+
         tr.appendChild(resultCell);
         
-        for (let idx = 0; idx < participantsData.length; idx++) {
-            const p = participantsData[idx];
+        for (let idx = 0; idx < participants.length; idx++) {
+            const p = participants[idx];
             const raw = p.predictions[i] || '—';
             const disp = blurPrediction(raw);
             let total = null;
@@ -1574,12 +1661,47 @@ function renderTable() {
             }
             const cell = document.createElement('td');
             cell.setAttribute('data-participant', p.name);
+
+	    cell.style.cursor = 'pointer';
+	    if (fantasyModeEnabled) {
+	        cell.title = 'Нажмите чтобы изменить прогноз (режим "А если...")';
+	    } else {
+	        cell.title = ''; // или убрать title, или оставить пустым
+	    }
+
+	    cell.onclick = (function(participantIdx, matchIdx) {
+	        return function() {
+	            if (fantasyModeEnabled) {
+            	    openFantasyPredictionInput(participantIdx, matchIdx);
+	            }
+	        };
+	    })(idx, i);
+
             cell.style.textAlign = 'center';
             cell.innerHTML = total !== null ? `${disp}<sup style="font-size:0.65rem;color:#888;">${total}</sup>` : disp;
 
-            if (total === -2) {
-                cell.classList.add('pulse-bullseye-index');
-            }
+	    if (fantasyModeEnabled) {
+	        cell.style.backgroundColor = '#ffe0e6';
+	        const originalParticipant = participantsData[idx];
+	        if (originalParticipant && originalParticipant.predictions[i] !== raw) {
+	            cell.style.backgroundColor = '#ff6b6b';
+	        }
+	    }
+
+	    if (total === -2) {
+	        if (fantasyModeEnabled) {
+	            // Проверяем, изменена ли ячейка
+	            const originalParticipant = participantsData[idx];
+	            const isChanged = originalParticipant && originalParticipant.predictions[i] !== raw;
+	            if (isChanged) {
+	                cell.classList.add('pulse-bullseye-fantasy');
+	            } else {
+	                cell.classList.add('pulse-bullseye-index');
+	            }
+	        } else {
+	            cell.classList.add('pulse-bullseye-index');
+	        }
+	    }
 
             if (selectedUserName === p.name) {
                 cell.classList.add('selected-col');
@@ -1590,10 +1712,9 @@ function renderTable() {
                 cell.title = REVEAL_DATE ? `Откроется ${formatDateTime(REVEAL_DATE)}` : '';
             }
             
-            // Только добавляем классы, НО НЕ вешаем обработчик клика!
-            // Клик по ячейке с прогнозом НЕ открывает меню и НЕ выделяет колонку
+	    // Обработчик клика для изменения прогноза в режиме "А если..."            
             
-            tr.appendChild(cell);
+	    tr.appendChild(cell);
         }
 
         if (selectedMatchId === m.id) {
@@ -1610,6 +1731,22 @@ function renderTable() {
     
     // Прокручиваем к выделенной строке при загрузке/обновлении
     scrollToSelectedMatchOnLoad();
+}
+
+function toggleRowSelection(matchId, rowElement) {
+    if (selectedMatchId === matchId) {
+        selectedMatchId = null;
+        localStorage.removeItem('selectedMatchId');
+        rowElement.classList.remove('selected-match-row');
+    } else {
+        if (selectedMatchId !== null) {
+            const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
+            if (prevRow) prevRow.classList.remove('selected-match-row');
+        }
+        selectedMatchId = matchId;
+        localStorage.setItem('selectedMatchId', selectedMatchId);
+        rowElement.classList.add('selected-match-row');
+    }
 }
 
 // ========== ПРОКРУТКА К ВЫДЕЛЕННОЙ СТРОКЕ ПРИ ЗАГРУЗКЕ ==========
@@ -1637,7 +1774,308 @@ function scrollToSelectedMatchOnLoad() {
     }, 300);
 }
 
-// ========== НОВЫЙ init() ==========
+// ========== ФУНКЦИИ ДЛЯ ФАНТАЗИ РЕЖИМА ==========
+function getCurrentData() {
+    if (fantasyModeEnabled && fantasyData) {
+        return {
+            matches: fantasyData.matches,
+            participants: fantasyData.participants
+        };
+    }
+    return {
+        matches: matchesData,
+        participants: participantsData
+    };
+}
+
+function toggleFantasyMode() {
+    const btn = document.getElementById('fantasyBtn');
+    if (!btn) return;
+
+    if (fantasyModeEnabled) {
+        // === ВЫКЛЮЧЕНИЕ РЕЖИМА ===
+        fantasyModeEnabled = false;
+        fantasyData = null;
+    
+        // Сбрасываем визуальное состояние кнопки
+        const btn = document.getElementById('fantasyBtn');
+        if (btn) {
+            btn.style.background = '#ffb6c1'; // исходный розовый
+        }
+    
+        // Перерисовываем таблицу из исходных данных
+        renderTable();
+        return;
+    }
+
+    // === ВКЛЮЧЕНИЕ РЕЖИМА ===
+    // 1. Клонируем данные
+    fantasyData = {
+        matches: JSON.parse(JSON.stringify(matchesData)),
+        participants: JSON.parse(JSON.stringify(participantsData))
+    };
+    
+    fantasyModeEnabled = true;
+
+    // Меняем вид кнопки — показываем, что режим активен
+    if (btn) {
+        btn.style.background = '#ff8a9e'; // более насыщенный розовый
+    }
+
+    // 2. Перерисовываем таблицу (функция renderTable должна использовать fantasyData, если режим включён)
+    renderTable();
+
+    // 3. Показываем модальное окно с описанием
+    showFantasyModal();
+}
+
+function recalculateFantasyStats() {
+    if (!fantasyModeEnabled || !fantasyData) return;
+    // Ничего дополнительного не нужно — renderTable() перерисует всё на основе fantasyData
+    // Все расчёты происходят внутри renderTable() через getCurrentData()
+}
+
+function showFantasyModal() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #ffe0e6; border-radius: 12px; padding: 16px 16px; max-width: 340px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    
+    modal.innerHTML = `
+        <h4 style="margin-top:0; color:#1e4620;">✨ Вы включили режим «А если...»</h4>
+        <p style="font-size:0.85rem; line-height:1.5; color: #2c5a2a;">
+            В этом режиме вы можете пофантазировать:<br>
+            • менять счёт любого матча<br>
+            • менять любой прогноз любого участника<br><br>
+            Все изменения остаются <strong>только у вас в <br>
+	    браузере</strong> и не видны никому.<br><br>
+            Чтобы выйти из режима - нажмите кнопку <br>
+	    «А если...» ещё раз или обновите страницу.
+        </p>
+        <button id="fantasyModalCloseBtn" style="
+            background: #2c7840; color: white; border: none; border-radius: 20px;
+            padding: 6px 20px; font-size: 0.9rem; cursor: pointer; display: block; margin: 12px auto 0;
+        ">Понятно</button>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    modal.querySelector('#fantasyModalCloseBtn').onclick = function() {
+        overlay.remove();
+    };
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+}
+
+function openFantasyPredictionInput(participantIdx, matchIdx) {
+    if (!fantasyModeEnabled || !fantasyData) return;
+    
+    const data = getCurrentData();
+    const match = data.matches[matchIdx];
+    const participant = data.participants[participantIdx];
+    const currentPrediction = participant.predictions[matchIdx] || '—';
+    
+    // Создаём overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #fef9e8; border-radius: 12px; padding: 12px 16px; max-width: 260px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Изменить прогноз</h3>
+        <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;">
+            <strong>${participant.name}</strong><br>
+            ${match.team1} – ${match.team2}
+        </p>
+        <div style="display:flex; align-items:center; gap:0; justify-content:center;">
+            <input type="text" id="fantasyPredictionInput" placeholder="х:х" style="
+                padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
+                border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
+            " value="${currentPrediction !== '—' ? currentPrediction : ''}">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
+            <button id="fantasyPredictionSendBtn" style="background: #2c7840; color: white; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Сохранить</button>
+            <button id="fantasyPredictionCancelBtn" style="background: #ccc; color: #333; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Отмена</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    const input = modal.querySelector('#fantasyPredictionInput');
+    input.focus();
+    input.select();
+    
+    modal.querySelector('#fantasyPredictionSendBtn').onclick = function() {
+        const score = input.value.trim();
+        
+        // Если пусто — не меняем прогноз
+        if (score === '') {
+            overlay.remove();
+            return;
+        }
+        
+        // Проверяем валидность счёта
+        if (/^\d+\s*[:–\-]\s*\d+$/.test(score)) {
+            const formattedScore = score.replace(/[–\-]/g, ':');
+            
+            // Обновляем fantasyData
+            fantasyData.participants[participantIdx].predictions[matchIdx] = formattedScore;
+            
+            // Пересчитываем и перерисовываем
+            recalculateFantasyStats();
+            renderTable();
+            overlay.remove();
+        } else {
+            input.style.borderColor = 'red';
+            setTimeout(() => {
+                input.style.borderColor = '#cddba8';
+                input.focus();
+                input.select();
+            }, 800);
+        }
+    };
+    
+    modal.querySelector('#fantasyPredictionCancelBtn').onclick = function() {
+        overlay.remove();
+    };
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+    
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const sendBtn = modal.querySelector('#fantasyPredictionSendBtn');
+            sendBtn.focus();
+            sendBtn.click();
+        }
+        if (e.key === 'Escape') {
+            overlay.remove();
+        }
+    };
+}
+
+function openFantasyScoreInput(matchIndex) {
+    if (!fantasyModeEnabled || !fantasyData) return;
+    
+    const data = getCurrentData();
+    const matches = data.matches;
+    const match = matches[matchIndex];
+    if (!match) return;
+    
+    const currentScore = (match.result && match.result !== '—') ? match.result : '';
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #ffe0e6; border-radius: 12px; padding: 12px 16px; max-width: 260px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Изменить счёт матча</h3>
+        <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;"><strong>${match.team1} – ${match.team2}</strong></p>
+        <div style="display:flex; align-items:center; gap:0; justify-content:center;">
+            <input type="text" id="fantasyScoreInput" placeholder="х:х" style="
+                padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
+                border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
+            " value="${currentScore}">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
+            <button id="fantasyScoreSendBtn" style="background: #2c7840; color: white; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Сохранить</button>
+            <button id="fantasyScoreCancelBtn" style="background: #ccc; color: #333; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Отмена</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    const input = modal.querySelector('#fantasyScoreInput');
+    input.focus();
+    input.select();
+    
+    modal.querySelector('#fantasyScoreSendBtn').onclick = function() {
+        const score = input.value.trim();
+        
+        // Пустое поле — удаляем счёт
+        if (score === '') {
+            fantasyData.matches[matchIndex].result = '—';
+            recalculateFantasyStats();
+            renderTable();
+            overlay.remove();
+            return;
+        }
+        
+        // Проверяем валидность счёта
+        if (/^\d+\s*[:–\-]\s*\d+$/.test(score)) {
+            const formattedScore = score.replace(/[–\-]/g, ':');
+            
+            // Обновляем fantasyData
+            fantasyData.matches[matchIndex].result = formattedScore;
+            
+            // Пересчитываем и перерисовываем
+            recalculateFantasyStats();
+            renderTable();
+            overlay.remove();
+        } else {
+            input.style.borderColor = 'red';
+            setTimeout(() => {
+                input.style.borderColor = '#cddba8';
+                input.focus();
+                input.select();
+            }, 800);
+        }
+    };
+    
+    modal.querySelector('#fantasyScoreCancelBtn').onclick = function() {
+        overlay.remove();
+    };
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+    
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const sendBtn = modal.querySelector('#fantasyScoreSendBtn');
+            sendBtn.focus();
+            sendBtn.click();
+        }
+        if (e.key === 'Escape') {
+            overlay.remove();
+        }
+    };
+}
+
+// ========== init() ==========
 async function init() {
     // Загружаем ВСЁ за один запрос
     const success = await loadAllData();
@@ -1649,6 +2087,12 @@ async function init() {
         if (fillBtn) fillBtn.classList.remove('disabled');
         if (battleBtn) battleBtn.classList.remove('disabled');
         return;
+    }
+
+    const fantasyBtn = document.getElementById('fantasyBtn');
+    if (fantasyBtn) {
+        fantasyBtn.style.display = participantsData.length > 0 ? 'inline-block' : 'none';
+        fantasyBtn.onclick = toggleFantasyMode;
     }
     
     // Определяем дедлайн (из уже загруженных tournamentParams)
