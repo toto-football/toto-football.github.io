@@ -858,6 +858,13 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     transform: translateY(-1px);
 }
 
+.btn-fantasy {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
 @keyframes pulse-bullseye-fantasy {
     0% {
         background-color: transparent;
