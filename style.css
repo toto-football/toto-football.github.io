@@ -72,6 +72,7 @@ h1 {
 .btn-battle {
     background: #7f8c8d;
     color: white;
+    white-space: nowrap;
 }
 
 .btn-battle.active {
