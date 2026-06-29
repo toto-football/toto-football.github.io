@@ -1728,9 +1728,6 @@ function renderTable() {
     wrapper.appendChild(table);
     
     activateButtons();
-    
-    // Прокручиваем к выделенной строке при загрузке/обновлении
-    scrollToSelectedMatchOnLoad();
 }
 
 function toggleRowSelection(matchId, rowElement) {
@@ -2110,6 +2107,9 @@ async function init() {
     
     // Рендерим таблицу
     renderTable();
+
+    // Прокручиваем к выделенной строке при загрузке/обновлении
+    scrollToSelectedMatchOnLoad();
 }
 
 init();
