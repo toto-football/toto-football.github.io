@@ -1355,15 +1355,10 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .fantasy-scan .row-dark::after {
         display: none !important;
     }
-    
-    /* Розовый фон у таблицы и обертки */
-    .fantasy-scan .table-wrapper,
-    .fantasy-scan .table-wrapper table {
+
+    /* Розовый фон у обертки */
+    .fantasy-scan {
         background-color: #ffe0e6 !important;
-    }
-    
-    /* Розовая рамка у таблицы */
-    .fantasy-scan .table-wrapper {
         border: 3px solid #ff8a9e !important;
         border-radius: 12px !important;
     }
