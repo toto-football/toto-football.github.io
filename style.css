@@ -1350,19 +1350,22 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 
     /* ===== INDEX: БОРЬБА С ОШИБКОЙ АНИМАЦИИ В РЕЖИМЕ ФЭНТЕЗИ ===== */
-    /* Полностью убираем псевдоэлементы */
+    /* Убираем псевдоэлементы */
     .fantasy-scan .row-light::after,
     .fantasy-scan .row-dark::after {
         display: none !important;
     }
     
-    /* Меняем фон строк для индикации режима */
-    .fantasy-scan .row-light td {
-        background-color: #fff0f0 !important;
+    /* Розовый фон у таблицы и обертки */
+    .fantasy-scan .table-wrapper,
+    .fantasy-scan .table-wrapper table {
+        background-color: #ffe0e6 !important;
     }
     
-    .fantasy-scan .row-dark td {
-        background-color: #f5e0e0 !important;
+    /* Розовая рамка у таблицы */
+    .fantasy-scan .table-wrapper {
+        border: 3px solid #ff8a9e !important;
+        border-radius: 12px !important;
     }
 
     /* ===== BATTLE: НАСТРОЙКИ ЭЛЕМЕНТОВ СТРАНИЦЫ ===== */
