@@ -210,8 +210,8 @@ function getTeamRank(teamName) {
 function formatTeamWithFlag(teamName, position = 'home') {
     const flagUrl = getFlagUrl(teamName);
     const rank = getTeamRank(teamName);
-    const rankText = rank ? `<span style="color:#888;">(${rank})</span> ` : '';
-    const rankTextAfter = rank ? ` <span style="color:#888;">(${rank})</span>` : '';
+    const rankText = rank ? `<span style="color:#888; font-size:0.65rem;">(${rank})</span> ` : '';
+    const rankTextAfter = rank ? ` <span style="color:#888; font-size:0.65rem;">(${rank})</span>` : '';
     
     if (!flagUrl) {
         if (position === 'home') return rankText + teamName;
@@ -350,7 +350,7 @@ function toggleAdminMode() {
         // renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
 
         // Убираем зелёный фон у заголовка "Результат"
-        const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(8)');
+        const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(7)');
         if (resultHeader) {
             resultHeader.style.backgroundColor = '';
         }
@@ -373,7 +373,7 @@ function toggleAdminMode() {
     playSound('on');
 
     // Ставим зелёный фон у заголовка "Результат"
-    const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(8)');
+    const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(7)');
     if (resultHeader) {
         resultHeader.style.backgroundColor = '#a8d5a2';
     }
@@ -409,7 +409,7 @@ function openScoreInput(matchIndex) {
     const row = rows[matchIndex];
     if (!row) return;
     const cells = row.querySelectorAll('td');
-    const resultCell = cells[7];
+    const resultCell = cells[6];
     if (!resultCell) return;
     
     activeScoreMatchId = matchIndex;
@@ -654,8 +654,8 @@ function updateMatchCell(matchIndex, score) {
     const rows = document.querySelectorAll('tbody tr');
     if (rows[matchIndex]) {
         const cells = rows[matchIndex].querySelectorAll('td');
-        if (cells.length >= 8) {
-            const resultCell = cells[7];
+        if (cells.length >= 7) {
+            const resultCell = cells[6];
             resultCell.textContent = score;
             
             resultCell.style.fontWeight = 'bold';
@@ -718,8 +718,8 @@ function activateButtons() {
         const rows = table.querySelectorAll('tbody tr');
         for (const row of rows) {
             const cells = row.querySelectorAll('td');
-            if (cells.length >= 8) {
-                const result = cells[7]?.innerText?.trim();
+            if (cells.length >= 7) {
+                const result = cells[6]?.innerText?.trim();
                 if (result && result !== '—' && /\d/.test(result)) {
                     hasFinished = true;
                     break;
@@ -1445,7 +1445,7 @@ function renderTable() {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
-    const mainHeaders = ['№', 'Дата', 'Время', 'Группа', 'Хозяева', '', 'Гости', 'Результат'];
+    const mainHeaders = ['№', 'Дата', 'Время', 'Хозяева', '', 'Гости', 'Результат'];
     for (const h of mainHeaders) {
         const th = document.createElement('th');
         th.textContent = h;
@@ -1476,7 +1476,7 @@ function renderTable() {
         headerRow.appendChild(th);
     }
 
-    const resultHeaderCell = headerRow.children[7];
+    const resultHeaderCell = headerRow.children[6];
     if (resultHeaderCell) {
 	if (adminModeEnabled) {
             resultHeaderCell.style.backgroundColor = '#a8d5a2';
@@ -1570,15 +1570,6 @@ function renderTable() {
 	})(m.id, tr);
 	tr.appendChild(timeCell);
 
-	// Ячейка "Группа"
-	const groupCell = createCell(`<span class="group-badge">${m.group}</span>`, true);
-	groupCell.style.cursor = 'pointer';
-	groupCell.title = 'Нажмите чтобы выделить строку';
-	groupCell.onclick = (function(matchId, rowElement) {
-	    return function() { toggleRowSelection(matchId, rowElement); };
-	})(m.id, tr);
-	tr.appendChild(groupCell);
-
 	// Ячейка "Хозяева"
 	const homeCell = createCell(formatTeamWithFlag(m.team1, 'home'), true, 'team-name');
 	homeCell.style.cursor = 'pointer';
@@ -1588,14 +1579,14 @@ function renderTable() {
 	})(m.id, tr);
 	tr.appendChild(homeCell);
 
-	// Ячейка "–" (разделитель)
-	const dashCell = createCell('–', false, '', true);
-	dashCell.style.cursor = 'pointer';
-	dashCell.title = 'Нажмите чтобы выделить строку';
-	dashCell.onclick = (function(matchId, rowElement) {
+	// Ячейка без названия (Группа)
+	const groupCell = createCell(`<span class="group-badge">${m.group}</span>`, true);
+	groupCell.style.cursor = 'pointer';
+	groupCell.title = 'Нажмите чтобы выделить строку';
+	groupCell.onclick = (function(matchId, rowElement) {
 	    return function() { toggleRowSelection(matchId, rowElement); };
 	})(m.id, tr);
-	tr.appendChild(dashCell);
+	tr.appendChild(groupCell);
 
 	// Ячейка "Гости"
 	const awayCell = createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name');
