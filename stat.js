@@ -1,5 +1,8 @@
 // APPS_SCRIPT_URL определён в config.js
 
+// ####################################################################################################################
+// ########## ПЕРЕМЕННЫЕ ##########
+// ####################################################################################################################
 let allMatchesData = [];
 let participantsData = [];
 let tournamentParams = {};
@@ -7,7 +10,9 @@ let teamsData = {};
 let totalMatches = 0;
 let lastPlayedMatchIndex = -1;
 
-// ========== ЗАГРУЗКА ДАННЫХ ==========
+// ####################################################################################################################
+// ########## ЗАГРУЗКА ДАННЫХ ##########
+// ####################################################################################################################
 async function loadAllData() {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
@@ -107,13 +112,18 @@ async function loadAllData() {
     }
 }
 
-// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+// ####################################################################################################################
+// ########## НОРМАЛИЗАЦИЯ СЧЕТА ##########
+// ####################################################################################################################
 function normalizeScore(score) {
     if (!score || score === '—') return score;
     if (score.includes('-')) return score.replace(/-/g, ':');
     return score;
 }
 
+// ####################################################################################################################
+// ########## ПАРСИНГ СЧЕТА В МАССИВ [ГОЛ1, ГОЛ2] ##########
+// ####################################################################################################################
 function parseScoreToArray(scoreStr) {
     if (!scoreStr || scoreStr === '—') return null;
     let cleaned = scoreStr.trim().replace(/[^0-9:]/g, '');
@@ -125,6 +135,9 @@ function parseScoreToArray(scoreStr) {
     return [g1, g2];
 }
 
+// ####################################################################################################################
+// ########## ОПРЕДЕЛЕНИЕ ИСХОДА МАТЧА (ПОБЕДА/НИЧЬЯ/ПОРАЖЕНИЕ) ##########
+// ####################################################################################################################
 function getOutcome(scoreArray) {
     if (!scoreArray) return null;
     if (scoreArray[0] > scoreArray[1]) return 1;
@@ -132,6 +145,9 @@ function getOutcome(scoreArray) {
     return -1;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ОШИБКИ МЕЖДУ ФАКТИЧЕСКИМ И ПРОГНОЗИРУЕМЫМ СЧЕТОМ ##########
+// ####################################################################################################################
 function calculateError(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -139,6 +155,9 @@ function calculateError(actualScore, predictedScore) {
     return Math.abs(actual[0] - predicted[0]) + Math.abs(actual[1] - predicted[1]);
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ БОНУСНЫХ БАЛЛОВ ЗА УГАДАННЫЙ ИСХОД И СЧЕТ ##########
+// ####################################################################################################################
 function calculateBonus(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -149,13 +168,19 @@ function calculateBonus(actualScore, predictedScore) {
     return bonus;
 }
 
-function calculateMatchResult(actualScore, predictedScore) {
+// ####################################################################################################################
+// ########## РАСЧЕТ ИТОГОВОГО РЕЗУЛЬТАТА УЧАСТНИКА ЗА МАТЧ ##########
+// ####################################################################################################################
+function calculateTotalScore(actualScore, predictedScore) {
     const error = calculateError(actualScore, predictedScore);
     const bonus = calculateBonus(actualScore, predictedScore);
     if (error === null) return null;
     return error - bonus;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ТУРНИРНОЙ ТАБЛИЦЫ ПОСЛЕ УКАЗАННОГО МАТЧА ##########
+// ####################################################################################################################
 function getStandingsAfterMatches(upToMatchIndex) {
     if (upToMatchIndex < 0) {
         return participantsData.map(p => ({
@@ -178,7 +203,7 @@ function getStandingsAfterMatches(upToMatchIndex) {
             const result = allMatchesData[i].result;
             const pred = p.predictions[i];
             if (result && result !== '—' && pred && pred !== '—') {
-                const matchRes = calculateMatchResult(result, pred);
+                const matchRes = calculateTotalScore(result, pred);
                 if (matchRes !== null) {
                     totalSum += matchRes;
                 }
@@ -190,7 +215,7 @@ function getStandingsAfterMatches(upToMatchIndex) {
             const currentPred = p.predictions[upToMatchIndex];
             if (currentPred && currentPred !== '—') {
                 prediction = currentPred;
-                const matchRes = calculateMatchResult(currentMatch.result, currentPred);
+                const matchRes = calculateTotalScore(currentMatch.result, currentPred);
                 if (matchRes !== null) {
                     matchError = matchRes;
                 }
@@ -226,6 +251,9 @@ function getStandingsAfterMatches(upToMatchIndex) {
     }));
 }
 
+// ####################################################################################################################
+// ########## ПАРСИНГ СТРОКИ РАНГА В ЧИСЛОВОЕ ЗНАЧЕНИЕ ##########
+// ####################################################################################################################
 function parseRankValue(rankStr) {
     if (!rankStr || rankStr === '—') return 0;
     if (rankStr.includes('-')) {
@@ -235,6 +263,9 @@ function parseRankValue(rankStr) {
     return parseInt(rankStr);
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ МИНИМАЛЬНОГО ЗНАЧЕНИЯ РАНГА ##########
+// ####################################################################################################################
 function getMinRankValue(rankStr) {
     if (!rankStr || rankStr === '—') return 0;
     if (rankStr.includes('-')) {
@@ -243,6 +274,9 @@ function getMinRankValue(rankStr) {
     return parseInt(rankStr);
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ МАКСИМАЛЬНОГО ЗНАЧЕНИЯ РАНГА ##########
+// ####################################################################################################################
 function getMaxRankValue(rankStr) {
     if (!rankStr || rankStr === '—') return 0;
     if (rankStr.includes('-')) {
@@ -251,6 +285,9 @@ function getMaxRankValue(rankStr) {
     return parseInt(rankStr);
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ МИНИМАЛЬНОЙ И МАКСИМАЛЬНОЙ ПОЗИЦИИ РАНГА ##########
+// ####################################################################################################################
 function getRankPosition(rankStr) {
     if (!rankStr || rankStr === '—') return { min: 0, max: 0 };
     if (rankStr.includes('-')) {
@@ -260,6 +297,9 @@ function getRankPosition(rankStr) {
     return { min: parseInt(rankStr), max: parseInt(rankStr) };
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ URL ФЛАГА КОМАНДЫ ##########
+// ####################################################################################################################
 function getFlagUrl(teamName) {
     if (!teamName) return '';
     const team = teamsData[teamName];
@@ -269,12 +309,18 @@ function getFlagUrl(teamName) {
     return '';
 }
 
+// ####################################################################################################################
+// ########## ФОРМАТИРОВАНИЕ НАЗВАНИЯ КОМАНДЫ С ФЛАГОМ ##########
+// ####################################################################################################################
 function formatTeamWithFlag(teamName) {
     const flagUrl = getFlagUrl(teamName);
     const flagHtml = flagUrl ? `<img src="${flagUrl}" style="width:20px;height:15px;vertical-align:middle;margin-right:4px;">` : '';
     return `${flagHtml}${teamName}`;
 }
 
+// ####################################################################################################################
+// ########## ФОРМАТИРОВАНИЕ МАТЧА С ФЛАГАМИ И СЧЕТОМ ##########
+// ####################################################################################################################
 function formatMatchWithFlagsAndScore(match) {
     const flag1 = getFlagUrl(match.team1);
     const flag2 = getFlagUrl(match.team2);
@@ -284,7 +330,9 @@ function formatMatchWithFlagsAndScore(match) {
     return `${match.team1}${flagHtml1} – ${flagHtml2}${match.team2}${score}`;
 }
 
-// ========== РАСЧЕТ СТАТИСТИКИ ==========
+// ####################################################################################################################
+// ########## РАСЧЕТ ВСЕХ СТАТИСТИЧЕСКИХ НОМИНАЦИЙ ##########
+// ####################################################################################################################
 function calculateStatistics() {
     if (lastPlayedMatchIndex < 0) {
         return { matches: {}, participants: {} };
@@ -318,7 +366,7 @@ function calculateStatistics() {
         for (const p of participantsData) {
             const pred = p.predictions[matchIndex];
             if (pred && pred !== '—') {
-                const matchRes = calculateMatchResult(match.result, pred);
+                const matchRes = calculateTotalScore(match.result, pred);
                 if (matchRes !== null) {
                     totalError += matchRes;
                     validPredictions++;
@@ -530,7 +578,7 @@ function calculateStatistics() {
                 if (p.name !== winner) {
                     const pred = p.predictions[matchIndex];
                     if (pred && pred !== '—') {
-                        const matchRes = calculateMatchResult(match.result, pred);
+                        const matchRes = calculateTotalScore(match.result, pred);
                         if (matchRes !== null) {
                             othersTotalError += matchRes;
                         }
@@ -731,7 +779,9 @@ function calculateStatistics() {
     return stats;
 }
 
-// ========== ОТРИСОВКА СТАТИСТИКИ ==========
+// ####################################################################################################################
+// ########## ОТРИСОВКА СТАТИСТИКИ НА СТРАНИЦЕ ##########
+// ####################################################################################################################
 function renderStats(stats) {
     const subtitle = document.getElementById('statSubtitle');
     const playedMatchesCount = lastPlayedMatchIndex + 1;
@@ -973,7 +1023,9 @@ function renderStats(stats) {
     }
 }
 
-// ========== ВКЛАДКИ ==========
+// ####################################################################################################################
+// ########## НАСТРОЙКА ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК ##########
+// ####################################################################################################################
 function setupTabs() {
     const tabs = document.querySelectorAll('.stat-tab');
     tabs.forEach(tab => {
@@ -988,7 +1040,9 @@ function setupTabs() {
     });
 }
 
-// ========== ИНИЦИАЛИЗАЦИЯ ==========
+// ####################################################################################################################
+// ########## ЗАГРУЗКА/ОБНОВЛЕНИЕ СТРАНИЦЫ ##########
+// ####################################################################################################################
 async function init() {
     const success = await loadAllData();
     
@@ -1003,4 +1057,7 @@ async function init() {
     setupTabs();
 }
 
+// ####################################################################################################################
+// ########## ЗАПУСК ГЛАВНОЙ ФУНКЦИИ ##########
+// ####################################################################################################################
 init();

@@ -229,11 +229,64 @@ function doPost(e) {
       }
     }
     
+    // --- ОТПРАВКА В ЧАТ-БОТ ТЕЛЕГРАММ УВЕДОМЛЕНИЯ О НОВОМ УЧАСТНИКЕ ---
+    let message = `⚽ <b>Новый прогноз!</b>\n` +
+      `Участник: ${username}\n` +
+      `Матчей: ${predictions.length}\n` +
+      `Время: ${new Date().toLocaleString()}`;
+    sendTelegramNotification(message);
+
     return ContentService.createTextOutput(JSON.stringify({ success: true, targetCol: finalCol }))
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ========== ОТПРАВКА СООБЩЕНИЯ В ЧАТ-БОТ ТЕЛЕГРАММ ==========
+// Шаг 1: Создал Telegram-бот
+//    В Telegram в чате @BotFather дать команду /newbot
+//    Придумать имя и username для бота (например, toto-football и toto_football_bot)
+//    Сохранить токен от BotFather (он выглядит примерно так: 123456789:ABCdefGHIjklm...). Токен получил 06.07.2026: 8711059758:AAFAyX_uU0ePaZcirOsFsS1NGDzdkLhwgBg
+
+//Шаг 2: Узнал Chat ID
+//    Чтобы бот мог писать именно вам, ему нужен ваш личный идентификатор. Напишите вашему новому боту любое сообщение, например, /start.
+//    Откройте в браузере эту ссылку (вставьте ваш токен): https://api.telegram.org/bot<ВАШ_ТОКЕН>/getUpdates.
+//    https://api.telegram.org/bot8711059758:AAFAyX_uU0ePaZcirOsFsS1NGDzdkLhwgBg/getUpdates
+//    Найдите в ответе сервера ваш "chat":{"id": ...}. Скопируйте эту цифру. Чат-ID узнал 06.07.2026: 1139454550
+
+const BOT_TOKEN = '8711059758:AAFAyX_uU0ePaZcirOsFsS1NGDzdkLhwgBg';
+const CHAT_ID = '1139454550';
+
+function sendTelegramNotification(message) {
+  if (!message || message.trim() === '') {
+    console.log('Сообщение пустое, отправка отменена');
+    return;
+    //message = 'Тестовое сообщение из скрипта';
+  }
+
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  
+  const payload = {
+    'chat_id': CHAT_ID,
+    'text': message,
+    'parse_mode': 'HTML', // чтобы можно было делать жирный текст
+    'disable_web_page_preview': true
+  };
+  
+  const options = {
+    'method': 'post',
+    'contentType': 'application/json',
+    'payload': JSON.stringify(payload),
+    'muteHttpExceptions': false
+  };
+  
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    console.log('Уведомление отправлено в Telegram');
+  } catch (error) {
+    console.error('Ошибка отправки в Telegram: ' + error);
   }
 }

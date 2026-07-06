@@ -1,3 +1,22 @@
+/* ####################################################################################################### */
+/* ####################################### ПЕРЕМЕННЫЕ ################################################### */
+/* ####################################################################################################### */
+
+:root {
+    --color-bg-main: #fef9e8;        			/* базовый цвет (фон контейнера и др. элементов) */
+    --color-bg-table: #fffffa;       			/* фон таблиц на index и battle */
+    --color-bg-row-light: #ffffff;   			/* фон светлой строки таблицы index */
+    --color-bg-row-dark: #f0f0e8;    		/* фон темной строки таблицы index */
+    --color-bg-success: #c8e6c9;     		/* фон угаданного прогноза */
+    --color-select: #e6b422;         			/* акцентный желтый (выделение, рамки) */
+    --color-primary: #1e4620;        			/* основной текст (заголовки, текст) - зеленый */
+    --color-secondary: #2c5a2a;      		/* вторичный текст (подзаголовки) - зеленый */
+}
+
+/* ####################################################################################################### */
+/* ####################################### ОБЩИЕ КЛАССЫ ################################################ */
+/* ####################################################################################################### */
+
 * {
     box-sizing: border-box;
 }
@@ -16,7 +35,7 @@ body {
 .container {
     max-width: 100%;
     margin: 0 auto;
-    background: #fef9e8;
+    background: var(--color-bg-main);
     border-radius: 24px;
     padding: 12px;
     padding-top: 4px;
@@ -32,18 +51,39 @@ body {
 
 h1 {
     margin: 0;
-    color: #1e4620;
+    color: var(--color-primary);
     font-size: 1.6rem;
     text-align: center;
 }
 
 .sub {
     font-size: 0.8rem;
-    color: #2c5a2a;
+    color: var(--color-secondary);
     text-align: center;
     border-left: none;
     padding-left: 0;
     margin: 0 0 15px 0;
+}
+
+.fill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.fill-header__title h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    text-align: left;
+}
+
+.fill-header__title .sub {
+    margin: 2px 0 0 0;
+    font-size: 0.8rem;
+    text-align: left;
 }
 
 .btn-fill, .btn-battle, .btn-back, .btn-submit, .btn-reset, .btn-random, .nav-btn, .btn-rules, .btn-stat {
@@ -120,7 +160,7 @@ h1 {
 
 .btn-rules {
     background: none;
-    color: #e6b422;
+    color: var(--color-select);
     padding: 4px 8px;
 }
 
@@ -129,33 +169,147 @@ h1 {
     text-decoration: underline;
 }
 
-.btn-fill.disabled, .btn-battle.disabled, .btn-submit:disabled, .btn-reset:disabled, .btn-random:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-    transform: none;
+.btn-fantasy {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s;
+} 
+
+.btn-fantasy:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.95);
 }
 
-.fill-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-    gap: 6px;
+/* ===== КНОПКА Статистика ====== */
+.btn-stat {
+    background: #1abc9c;  /* бирюзовый */
+    color: white;
 }
 
-.fill-header__title h1 {
-    margin: 0;
-    font-size: 1.2rem;
+.btn-stat:hover {
+    background: #16a085;
+    transform: translateY(-1px);
+}
+
+.btn-stat.active {
+    background: #1abc9c !important;
+}
+
+.btn-stat.active:hover {
+    background: #16a085 !important;
+    transform: translateY(-1px);
+}
+
+/* ===== INDEX: КНОПКА ФЭНТЕЗИ ===== */
+.fantasy-inactive {
+    background: #ffb6c1;
+}
+
+.fantasy-active {
+    background: #ff8a9e;
+}
+
+
+.status-msg {
+    background: #ffe3b5;
+    padding: 6px 12px;
+    border-radius: 30px;
+    margin-top: 12px;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.status-msg.error {
+    background: #ffe0e0;
+    color: #c00;
+}
+
+.loading-overlay {
+    text-align: center;
+    padding: 30px;
+    font-size: 1rem;
+    color: var(--color-primary);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: var(--color-bg-table);
+    flex: 1;
+    min-height: 0;
+    padding-bottom: 12px;
+    padding-right: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+th {
+    background: var(--color-bg-main); /* цвет такой же, как и у фона контейнера с таблицей, что делает как будто прозрачным заголовок */
+    position: sticky;
+    top: 0;
+    z-index: 20;
+/*    box-shadow: inset 0 -2px 0 #c5d6a5; */
+}
+
+thead {
+    background: var(--color-bg-main);
+    position: sticky;
+    top: 0;
+    z-index: 25;
+}
+
+td {
+    padding: 2px 4px;
+    text-align: center;
+}
+
+.group-badge {
+    background: #d0dfb0;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    display: inline-block;
+}
+
+.team-name {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+td:nth-child(5), th:nth-child(5) {
+    text-align: right;
+    padding-right: 10px;
+}
+td:nth-child(7), th:nth-child(7) {
     text-align: left;
+    padding-left: 10px;
 }
 
-.fill-header__title .sub {
-    margin: 2px 0 0 0;
-    font-size: 0.8rem;
-    text-align: left;
-}
+th:nth-child(1), td:nth-child(1) { width: 40px; }
+th:nth-child(2), td:nth-child(2) { width: 65px; }
+th:nth-child(3), td:nth-child(3) { width: 55px; }
+th:nth-child(4), td:nth-child(4) { width: 45px; }
+th:nth-child(5), td:nth-child(5) { width: 120px; }
+th:nth-child(6), td:nth-child(6) { width: 12px; }
+th:nth-child(7), td:nth-child(7) { width: 120px; }
+th:nth-child(8), td:nth-child(8) { width: 70px; }
+
+
+/* ####################################################################################################### */
+/* ####################################### страница INDEX ################################################# */
+/* ####################################################################################################### */
 
 .index-actions {
     display: flex;
@@ -175,125 +329,10 @@ h1 {
     gap: 8px;
 }
 
-.fill-controls-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 8px;
+/* ===== INDEX: ЗАБЛЮРЕННЫЙ ПРОГНОЗ ===== */
+.prediction-hidden {
+    filter: blur(1px);
 }
-
-.fill-controls-bar__left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.fill-controls-bar__right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.fill-controls-bar .user-input {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.fill-controls-bar .user-input input {
-    width: 100px;
-    min-width: 80px;
-    max-width: 100px;
-    padding: 4px 12px;
-    font-size: 0.75rem;
-    border-radius: 20px;
-    border: 1px solid #bcbc7c;
-}
-
-.battle-selector-bar {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.battle-container .match-selector {
-    display: flex;
-    align-items: center;
-    gap: 48px;
-    flex-wrap: wrap;
-    margin: 0;
-}
-
-.battle-container .match-selector select {
-    padding: 4px 10px;
-    border-radius: 40px;
-    border: 1px solid #bcbc7c;
-    background: white;
-    font-size: 0.8rem;
-    width: 250px;
-}
-
-.battle-container .match-info {
-    background: #e9e6cf;
-    padding: 4px 12px;
-    border-radius: 30px;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-
-.battle-container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 12px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-}
-
-.standings-table-wrapper {
-    overflow-x: auto;
-    background: #fffffa;
-    border-radius: 8px;
-    border: 1px solid #cfd9b7;
-    margin: 0;
-    padding: 0;
-    -webkit-overflow-scrolling: touch;
-}
-
-.standings-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.standings-table th,
-.standings-table td {
-    padding: 2px 4px;
-    line-height: 1.2;
-}
-
-.standings-table tr:last-child td {
-    border-bottom: none;
-}
-
-.standings-table th {
-    border-bottom: 2px solid #9aaa80;
-    background: #dde8c0;
-    font-weight: bold;
-}
-
-.standings-table th:nth-child(1) { width: 60px; text-align: center; }
-.standings-table td:nth-child(1) { text-align: center; font-weight: bold; color: #b8860b; }
-.standings-table th:nth-child(2) { text-align: left; }
-.standings-table td:nth-child(2) { text-align: left; font-weight: 500; padding-left: 8px; }
-.standings-table th:nth-child(3) { width: 80px; text-align: center; }
-.standings-table td:nth-child(3) { text-align: center; font-family: monospace; }
-.standings-table th:nth-child(4) { width: 70px; text-align: center; }
-.standings-table td:nth-child(4) { text-align: center; font-weight: bold; }
-.standings-table th:nth-child(5) { width: 80px; text-align: center; }
-.standings-table td:nth-child(5) { text-align: center; font-weight: bold; }
 
 .progress-container {
     padding: 0;
@@ -352,73 +391,24 @@ h1 {
     cursor: not-allowed;
 }
 
-.table-wrapper {
-    overflow-x: auto;
-    overflow-y: auto;
-    border-radius: 8px;
-    border: 1px solid #cfd9b7;
-    background: #fffffa;
-    flex: 1;
-    min-height: 0;
+/* ===== ЗАКРУГЛЕНИЕ ЗАГОЛОВКА "ГОСТИ" ===== */
+#table-wrapper table thead th:nth-child(7) {
+    border-top-right-radius: 12px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    white-space: nowrap;
+.result-header-cell {
+    border-top-right-radius: 12px;
+    border-top-left-radius: 12px;
 }
 
-th {
-    background: #dde8c0;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    box-shadow: inset 0 -2px 0 #c5d6a5;
-}
-
+/* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ ЗАГОЛОВКОВ С ИМЕНАМИ УЧАСТНИКОВ ===== */
 .participant-col {
     background-color: #e0e6e0;
     position: sticky;
-    top: 0;
-    z-index: 20;
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    transition: all 0.2s;
 }
-
-td {
-    padding: 2px 4px;
-    text-align: center;
-}
-
-.group-badge {
-    background: #d0dfb0;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    display: inline-block;
-}
-
-.team-name {
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-td:nth-child(5), th:nth-child(5) {
-    text-align: right;
-    padding-right: 10px;
-}
-td:nth-child(7), th:nth-child(7) {
-    text-align: left;
-    padding-left: 10px;
-}
-
-th:nth-child(1), td:nth-child(1) { width: 40px; }
-th:nth-child(2), td:nth-child(2) { width: 65px; }
-th:nth-child(3), td:nth-child(3) { width: 55px; }
-th:nth-child(4), td:nth-child(4) { width: 45px; }
-th:nth-child(5), td:nth-child(5) { width: 120px; }
-th:nth-child(6), td:nth-child(6) { width: 12px; }
-th:nth-child(7), td:nth-child(7) { width: 120px; }
-th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 .fill-table th, .fill-table td {
     padding: 6px 2px;
@@ -444,7 +434,6 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     padding: 4px;
     border: 1px solid #cddba8;
     border-radius: 10px;
-/*    background-color: transparent; */
 }
 
 .score-input::placeholder {
@@ -452,25 +441,31 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     font-size: 0.65rem;
 }
 
-.status-msg {
-    background: #ffe3b5;
-    padding: 6px 12px;
-    border-radius: 30px;
-    margin-top: 12px;
-    font-size: 0.75rem;
-    text-align: center;
+/* ===== ЗАКРУГЛЕНИЕ ЯЧЕЙКИ "№" (СЛЕВА) ===== */
+.match-id-cell {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
 
-.status-msg.error {
-    background: #ffe0e0;
-    color: #c00;
+/* ===== ЗАКРУГЛЕНИЕ ЯЧЕЙКИ "ГОСТИ" (СПРАВА) ===== */
+.guest-team-cell {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
-.loading-overlay {
-    text-align: center;
-    padding: 30px;
-    font-size: 1rem;
-    color: #1e4620;
+/* ===== ФОН ЯЧЕЕК С МАТЧАМИ И ПРОГНОЗАМИ ===== */
+.row-light td {
+    background-color: var(--color-bg-row-light); /* светлая строка */
+}
+
+.row-dark td {
+    background-color: var(--color-bg-row-dark); /* строка потемнее */
+}
+
+/* ===== ЯЧЕЙКИ С УГАДАННЫМИ ПРОГНОЗАМИ ===== */
+.bullseye-static {
+    background-color: var(--color-bg-success) !important;  
+    border-radius: 12px;
 }
 
 .progress-bar-writing {
@@ -494,26 +489,531 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     font-size: 0.75rem;
     text-align: center;
     margin-top: 4px;
-    color: #1e4620;
+    color: var(--color-primary);
 }
 
-/* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
-.standings-table td:nth-child(2) span {
-    font-weight: 700 !important;
+
+/* ===== INDEX: НАСТРОЙКИ ЯЧЕЕК (ВАЖЕН ПОРЯДОК СЛЕДОВАНИЯ!) ===== */
+
+/* Если ячейка одновременно выделена и по СТРОКЕ, и по КОЛОНКЕ */
+#table-wrapper table td.selected-match-cell.selected-col {
+    box-shadow: 
+        inset 2px 0 0 0 var(--color-select), 
+        inset -2px 0 0 0 var(--color-select),
+        inset 0 2px 0 0 var(--color-select), 
+        inset 0 -2px 0 0 var(--color-select);
 }
 
-/* ===== ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ С СОХРАНЕНИЕМ ЦВЕТОВ ===== */
-/* Заголовки участников */
-.participant-col {
-    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 6px rgba(0,0,0,0.1);
-    border-radius: 12px;
-    transition: all 0.2s;
+/* Ячейки выделенной строки поднять над остальными ячейками таблицы, */ 
+/* чтобы рамка (box-shadow) отображалась поверх фона соседних ячеек */
+#table-wrapper table td.selected-match-cell {
+    position: relative;
+    z-index: 1;
+}
+
+/* 1-я ячейка: границы только слева, сверху и снизу */
+#table-wrapper table td.selected-match-cell:first-child {
+    box-shadow: inset 2px 0 0 0 var(--color-select), inset 0 2px 0 0 var(--color-select), inset 0 -2px 0 0 var(--color-select) !important;
+    border-top-left-radius: 12px !important;
+    border-bottom-left-radius: 12px !important;
+}
+
+/* последняя ячейка: границы только справа, сверху и снизу */
+#table-wrapper table td.selected-match-cell:last-child {
+    box-shadow: inset -2px 0 0 0 var(--color-select), inset 0 2px 0 0 var(--color-select), inset 0 -2px 0 0 var(--color-select) !important;
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+}
+
+/* Ячейки 2-предпоследняя: только верхняя и нижняя границы (без левой и правой) */
+#table-wrapper table td.selected-match-cell:not(:first-child):not(:last-child) {
+    box-shadow: inset 0 2px 0 0 var(--color-select), inset 0 -2px 0 0 var(--color-select) !important;
 }
 
 /* Ячейки с прогнозами участников */
 #table-wrapper table td:nth-child(n+9) {
     box-shadow: inset -1px -1px 3px rgba(0,0,0,0.08), inset 1px 1px 3px rgba(255,255,255,0.5);
     border-radius: 8px;
+}
+
+/* Подсветка СТРОКИ выбранного матча */
+#table-wrapper table tr.selected-match-row {
+    outline: 2px solid var(--color-select);
+    outline-offset: -1px;
+    background-color: rgba(230, 180, 34, 0.15) !important;
+    border-radius: 12px;
+}
+
+/* Убираем двойные рамки между строками */
+#table-wrapper table tr.selected-match-row + tr.selected-match-row td {
+    box-shadow: inset 0 1px 0 0 var(--color-select);
+}
+
+/* В выделенной КОЛОНКЕ границы - только слева и справа ===== */
+#table-wrapper table td.selected-col,
+#table-wrapper table th.selected-col {
+    box-shadow: inset 2px 0 0 0 var(--color-select), inset -2px 0 0 0 var(--color-select);
+}
+
+
+/* ===== INDEX: ЭФФЕКТ СКАНИРОВАНИЯ ТАБЛИЦЫ В РЕЖИМЕ ФЭНТЕЗИ ===== */
+@keyframes scan {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; } 
+}
+
+.fantasy-scan .row-light,
+.fantasy-scan .row-dark {
+    position: relative;
+    overflow: hidden;
+}
+
+.fantasy-scan .row-light::after,
+.fantasy-scan .row-dark::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255, 182, 193, 0.15) 0%,
+        rgba(255, 182, 193, 0.15) 20%,
+        rgba(255, 182, 193, 0.15) 35%,
+        rgba(255, 255, 255, 0.05) 45%,
+        rgba(255, 255, 255, 0.2) 48%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0.2) 52%,
+        rgba(255, 255, 255, 0.05) 55%,
+        rgba(255, 182, 193, 0.15) 65%,
+        rgba(255, 182, 193, 0.15) 80%,
+        rgba(255, 182, 193, 0.15) 100%
+    );
+    background-size: 400% 100%;
+    animation: scan 8s linear infinite;
+
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 12px;
+}
+
+/* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "РЕЗУЛЬТАТ" НА INDEX ===== */
+.result-cell {
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+/* ===== INDEX: ПУЛЬСАЦИЯ ЯЧЕЙКИ РЕЗУЛЬТАТА, КОГДА МАТЧ НАЧАЛСЯ, НО СЧЁТА ЕЩЁ НЕТ ===== */
+@keyframes pulse-result-missed {
+    0% {        background-color: transparent;    }
+    50% {        background-color: #B7E2FA;    }
+    100% {        background-color: transparent;    }
+}
+
+.pulse-result-missed {
+    animation: pulse-result-missed 1.5s ease-in-out infinite !important;
+    font-weight: bold;
+}
+
+
+/* ===== INDEX: МОДАЛЬНОЕ ОКНО И ЕГО ЭЛЕМЕНТЫ В РЕЖИМЕ АДМИНА (ДЛЯ ВВОДА СЧЕТА МАТЧА) ===== */
+#scoreModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#scoreModalOverlay .modal-content {
+    background: var(--color-bg-main);
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 260px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+}
+
+
+/* ===== INDEX: МОДАЛЬНОЕ ОКНО И ЕГО ЭЛЕМЕНТЫ В РЕЖИМЕ ФЭНТЕЗИ (ДЛЯ ИЗМЕНЕНИЯ ПРОГНОЗОВ) ===== */
+#fantasyPredictionOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#fantasyPredictionOverlay .modal-content {
+    background: var(--color-bg-main);
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 200px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%; 
+}
+
+#fantasyPredictionInput {
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    border: 2px solid #cddba8;
+    border-radius: 8px;
+    text-align: center;
+    font-family: monospace;
+    width: 80px;
+}
+
+#fantasyPredictionSendBtn {
+    background: #2c7840;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+#fantasyPredictionCancelBtn {
+    background: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+/* ===== INDEX: МОДАЛЬНОЕ ОКНО И ЕГО ЭЛЕМЕНТЫ В РЕЖИМЕ ФЭНТЕЗИ (ДЛЯ ИЗМЕНЕНИЯ СЧЕТОВ МАТЧЕЙ) ===== */
+#fantasyScoreOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#fantasyScoreOverlay .modal-content {
+    background: #ffe0e6;
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 200px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+}
+
+#fantasyScoreInput {
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    border: 2px solid #cddba8;
+    border-radius: 8px;
+    text-align: center;
+    font-family: monospace;
+    width: 80px;
+}
+
+#fantasyScoreSendBtn {
+    background: #2c7840;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+#fantasyScoreCancelBtn {
+    background: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+/* ===== INDEX: МОДАЛЬНОЕ ОКНО И ЕГО ЭЛЕМЕНТЫ В РЕЖИМЕ ФЭНТЕЗИ (ИНФО) ===== */
+#fantasyModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#fantasyModalOverlay .modal-content {
+    background: #ffe0e6;
+    border-radius: 12px;
+    padding: 16px;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+}
+
+#fantasyModalCloseBtn {
+    background: #2c7840;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: block;
+    margin: 12px auto 0;
+}
+
+
+/* ===== INDEX: КОНТЕКСТНОЕ МЕНЮ УЧАСТНИКА И ЕГО ЭЛЕМЕНТЫ ===== */
+#participantContextMenu {
+    position: fixed;
+    background: var(--color-bg-main);
+    border: 1px solid #9aaa80;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    padding: 10px 14px;
+    z-index: 9999;
+    min-width: 200px;
+    max-width: 240px;
+    font-size: 0.7rem;
+  
+    color: var(--color-primary);
+}
+
+/* Заголовок */
+.context-menu-header {
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    border-bottom: 1px solid #dde8c0;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+/* Подзаголовки */
+.context-menu-subheader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #555;
+    margin-bottom: 4px;
+    padding: 0 0 6px 0;
+    gap: 12px;
+    border-bottom: 1px solid #dde8c0;
+}
+
+.context-menu-row {
+    font-size: 0.7rem;
+    color: #555;
+    margin-bottom: 3px;
+    padding: 0 0 0 6px;
+    text-align: left;
+}
+
+.context-menu-outcome {
+    font-size: 0.7rem;
+    color: var(--color-primary);
+    padding: 0 0 0 6px;
+    margin-bottom: 3px;
+    text-align: left;
+}
+
+.context-menu-rank-range {
+    font-size: 0.7rem;
+    color: var(--color-primary);
+    padding: 0 0 6px 6px;
+    margin-bottom: 4px;
+    text-align: left;
+    border-bottom: 1px solid #dde8c0;
+}
+
+.context-menu-empty {
+    color: #888;
+    text-align: center;
+    padding: 8px 0;
+}
+
+.context-menu-stats {
+    margin-bottom: 6px;
+    margin-top: 8px;
+}
+
+.context-menu-stats-header {
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    gap: 2px 8px;
+    font-weight: bold;
+    color: #666;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e9e6cf;
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+}
+
+.context-menu-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    gap: 2px 8px;
+    align-items: center;
+    padding: 1px 0;
+}
+
+.context-menu-stats-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.context-menu-stats-val {
+    font-weight: bold;
+    text-align: center;
+    min-width: 18px;
+    font-size: 0.7rem;
+}
+
+.context-menu-stats-bar-bg {
+    flex: 1;
+    background: #e9e6cf;
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.context-menu-stats-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    opacity: 0.8;
+}
+
+.context-menu-stats-count {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.7rem;
+}
+
+.context-menu-sep {
+    border: none;
+    border-top: 1px solid #dde8c0;
+    margin: 6px 0;
+}
+
+.context-menu-avg {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--color-primary);
+    padding: 2px 0;
+}
+
+
+/* ####################################################################################################### */
+/* ####################################### страница BATTLE ################################################ */
+/* ####################################################################################################### */
+
+.standings-table-wrapper {
+    overflow-x: auto;
+    background: var(--color-bg-table);
+    border-radius: 8px;
+    border: 1px solid #cfd9b7;
+    margin: 0;
+    padding: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.standings-table th,
+.standings-table td {
+    padding: 2px 4px;
+    line-height: 1.2;
+}
+
+.standings-table tr:last-child td {
+    border-bottom: none;
+}
+
+.standings-table th {
+    border-bottom: 2px solid #9aaa80;
+    background: #dde8c0;
+    font-weight: bold;
+}
+
+.standings-table th:nth-child(1) { width: 60px; text-align: center; }
+.standings-table td:nth-child(1) { text-align: center; font-weight: bold; color: #b8860b; }
+.standings-table th:nth-child(2) { text-align: left; }
+.standings-table td:nth-child(2) { text-align: left; font-weight: 500; padding-left: 8px; }
+.standings-table th:nth-child(3) { width: 80px; text-align: center; }
+.standings-table td:nth-child(3) { text-align: center; font-family: monospace; }
+.standings-table th:nth-child(4) { width: 70px; text-align: center; }
+.standings-table td:nth-child(4) { text-align: center; font-weight: bold; }
+.standings-table th:nth-child(5) { width: 80px; text-align: center; }
+.standings-table td:nth-child(5) { text-align: center; font-weight: bold; }
+
+.battle-selector-bar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.battle-container .match-selector {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.battle-container .match-selector select {
+    padding: 4px 10px;
+    border-radius: 40px;
+    border: 1px solid #bcbc7c;
+    background: white;
+    font-size: 0.8rem;
+    width: 250px;
+}
+
+.battle-container .match-info {
+    background: #e9e6cf;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.battle-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 12px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+/* ===== BATTLE — ЖИРНЫЙ ШРИФТ ДЛЯ ИМЁН УЧАСТНИКОВ ===== */
+.standings-table td:nth-child(2) span {
+    font-weight: 700 !important;
 }
 
 /* ===== BATTLE: ВЫПУКЛЫЕ ЯЧЕЙКИ УЧАСТНИКОВ ===== */
@@ -551,32 +1051,12 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     border-radius: 12px;
 }
 
-.standings-cell-3d {
-    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.6), 2px 2px 6px rgba(0,0,0,0.1);
-    background: inherit;
-    line-height: 1.2;
-}
-
-/* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "РЕЗУЛЬТАТ" НА INDEX ===== */
-.result-cell {
-    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
-    border-radius: 10px;
-}
 
 /* ===== BATTLE: ПУЛЬСАЦИЯ ЦИФРЫ УГАДАВШИХ СЧЁТ ===== */
 @keyframes pulse-bullseye {
-    0% {
-        color: #1e4620;
-        transform: scale(1);
-    }
-    50% {
-        color: #e63946;
-        transform: scale(1.5);
-    }
-    100% {
-        color: #1e4620;
-        transform: scale(1);
-    }
+    0% {        color: var(--color-primary);        transform: scale(1);    }
+    50% {        color: #e63946;        transform: scale(1.5);    }
+    100% {        color: var(--color-primary);        transform: scale(1);    }
 }
 
 .pulse-bullseye {
@@ -584,109 +1064,9 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     display: inline-block;
 }
 
-
-/* ===== INDEX: ПУЛЬСАЦИЯ ФОНА ЯЧЕЙКИ УГАДАВШИХ СЧЁТ ===== */
-@keyframes pulse-bullseye-index {
-    0% {
-        background-color: transparent;
-    }
-    50% {
-        background-color: #aed581;
-    }
-    100% {
-        background-color: transparent;
-    }
-}
-
-.pulse-bullseye-index {
-    animation: pulse-bullseye-index 2s ease-in-out infinite;
-    border-radius: 8px;
-}
-
-/* ===== INDEX: ПУЛЬСАЦИЯ ЯЧЕЙКИ РЕЗУЛЬТАТА, КОГДА МАТЧ НАЧАЛСЯ, НО СЧЁТА ЕЩЁ НЕТ ===== */
-@keyframes pulse-result-missed {
-    0% {
-        background-color: transparent;
-    }
-    50% {
-        background-color: #B7E2FA;
-    }
-    100% {
-        background-color: transparent;
-    }
-}
-
-.pulse-result-missed {
-    animation: pulse-result-missed 1.5s ease-in-out infinite !important;
-    font-weight: bold;
-}
-
-/* ===== INDEX: ПОДСВЕТКА КОЛОНКИ ВЫБРАННОГО УЧАСТНИКА ===== */
-#table-wrapper table th.selected-col,
-#table-wrapper table td.selected-col {
-    background-color: rgba(230, 180, 34, 0.2);
-}
-
-/* Верхняя рамка с закруглением у заголовка */
-#table-wrapper table th.selected-col {
-    box-shadow: inset 0 0 0 1px #e6b422, 0 1px 0 0 #e6b422;
-    border-top-left-radius: 16px !important;
-    border-top-right-radius: 16px !important;
-}
-
-/* Левая и правая границы для всех ячеек колонки */
-#table-wrapper table td.selected-col {
-    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422;
-}
-
-/* Нижняя рамка с закруглением у последней ячейки */
-#table-wrapper table tr:last-child td.selected-col {
-    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422, inset 0 -1px 0 0 #e6b422;
-    border-bottom-left-radius: 16px !important;
-    border-bottom-right-radius: 16px !important;
-}
-
-/* Убираем нижнюю рамку у всех, кроме последней */
-#table-wrapper table td.selected-col {
-    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422, inset 0 -1px 0 0 #e6b422;
-}
-
-#table-wrapper table tr:last-child td.selected-col {
-    box-shadow: inset 1px 0 0 0 #e6b422, inset -1px 0 0 0 #e6b422;
-}
-
-/* ===== INDEX: ПОДСВЕТКА СТРОКИ ВЫБРАННОГО МАТЧА ===== */
-#table-wrapper table tr.selected-match-row td {
-    background-color: rgba(230, 180, 34, 0.2);
-}
-
-/* Верхняя рамка с закруглением у первой ячейки строки */
-#table-wrapper table tr.selected-match-row td:first-child {
-    border-top-left-radius: 16px !important;
-    border-bottom-left-radius: 16px !important;
-    box-shadow: inset 0 0 0 1px #e6b422, -1px 0 0 0 #e6b422;
-}
-
-/* Нижняя и верхняя границы для всех ячеек строки */
-#table-wrapper table tr.selected-match-row td {
-    box-shadow: inset 0 -1px 0 0 #e6b422, inset 0 1px 0 0 #e6b422;
-}
-
-/* Правая рамка с закруглением у последней ячейки строки */
-#table-wrapper table tr.selected-match-row td:last-child {
-    border-top-right-radius: 16px !important;
-    border-bottom-right-radius: 16px !important;
-    box-shadow: inset 0 0 0 1px #e6b422, 1px 0 0 0 #e6b422;
-}
-
-/* Убираем двойные рамки между строками */
-#table-wrapper table tr.selected-match-row + tr.selected-match-row td {
-    box-shadow: inset 0 1px 0 0 #e6b422;
-}
-
 /* ===== BATTLE: ПОДСВЕТКА СТРОКИ ВЫБРАННОГО УЧАСТНИКА ===== */
 .standings-table tr.selected-battle-row {
-    outline: 3px solid #e6b422;
+    outline: 3px solid var(--color-select);
     outline-offset: -1px;
     background-color: rgba(230, 180, 34, 0.15) !important;
     border-radius: 12px;
@@ -708,9 +1088,51 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     -webkit-tap-highlight-color: rgba(230, 180, 34, 0.3);
 }
 
+/* ####################################################################################################### */
+/* ####################################### страница FILL ################################################### */
+/* ####################################################################################################### */
+
+.fill-controls-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.fill-controls-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fill-controls-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fill-controls-bar .user-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fill-controls-bar .user-input input {
+    width: 100px;
+    min-width: 80px;
+    max-width: 100px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    border-radius: 20px;
+    border: 1px solid #bcbc7c;
+}
+
 /* ===== FILL: СОСТОЯНИЯ ЯЧЕЕК ПРОГНОЗОВ ===== */
 .score-input-empty {
-    background-color: #FFFFFF;
+    background-color: #FFFFFF; /* белый цвет */
     border-color: #cddba8;
 }
 
@@ -721,7 +1143,40 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     font-weight: bold;
 }
 
-/* ===== СТРАНИЦА СТАТИСТИКИ ===== */
+/* ===== FILL: МОДАЛЬНОЕ ОКНО ВВОДА ПРОГНОЗА ===== */
+#inputModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#inputModalOverlay .modal-content {
+    background: var(--color-bg-main);
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 260px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+}
+
+/* ===== FILL: ЗАКРУГЛЕНИЕ ЗАГОЛОВКА "ПРОГНОЗ" ===== */
+.fill-table thead th:last-child {
+    border-top-right-radius: 12px;
+    border-top-left-radius: 12px;
+}
+
+
+/* ####################################################################################################### */
+/* ####################################### страница STAT ################################################## */
+/* ####################################################################################################### */
+
 .stat-container {
     max-width: 980px;
 }
@@ -747,7 +1202,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #2c5a2a;
+    color: var(--color-secondary);
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
@@ -761,7 +1216,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 .stat-tab.active {
     border-bottom-color: #2c7840;
-    color: #1e4620;
+    color: var(--color-primary);
     font-weight: 600;
 }
 
@@ -794,7 +1249,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 
 .stat-nomination h3 {
     margin: 0 0 3px 0;
-    color: #1e4620;
+    color: var(--color-primary);
     font-size: 1rem;
 }
 
@@ -808,7 +1263,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 .stat-nomination .winners {
     font-size: 0.92rem;
     font-weight: 500;
-    color: #1e4620;
+    color: var(--color-primary);
     word-wrap: break-word;
 }
 
@@ -823,7 +1278,7 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
 }
 
 .stat-nomination .value strong {
-    color: #2c5a2a;
+    color: var(--color-secondary);
 }
 
 .stat-nomination-empty {
@@ -838,55 +1293,62 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     padding-left: 20px;
 }
 
-/* ===== КНОПКИ Статистика ====== */
-.btn-stat {
-    background: #1abc9c;  /* бирюзовый */
-    color: white;
-}
-
-.btn-stat:hover {
-    background: #16a085;
-    transform: translateY(-1px);
-}
-
-.btn-stat.active {
-    background: #1abc9c !important;
-}
-
-.btn-stat.active:hover {
-    background: #16a085 !important;
-    transform: translateY(-1px);
-}
-
-.btn-fantasy {
-    padding: 4px 12px;
-    font-size: 0.75rem;
-    line-height: 1.4;
-    white-space: nowrap;
-}
-
-@keyframes pulse-bullseye-fantasy {
-    0% {
-        background-color: transparent;
-    }
-    50% {
-        background-color: #ff6b6b;
-    }
-    100% {
-        background-color: transparent;
-    }
-}
-
-.pulse-bullseye-fantasy {
-    animation: pulse-bullseye-fantasy 2s ease-in-out infinite;
-    border-radius: 8px;
-}
 
 /* ####################################################################################################### */
 /* ####################################### БЛОК ДЛЯ ТЕЛЕФОНА ############################################ */
 /* ####################################################################################################### */
 
 @media (max-width: 768px) {
+
+    /* ===== ДЛЯ ВСЕХ СТРАНИЦ: ОДИНАКОВЫЕ ОТСТУПЫ МЕЖДУ БЛОКАМИ ВВЕРХУ, НАД ТАБЛИЦАМИ ===== */
+    .container {
+        padding: 8px;
+    }
+
+    .fill-header {
+        margin-bottom: 4px !important;
+        gap: 4px !important;
+    }
+    
+    .fill-header__title .sub {
+        margin-top: 0 !important;
+    }
+    
+    .battle-selector-bar,
+    .fill-controls-bar {
+        margin-bottom: 4px !important;
+    }    
+
+    /* ===== ЧТОБЫ СТРАНИЦА ОТКРЫВАЛАСЬ ПРИЖАТОЙ КВЕРХУ БРАУЗЕРА НА ТЕЛЕФОНЕ ===== */
+    body {
+        padding-top: 0;
+    }
+    
+    .container {
+        margin-top: 0;
+    }
+
+    /* ===== INDEX: ПРОКРУТКА ЗАГОЛОВКА ГОРИЗОНТАЛЬНО ===== */
+    .fill-header:has(.index-actions) .fill-header__title h1 {
+        white-space: nowrap;					/* зпретить перенос строки */
+        overflow-x: auto;						/* включает горизонтальную прокрутку, если заголовок шире контейнера */
+        -webkit-overflow-scrolling: touch;		/* делает прокрутку плавной, с инерцией */
+    }
+
+    /* ===== INDEX: ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
+    .index-actions {
+        width: 100%;
+    }
+    
+    .index-actions__row {
+        width: 100%;
+    }
+    
+    .index-actions__buttons {
+        justify-content: flex-end;
+        width: 100%;
+    }
+
     /* ===== BATTLE: НАСТРОЙКИ ЭЛЕМЕНТОВ СТРАНИЦЫ ===== */
     .btn-back {
         padding: 4px 10px !important;
@@ -926,35 +1388,9 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .standings-table td:nth-child(5) {
         padding-left: 1px !important;
     }
-}
 
-/* ===== INDEX: ПРОКРУТКА ЗАГОЛОВКА ГОРИЗОНТАЛЬНО ===== */
-@media (max-width: 768px) {
-    .fill-header:has(.index-actions) .fill-header__title h1 {
-        white-space: nowrap;					/* зпретить перенос строки */
-        overflow-x: auto;						/* включает горизонтальную прокрутку, если заголовок шире контейнера */
-        -webkit-overflow-scrolling: touch;		/* делает прокрутку плавной, с инерцией */
-    }
-}
 
-/* ===== INDEX: ПРИЖАТЬ БЛОК С ПРАВИЛАМИ И КНОПКАМИ ВПРАВО ===== */
-@media (max-width: 768px) {
-    .index-actions {
-        width: 100%;
-    }
-    
-    .index-actions__row {
-        width: 100%;
-    }
-    
-    .index-actions__buttons {
-        justify-content: flex-end;
-        width: 100%;
-    }
-}
-
-/* ===== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ТАБЛИЦЫ ===== */
-@media (max-width: 768px) {
+    /* ===== BATTLE: УМЕНЬШЕНИЕ ВЫСОТЫ СТРОК ТАБЛИЦЫ ===== */
     .battle-container .standings-table td {
         padding: 1px 2px !important;  	/* уменьшаем отступы ячеек */
         line-height: 1.0 !important;   	/* уменьшаем высоту строки */
@@ -963,49 +1399,15 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     .battle-container .standings-table td:nth-child(2) span {
         padding: 1px 2px !important;
     } 
-}
 
-/* ===== ДЛЯ ВСЕХ СТРАНИЦ: ОДИНАКОВЫЕ ОТСТУПЫ МЕЖДУ БЛОКАМИ ВВЕРХУ, НАД ТАБЛИЦАМИ ===== */
-@media (max-width: 768px) {
-    .container {
-        padding: 8px;
-    }
 
-    .fill-header {
-        margin-bottom: 4px !important;
-        gap: 4px !important;
-    }
-    
-    .fill-header__title .sub {
-        margin-top: 0 !important;
-    }
-    
-    .battle-selector-bar,
-    .fill-controls-bar {
-        margin-bottom: 4px !important;
-    }    
-}
-
-/* ===== ЧТОБЫ СТРАНИЦА ОТКРЫВАЛАСЬ ПРИЖАТОЙ КВЕРХУ БРАУЗЕРА НА ТЕЛЕФОНЕ ===== */
-@media (max-width: 768px) {
-    body {
-        padding-top: 0;
-    }
-    
-    .container {
-        margin-top: 0;
-    }
-}
-
-/* ===== BATTLE: ПЕРЕОПРЕДЕЛИТЬ ОТСТУП ПОЛЯ СЧЕТА ОТ ПОЛЯ ВЫБОРА МАТЧА (ОН - БОЛЬШОЙ НА КОМПЕ РАДИ ВЫРАВНИВАНИЯ С КОЛОНКОЙ ПРОГНОЗ) ===== */
-@media (max-width: 768px) {
+    /* ===== BATTLE: ПЕРЕОПРЕДЕЛИТЬ ОТСТУП ПОЛЯ СЧЕТА ОТ ПОЛЯ ВЫБОРА МАТЧА (ОН БОЛЬШОЙ НА КОМПЕ РАДИ ВЫРАВНИВАНИЯ С КОЛОНКОЙ ПРОГНОЗ) ===== */
     .battle-container .match-selector {
         gap: 12px;
     }
-}
 
-/* ===== BATTLE: ПОЛЕ ВЫБОРА МАТЧА - УМЕНЬШЕНИЕ ШРИФТА И ВЫСОТЫ ПОЛЯ ===== */
-@media (max-width: 768px) {
+
+    /* ===== BATTLE: ПОЛЕ ВЫБОРА МАТЧА - УМЕНЬШЕНИЕ ШРИФТА И ВЫСОТЫ ПОЛЯ ===== */
     .battle-container .match-selector select {
         font-size: 14px;
         padding: 2px 8px;

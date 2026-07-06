@@ -1,5 +1,8 @@
 // APPS_SCRIPT_URL определён в config.js
 
+// ####################################################################################################################
+// ########## ПЕРЕМЕННЫЕ ##########
+// ####################################################################################################################
 let allMatchesData = [];
 let participantsData = [];
 let playedMatches = [];
@@ -13,7 +16,9 @@ let tournamentParams = {};
 let selectedBattleUserName = localStorage.getItem('selectedBattleUserName') || null;
 let savedMatchIndex = localStorage.getItem('battleCurrentMatchIndex') ? parseInt(localStorage.getItem('battleCurrentMatchIndex')) : 0;
 
-// ========== ЗАГРУЗКА ДАННЫХ ==========
+// ####################################################################################################################
+// ########## ЗАГРУЗКА ДАННЫХ ##########
+// ####################################################################################################################
 async function loadAllData() {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
@@ -107,7 +112,9 @@ async function loadAllData() {
     }
 }
 
-// ========== ГЕНЕРАЦИЯ СТАБИЛЬНЫХ ЦВЕТОВ ДЛЯ УЧАСТНИКОВ ==========
+// ####################################################################################################################
+// ########## ХЕШИРОВАНИЕ СТРОКИ ##########
+// ####################################################################################################################
 function hashCode(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -117,6 +124,9 @@ function hashCode(str) {
     return Math.abs(hash);
 }
 
+// ####################################################################################################################
+// ########## ГЕНЕРАЦИЯ СВЕТЛОГО ЦВЕТА ДЛЯ УЧАСТНИКА ##########
+// ####################################################################################################################
 function getColorForName(name) {
     const hash = hashCode(name);
     const hue = hash % 360;
@@ -125,6 +135,9 @@ function getColorForName(name) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
+// ####################################################################################################################
+// ########## ГЕНЕРАЦИЯ ТЕМНОГО ЦВЕТА ДЛЯ ПРОГРЕСС-БАРА ##########
+// ####################################################################################################################
 function getDarkerColor(lightColor) {
     const match = lightColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
     if (match) {
@@ -140,6 +153,9 @@ function getDarkerColor(lightColor) {
 let participantColors = {};
 let participantDarkerColors = {};
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ СВЕТЛОГО ЦВЕТА УЧАСТНИКА ##########
+// ####################################################################################################################
 function getParticipantColor(name) {
     if (!participantColors[name]) {
         participantColors[name] = getColorForName(name);
@@ -147,6 +163,9 @@ function getParticipantColor(name) {
     return participantColors[name];
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ ТЕМНОГО ЦВЕТА УЧАСТНИКА ##########
+// ####################################################################################################################
 function getParticipantDarkerColor(name) {
     if (!participantDarkerColors[name]) {
         const lightColor = getParticipantColor(name);
@@ -155,13 +174,18 @@ function getParticipantDarkerColor(name) {
     return participantDarkerColors[name];
 }
 
-// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+// ####################################################################################################################
+// ########## НОРМАЛИЗАЦИЯ СЧЕТА ##########
+// ####################################################################################################################
 function normalizeScore(score) {
     if (!score || score === '—') return score;
     if (score.includes('-')) return score.replace(/-/g, ':');
     return score;
 }
 
+// ####################################################################################################################
+// ########## ПАРСИНГ СЧЕТА В МАССИВ ##########
+// ####################################################################################################################
 function parseScoreToArray(scoreStr) {
     if (!scoreStr || scoreStr === '—') return null;
     let cleaned = scoreStr.trim().replace(/[^0-9:]/g, '');
@@ -173,6 +197,9 @@ function parseScoreToArray(scoreStr) {
     return [g1, g2];
 }
 
+// ####################################################################################################################
+// ########## ОПРЕДЕЛЕНИЕ ИСХОДА МАТЧА ##########
+// ####################################################################################################################
 function getOutcome(scoreArray) {
     if (!scoreArray) return null;
     if (scoreArray[0] > scoreArray[1]) return 1;
@@ -180,6 +207,9 @@ function getOutcome(scoreArray) {
     return -1;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ОШИБКИ МЕЖДУ СЧЕТАМИ ##########
+// ####################################################################################################################
 function calculateError(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -187,6 +217,9 @@ function calculateError(actualScore, predictedScore) {
     return Math.abs(actual[0] - predicted[0]) + Math.abs(actual[1] - predicted[1]);
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ БОНУСНЫХ БАЛЛОВ ##########
+// ####################################################################################################################
 function calculateBonus(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -197,13 +230,19 @@ function calculateBonus(actualScore, predictedScore) {
     return bonus;
 }
 
-function calculateMatchResult(actualScore, predictedScore) {
+// ####################################################################################################################
+// ########## РАСЧЕТ РЕЗУЛЬТАТА УЧАСТНИКА ЗА МАТЧ ##########
+// ####################################################################################################################
+function calculateTotalScore(actualScore, predictedScore) {
     const error = calculateError(actualScore, predictedScore);
     const bonus = calculateBonus(actualScore, predictedScore);
     if (error === null) return null;
     return error - bonus;
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ СПИСКА СЫГРАННЫХ МАТЧЕЙ (С ВИРТУАЛЬНЫМ СТАРТОМ) ##########
+// ####################################################################################################################
 function getPlayedMatches() {
     const played = [];
     played.push({
@@ -229,6 +268,9 @@ function getPlayedMatches() {
     return played;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ТАБЛИЦЫ ПОСЛЕ УКАЗАННОГО МАТЧА ##########
+// ####################################################################################################################
 function getStandingsAfterMatches(upToMatchIndex) {
     const participantStats = [];
     for (let p of participantsData) {
@@ -241,7 +283,7 @@ function getStandingsAfterMatches(upToMatchIndex) {
                 const result = allMatchesData[i].result;
                 const pred = p.predictions[i];
                 if (result && result !== '—' && pred && pred !== '—') {
-                    const matchRes = calculateMatchResult(result, pred);
+                    const matchRes = calculateTotalScore(result, pred);
                     if (matchRes !== null) {
                         totalSum += matchRes;
                     }
@@ -253,7 +295,7 @@ function getStandingsAfterMatches(upToMatchIndex) {
                 const currentPred = p.predictions[upToMatchIndex];
                 if (currentPred && currentPred !== '—') {
                     prediction = currentPred;
-                    const matchRes = calculateMatchResult(currentMatch.result, currentPred);
+                    const matchRes = calculateTotalScore(currentMatch.result, currentPred);
                     if (matchRes !== null) {
                         matchError = matchRes;
                     }
@@ -289,6 +331,9 @@ function getStandingsAfterMatches(upToMatchIndex) {
     }));
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ШИРИНЫ ПРОГРЕСС-БАРА УЧАСТНИКА ##########
+// ####################################################################################################################
 function calculateProgressWidth(totalSum, allSums) {
     if (!allSums.length) return 0;
     
@@ -310,6 +355,9 @@ function calculateProgressWidth(totalSum, allSums) {
     return Math.max(5, percent);
 }
 
+// ####################################################################################################################
+// ########## ОБНОВЛЕНИЕ ПРОГРЕСС-БАРА НАВИГАЦИИ ##########
+// ####################################################################################################################
 function updateProgressBar() {
     const total = playedMatches.length - 1;
     const current = currentMatchIndex;
@@ -328,7 +376,9 @@ function updateProgressBar() {
     }
 }
 
-// ========== ВЫБОР УЧАСТНИКА НА СТРАНИЦЕ BATTLE ==========
+// ####################################################################################################################
+// ########## ВЫБОР УЧАСТНИКА НА СТРАНИЦЕ BATTLE ##########
+// ####################################################################################################################
 window.selectBattleUser = function(userName, rowElement) {
     if (selectedBattleUserName === userName) {
         // Отменяем выбор
@@ -350,7 +400,9 @@ window.selectBattleUser = function(userName, rowElement) {
     }
 };
 
-
+// ####################################################################################################################
+// ########## ОБНОВЛЕНИЕ КНОПКИ АВТОВОСПРОИЗВЕДЕНИЯ ##########
+// ####################################################################################################################
 function updateAnimateAllButton() {
     const animateAllBtn = document.getElementById('animateAllBtn');
     if (!animateAllBtn) return;
@@ -361,6 +413,9 @@ function updateAnimateAllButton() {
     }
 }
 
+// ####################################################################################################################
+// ########## ОТРИСОВКА СЕЛЕКТОРА МАТЧЕЙ ##########
+// ####################################################################################################################
 function renderMatchSelector() {
     const select = document.getElementById('matchSelect');
     const matchInfo = document.getElementById('matchInfo');
@@ -410,6 +465,9 @@ function renderMatchSelector() {
     });
 }
 
+// ####################################################################################################################
+// ########## ОБНОВЛЕНИЕ СОСТОЯНИЯ КНОПОК НАВИГАЦИИ ##########
+// ####################################################################################################################
 function updateNavButtons() {
     const prevBtn = document.getElementById('prevMatchBtn');
     const nextBtn = document.getElementById('nextMatchBtn');
@@ -424,6 +482,9 @@ function updateNavButtons() {
     updateAnimateAllButton();
 }
 
+// ####################################################################################################################
+// ########## ОСТАНОВКА АВТОВОСПРОИЗВЕДЕНИЯ ##########
+// ####################################################################################################################
 function stopAutoPlay() {
     if (autoPlayTimeout) {
         clearTimeout(autoPlayTimeout);
@@ -434,6 +495,9 @@ function stopAutoPlay() {
     updateNavButtons();
 }
 
+// ####################################################################################################################
+// ########## ЗАПУСК АВТОВОСПРОИЗВЕДЕНИЯ ##########
+// ####################################################################################################################
 function startAutoPlay() {
     if (isAnimating || isAutoPlaying || !isDataLoaded) return;
     if (playedMatches.length <= 1) return;
@@ -462,6 +526,9 @@ function startAutoPlay() {
     }
 }
 
+// ####################################################################################################################
+// ########## ШАГ АВТОВОСПРОИЗВЕДЕНИЯ ##########
+// ####################################################################################################################
 function startAutoPlayStep(current) {
     if (!isAutoPlaying || stopRequested || !isDataLoaded) {
         if (stopRequested) stopAutoPlay();
@@ -499,6 +566,9 @@ function startAutoPlayStep(current) {
     });
 }
 
+// ####################################################################################################################
+// ########## АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ МАТЧА С КОЛБЭКОМ ##########
+// ####################################################################################################################
 function animateFlipWithCallback(callback) {
     if (isAnimating) {
         if (callback) setTimeout(() => animateFlipWithCallback(callback), 100);
@@ -621,10 +691,16 @@ function animateFlipWithCallback(callback) {
     }
 }
 
+// ####################################################################################################################
+// ########## АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ МАТЧА ##########
+// ####################################################################################################################
 function animateFlip() {
     animateFlipWithCallback(null);
 }
 
+// ####################################################################################################################
+// ########## СТАТИЧЕСКАЯ ОТРИСОВКА ТАБЛИЦЫ (БЕЗ АНИМАЦИИ) ##########
+// ####################################################################################################################
 function renderStandingsStatic() {
     const container = document.getElementById('standingsTable');
     if (!container) return;
@@ -690,6 +766,9 @@ function renderStandingsStatic() {
     updateProgressBar();
 }
 
+// ####################################################################################################################
+// ########## НАСТРОЙКА НАВИГАЦИОННЫХ КНОПОК ##########
+// ####################################################################################################################
 function setupNavigation() {
     const prevBtn = document.getElementById('prevMatchBtn');
     const nextBtn = document.getElementById('nextMatchBtn');
@@ -755,6 +834,9 @@ function setupNavigation() {
     }
 }
 
+// ####################################################################################################################
+// ########## ЗАГРУЗКА/ОБНОВЛЕНИЕ СТРАНИЦЫ ##########
+// ####################################################################################################################
 async function init() {
     isDataLoaded = false;
     updateNavButtons();
@@ -790,4 +872,7 @@ async function init() {
     }
 }
 
+// ####################################################################################################################
+// ########## ЗАПУСК ГЛАВНОЙ ФУНКЦИИ ##########
+// ####################################################################################################################
 init();

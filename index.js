@@ -1,5 +1,8 @@
 // APPS_SCRIPT_URL определён в config.js
 
+// ####################################################################################################################
+// ########## ПЕРЕМЕННЫЕ ##########
+// ####################################################################################################################
 let matchesData = [];
 let participantsData = [];
 let firstMatchDeadline = null;
@@ -12,12 +15,14 @@ let selectedMatchId = localStorage.getItem('selectedMatchId') ? parseInt(localSt
 let fantasyModeEnabled = false;
 let fantasyData = null; // { matches: [], participants: [] }
 
-// ========== ПЕРЕМЕННЫЕ ДЛЯ АДМИН-РЕЖИМА ==========
+// ########## ПЕРЕМЕННЫЕ ДЛЯ АДМИН-РЕЖИМА ##########
 let adminModeEnabled = localStorage.getItem('adminMode') === 'true' || false;
 let adminClickSequence = []; // для отслеживания нажатий на заголовки
 let isSpeechSupported = false;
 
-// ========== ЗАГРУЗКА ПАРАМЕТРОВ ТУРНИРА ==========
+// ####################################################################################################################
+// ########## ЗАГРУЗКА ВСЕХ ДАННЫХ С СЕРВЕРА ##########
+// ####################################################################################################################
 async function loadAllData() {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=all`);
@@ -107,7 +112,9 @@ async function loadAllData() {
     }
 }
 
-// ========== ОПРЕДЕЛЕНИЕ ДАТЫ ПЕРВОГО МАТЧА ИЗ ПАРАМЕТРОВ ==========
+// ####################################################################################################################
+// ########## ОПРЕДЕЛЕНИЕ ДАТЫ ПЕРВОГО МАТЧА ИЗ ПАРАМЕТРОВ ##########
+// ####################################################################################################################
 function getFirstMatchDeadlineFromParams() {
     if (!tournamentParams.первый_матч_дата || !tournamentParams.первый_матч_время) return null;
     
@@ -165,7 +172,9 @@ function getFirstMatchDeadlineFromParams() {
     return new Date(year, month, day, hour, minute);
 }
 
-// ========== ФОРМАТИРОВАНИЕ ДАТЫ ==========
+// ####################################################################################################################
+// ########## ФОРМАТИРОВАНИЕ ДАТЫ ##########
+// ####################################################################################################################
 function formatDateTime(date) {
     if (!date) return '';
     const day = date.getDate().toString().padStart(2, '0');
@@ -176,7 +185,9 @@ function formatDateTime(date) {
     return `${day}.${month}.${year}, ${hours}:${minutes}`;
 }
 
-// ========== ФУНКЦИИ ДЛЯ ФЛАГОВ И РЕЙТИНГА ==========
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ URL ФЛАГА КОМАНДЫ ##########
+// ####################################################################################################################
 function getFlagUrl(teamName) {
     const team = teamsData[teamName];
     if (team && team.flagCode) {
@@ -185,11 +196,17 @@ function getFlagUrl(teamName) {
     return '';
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ РЕЙТИНГА КОМАНДЫ ##########
+// ####################################################################################################################
 function getTeamRank(teamName) {
     const team = teamsData[teamName];
     return team && team.rank ? team.rank : null;
 }
 
+// ####################################################################################################################
+// ########## ФОРМАТИРОВАНИЕ НАЗВАНИЯ КОМАНДЫ С ФЛАГОМ И РЕЙТИНГОМ ##########
+// ####################################################################################################################
 function formatTeamWithFlag(teamName, position = 'home') {
     const flagUrl = getFlagUrl(teamName);
     const rank = getTeamRank(teamName);
@@ -209,9 +226,12 @@ function formatTeamWithFlag(teamName, position = 'home') {
     }
 }
 
-// ========== ЦВЕТА ДЛЯ УЧАСТНИКОВ ==========
+// ########## ЦВЕТА ДЛЯ УЧАСТНИКОВ ##########
 let participantColors = {};
 
+// ####################################################################################################################
+// ########## ХЕШИРОВАНИЕ СТРОКИ ##########
+// ####################################################################################################################
 function hashCode(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -221,6 +241,9 @@ function hashCode(str) {
     return Math.abs(hash);
 }
 
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ ЦВЕТА ЯЧЕЙКИ С ИМЕНЕМ УЧАСТНИКА ##########
+// ####################################################################################################################
 function getParticipantColor(name) {
     if (!participantColors[name]) {
         const hash = hashCode(name);
@@ -232,7 +255,9 @@ function getParticipantColor(name) {
     return participantColors[name];
 }
 
-// ========== ЗВУКОВОЕ СОПРОВОЖДЕНИЕ ==========
+// ####################################################################################################################
+// ########## ЗВУКОВОЕ СОПРОВОЖДЕНИЕ ##########
+// ####################################################################################################################
 function playSound(type) {
     const sounds = {
         on: 'images/admin-on.mp3',
@@ -247,7 +272,9 @@ function playSound(type) {
     });
 }
 
-// ========== ПРОВЕРКА ВОЗМОЖНОСТИ ВВОДА СЧЁТА ДЛЯ КОНКРЕТНОГО МАТЧА (ОНИ ДОЛЖНЫ ИДТИ БЕЗ ПРОПУСКОВ!) ==========
+// ####################################################################################################################
+// ########## ПРОВЕРКА ВОЗМОЖНОСТИ ВВОДА СЧЁТА ДЛЯ КОНКРЕТНОГО МАТЧА (ОНИ ДОЛЖНЫ ИДТИ БЕЗ ПРОПУСКОВ!) ##########
+// ####################################################################################################################
 function canEnterScore(matchIndex) {
     // Первый матч всегда можно вводить
     if (matchIndex === 0) return true;
@@ -261,7 +288,9 @@ function canEnterScore(matchIndex) {
     return true; // все матчи до этого имеют счёт
 }
 
-// ========== ПРОВЕРКА ДОСТУПНЫХ ЯЧЕЕК ДЛЯ ВВОДА СЧЕТА ==========
+// ####################################################################################################################
+// ########## ПРОВЕРКА ДОСТУПНЫХ ЯЧЕЕК ДЛЯ ВВОДА СЧЕТА ##########
+// ####################################################################################################################
 function getAvailableMatches() {
     const now = new Date();
     const available = [];
@@ -309,7 +338,9 @@ function getAvailableMatches() {
     return available;
 }
 
-// ========== ВКЛЮЧЕНИЕ / ВЫКЛЮЧЕНИЕ РЕЖИМА АДМИНА ==========
+// ####################################################################################################################
+// ########## ВКЛЮЧЕНИЕ / ВЫКЛЮЧЕНИЕ РЕЖИМА АДМИНА ##########
+// ####################################################################################################################
 function toggleAdminMode() {
     if (adminModeEnabled) {
         // === ВЫКЛЮЧЕНИЕ ===
@@ -340,7 +371,6 @@ function toggleAdminMode() {
     adminModeEnabled = true;
     localStorage.setItem('adminMode', 'true');
     playSound('on');
-    // renderTable(); // <-- ПЕРЕРИСОВЫВАЕМ ВСЮ ТАБЛИЦУ
 
     // Ставим зелёный фон у заголовка "Результат"
     const resultHeader = document.querySelector('#table-wrapper table thead th:nth-child(8)');
@@ -349,7 +379,9 @@ function toggleAdminMode() {
     }
 }
 
-// ========== МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА СЧЕТА (INDEX) ==========
+// ####################################################################################################################
+// ########## МОДАЛЬНОЕ ОКНО ДЛЯ ВВОДА СЧЕТА (INDEX) ##########
+// ####################################################################################################################
 let activeScoreMatchId = null;
 let activeScoreCell = null;
 
@@ -385,17 +417,9 @@ function openScoreInput(matchIndex) {
     
     const overlay = document.createElement('div');
     overlay.id = 'scoreModalOverlay';
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #fef9e8; border-radius: 12px; padding: 12px 16px; max-width: 260px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
+    modal.className = 'modal-content';
     
     const speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
     const currentScore = (matches[matchIndex].result && matches[matchIndex].result !== '—') ? matches[matchIndex].result : '';    
@@ -488,7 +512,9 @@ function openScoreInput(matchIndex) {
     }
 }
 
-// ========== ГОЛОС В МОДАЛЬНОМ ОКНЕ (INDEX) ==========
+// ####################################################################################################################
+// ########## ГОЛОС В МОДАЛЬНОМ ОКНЕ (INDEX) ##########
+// ####################################################################################################################
 function startVoiceRecognitionInScoreModal(matchIndex, inputElement) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
@@ -539,7 +565,9 @@ function startVoiceRecognitionInScoreModal(matchIndex, inputElement) {
     };
 }
 
-// ========== ПАРСИНГ СЧЁТА ИЗ РЕЧИ ==========
+// ####################################################################################################################
+// ########## ПАРСИНГ СЧЁТА ИЗ РЕЧИ ##########
+// ####################################################################################################################
 function parseScoreFromSpeech(text) {
     // Убираем лишние пробелы и приводим к нижнему регистру
     text = text.toLowerCase().trim();
@@ -572,7 +600,9 @@ function parseScoreFromSpeech(text) {
     return null;
 }
 
-// ========== ОТПРАВКА СЧЁТА В ТАБЛИЦУ ЧЕРЕЗ СЦЕНАРИЙ ==========
+// ####################################################################################################################
+// ########## ОТПРАВКА СЧЁТА В ТАБЛИЦУ ЧЕРЕЗ СЦЕНАРИЙ ##########
+// ####################################################################################################################
 async function sendScoreToSheet(matchIndex, score) {
 
     // Если режим фантазии — НЕ отправляем в Google Sheets!
@@ -617,7 +647,9 @@ async function sendScoreToSheet(matchIndex, score) {
     }
 }
 
-// ========== ОБНОВЛЕНИЕ ЯЧЕЙКИ НА СТРАНИЦЕ ==========
+// ####################################################################################################################
+// ########## ОБНОВЛЕНИЕ ЯЧЕЙКИ НА СТРАНИЦЕ ##########
+// ####################################################################################################################
 function updateMatchCell(matchIndex, score) {
     const rows = document.querySelectorAll('tbody tr');
     if (rows[matchIndex]) {
@@ -632,7 +664,9 @@ function updateMatchCell(matchIndex, score) {
     }
 }
 
-// ========== АКТИВАЦИЯ КНОПОК ==========
+// ####################################################################################################################
+// ########## АКТИВАЦИЯ КНОПОК ##########
+// ####################################################################################################################
 function activateButtons() {
     const fillBtn = document.getElementById('fillBtn');
     const battleBtn = document.getElementById('battleBtn');
@@ -727,17 +761,25 @@ function activateButtons() {
     }
 }
 
-// ========== ОСТАЛЬНЫЕ ФУНКЦИИ ==========
+// ####################################################################################################################
+// ########## НАСТУПИЛ ЛИ ДЕДЛАЙН ##########
+// ####################################################################################################################
 function isRevealed() {
     if (!REVEAL_DATE) return false;
     return new Date() >= REVEAL_DATE;
 }
 
+// ####################################################################################################################
+// ########## НОРМАЛИЗАЦИЯ СЧЕТА ##########
+// ####################################################################################################################
 function normalizeScore(score) {
     if (!score || score === '—') return score;
     return score.includes('-') ? score.replace(/-/g, ':') : score;
 }
 
+// ####################################################################################################################
+// ########## ПАРСИНГ СЧЕТА В МАССИВ [ГОЛ1, ГОЛ2] ##########
+// ####################################################################################################################
 function parseScoreToArray(scoreStr) {
     if (!scoreStr || scoreStr === '—') return null;
     let cleaned = scoreStr.trim().replace(/[^0-9:]/g, '');
@@ -748,6 +790,9 @@ function parseScoreToArray(scoreStr) {
     return [g1, g2];
 }
 
+// ####################################################################################################################
+// ########## ОПРЕДЕЛЕНИЕ ИСХОДА МАТЧА (ПОБЕДА/НИЧЬЯ/ПОРАЖЕНИЕ) ##########
+// ####################################################################################################################
 function getOutcome(scoreArray) {
     if (!scoreArray) return null;
     if (scoreArray[0] > scoreArray[1]) return 1;
@@ -755,6 +800,9 @@ function getOutcome(scoreArray) {
     return -1;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ОШИБКИ МЕЖДУ ФАКТИЧЕСКИМ И ПРОГНОЗИРУЕМЫМ СЧЕТОМ ##########
+// ####################################################################################################################
 function calculateError(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -762,6 +810,9 @@ function calculateError(actualScore, predictedScore) {
     return Math.abs(actual[0] - predicted[0]) + Math.abs(actual[1] - predicted[1]);
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ БОНУСНЫХ БАЛЛОВ ЗА УГАДАННЫЙ ИСХОД И СЧЕТ ##########
+// ####################################################################################################################
 function calculateBonus(actualScore, predictedScore) {
     const actual = parseScoreToArray(actualScore);
     const predicted = parseScoreToArray(predictedScore);
@@ -772,6 +823,9 @@ function calculateBonus(actualScore, predictedScore) {
     return bonus;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ ИТОГОВОГО РЕЗУЛЬТАТА УЧАСТНИКА ЗА МАТЧ ##########
+// ####################################################################################################################
 function calculateTotalScore(actualScore, predictedScore) {
     const error = calculateError(actualScore, predictedScore);
     const bonus = calculateBonus(actualScore, predictedScore);
@@ -779,6 +833,9 @@ function calculateTotalScore(actualScore, predictedScore) {
     return error - bonus;
 }
 
+// ####################################################################################################################
+// ########## СКРЫТИЕ ПРОГНОЗА (ЗАМЕНА ЦИФР НА X ИЛИ РАЗМЫТИЕ) ##########
+// ####################################################################################################################
 function blurPrediction(prediction) {
     if (!prediction || prediction === '—') return '—';
     const normalized = normalizeScore(prediction);
@@ -789,6 +846,9 @@ function blurPrediction(prediction) {
     return normalized;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ СУММАРНОГО РЕЗУЛЬТАТА УЧАСТНИКА ПО ВСЕМ МАТЧАМ ##########
+// ####################################################################################################################
 function calculateTotalParticipantScore(predictions, results) {
     let total = 0;
     for (let i = 0; i < predictions.length; i++) {
@@ -802,6 +862,9 @@ function calculateTotalParticipantScore(predictions, results) {
     return total;
 }
 
+// ####################################################################################################################
+// ########## РАСЧЕТ МЕСТ УЧАСТНИКОВ ##########
+// ####################################################################################################################
 function calculateRanks(participants, results) {
     const withScores = participants.map((p, idx) => ({
         name: p.name,
@@ -821,6 +884,9 @@ function calculateRanks(participants, results) {
     return { ranks, totalScores: withScores };
 }
 
+// ####################################################################################################################
+// ########## СОЗДАНИЕ ЯЧЕЙКИ ТАБЛИЦЫ ##########
+// ####################################################################################################################
 function createCell(content, isHtml = false, className = '') {
     const cell = document.createElement('td');
     if (className) cell.className = className;
@@ -829,7 +895,9 @@ function createCell(content, isHtml = false, className = '') {
     return cell;
 }
 
-// ========== РАСЧЁТ STANDINGS ПОСЛЕ МАТЧА (ДЛЯ МЕСТ) ==========
+// ####################################################################################################################
+// ########## РАСЧЁТ STANDINGS ПОСЛЕ МАТЧА (ДЛЯ МЕСТ) ##########
+// ####################################################################################################################
 function calculateStandingsAfterMatch(upToMatchIndex) {
     const data = getCurrentData();
     if (upToMatchIndex < 0) {
@@ -879,7 +947,9 @@ function calculateStandingsAfterMatch(upToMatchIndex) {
     }));
 }
 
-// ========== ПОЛУЧЕНИЕ ПОЗИЦИИ РАНГА ==========
+// ####################################################################################################################
+// ########## ПОЛУЧЕНИЕ ПОЗИЦИИ РАНГА ##########
+// ####################################################################################################################
 function getRankPosition(rankStr) {
     if (!rankStr || rankStr === '—') return { min: 0, max: 0 };
     if (rankStr.includes('-')) {
@@ -889,7 +959,9 @@ function getRankPosition(rankStr) {
     return { min: parseInt(rankStr), max: parseInt(rankStr) };
 }
 
-// ========== РАСЧЁТ РАСШИРЕННОЙ СТАТИСТИКИ УЧАСТНИКА ==========
+// ####################################################################################################################
+// ########## РАСЧЁТ РАСШИРЕННОЙ СТАТИСТИКИ УЧАСТНИКА ##########
+// ####################################################################################################################
 function calculateParticipantExtendedStats(participantName) {
     const data = getCurrentData();
     const results = data.matches.map(m => m.result);
@@ -982,7 +1054,7 @@ function calculateParticipantExtendedStats(participantName) {
     };
 }
 
-// ========== КОНТЕКСТНОЕ МЕНЮ ==========
+// ########## КОНТЕКСТНОЕ МЕНЮ ##########
 let contextMenuVisible = false;
 let contextMenuTarget = null;
 
@@ -1076,46 +1148,16 @@ function showContextMenu(event, participantName, targetElement) {
     // Создаём меню
     const menu = document.createElement('div');
     menu.id = 'participantContextMenu';
-    menu.style.cssText = `
-        position: fixed;
-        background: #fef9e8;
-        border: 1px solid #9aaa80;
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-        padding: 10px 14px 10px 14px;
-        z-index: 9999;
-        min-width: 200px;
-        max-width: 240px;
-        font-size: 0.7rem;
-        color: #1e4620;
-    `;
     
     // Заголовок
     const header = document.createElement('div');
-    header.style.cssText = `
-        font-weight: bold;
-        font-size: 0.8rem;
-        color: #1e4620;
-        border-bottom: 1px solid #dde8c0;
-        padding-bottom: 6px;
-        margin-bottom: 6px;
-        text-align: center;
-    `;
+    header.className = 'context-menu-header';
     header.textContent = 'Статистика участника';
     menu.appendChild(header);
     
     // Подзаголовки
     const subHeader = document.createElement('div');
-    subHeader.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.7rem;
-        color: #555;
-        margin-bottom: 4px;
-        padding: 0 0 6px 0;
-        gap: 12px;
-        border-bottom: 1px solid #dde8c0;
-    `;
+    subHeader.className = 'context-menu-subheader';
     subHeader.innerHTML = `
         <span style="white-space: nowrap; text-align: left;">участник: <strong>${participantName}</strong></span>
         <span style="white-space: nowrap; text-align: right;">матчей: <strong>${totalMatches}</strong></span>
@@ -1124,13 +1166,7 @@ function showContextMenu(event, participantName, targetElement) {
 
     // Место __ (из __)
     const rankRow = document.createElement('div');
-    rankRow.style.cssText = `
-        font-size: 0.7rem;
-        color: #555;
-        margin-bottom: 3px;
-        padding: 0 0 0 6px;
-        text-align: left;
-    `;
+    rankRow.className = 'context-menu-row';
     rankRow.innerHTML = `
         <span style="display: inline-block; width: 110px;">место:</span>
         <span><strong>${rankDisplay}</strong> (из ${totalParticipants})</span>
@@ -1139,13 +1175,7 @@ function showContextMenu(event, participantName, targetElement) {
 
     // Сумма ошибок (отставание от лидера)
     const diffRow = document.createElement('div');
-    diffRow.style.cssText = `
-        font-size: 0.7rem;
-        color: #555;
-        margin-bottom: 3px;
-        padding: 0 0 0 6px;
-        text-align: left;
-    `;
+    diffRow.className = 'context-menu-row';
     diffRow.innerHTML = `
         <span style="display: inline-block; width: 110px;">сумма ошибок:</span>
         <span><strong>${totalMatches > 0 ? sumResults : '-'}</strong>${totalMatches > 0 ? ` (${leaderDiff})` : ''}</span>
@@ -1156,7 +1186,7 @@ function showContextMenu(event, participantName, targetElement) {
     const extendedStats = calculateParticipantExtendedStats(participantName);
     if (extendedStats) {
 	const outcomeDiv = document.createElement('div');
-	outcomeDiv.style.cssText = 'font-size: 0.7rem; color: #1e4620; padding: 0 0 0 6px; margin-bottom: 3px; text-align: left;';
+	outcomeDiv.className = 'context-menu-outcome';
 	const diffText = extendedStats.diffFromLeader > 0 ? `(-${extendedStats.diffFromLeader})` : '(-)';
 	outcomeDiv.innerHTML = `
 	    <span style="display: inline-block; width: 110px;">угадал исход:</span>
@@ -1166,7 +1196,7 @@ function showContextMenu(event, participantName, targetElement) {
 
         // Занимал места 
         const rankRangeDiv = document.createElement('div');
-        rankRangeDiv.style.cssText = 'font-size: 0.7rem; color: #1e4620; padding: 0 0 6px 6px; margin-bottom: 4px; text-align: left; border-bottom: 1px solid #dde8c0;';
+        rankRangeDiv.className = 'context-menu-rank-range';
         
         // Проверяем, сыграно ли 5 матчей
         let playedMatches = 0;
@@ -1191,12 +1221,12 @@ function showContextMenu(event, participantName, targetElement) {
     // Статистика
     if (totalMatches === 0) {
         const empty = document.createElement('div');
-        empty.style.cssText = 'color: #888; text-align: center; padding: 8px 0;';
+        empty.className = 'context-menu-empty';
         empty.textContent = 'Нет сыгранных матчей';
         menu.appendChild(empty);
     } else {
         const statsDiv = document.createElement('div');
-        statsDiv.style.cssText = 'margin-bottom: 6px; margin-top: 8px;';
+        statsDiv.className = 'context-menu-stats';
         
 	// Находим максимальное значение ошибки
 	const maxError = Math.max(...Object.keys(stats).map(Number));
@@ -1209,18 +1239,7 @@ function showContextMenu(event, participantName, targetElement) {
         
         // Заголовки таблицы
         const headerRow = document.createElement('div');
-        headerRow.style.cssText = `
-            display: grid;
-            grid-template-columns: 1fr 40px;
-            gap: 2px 8px;
-            font-weight: bold;
-            color: #666;
-            font-size: 0.55rem;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e9e6cf;
-            padding-bottom: 3px;
-            margin-bottom: 3px;
-        `;
+        headerRow.className = 'context-menu-stats-header';
         headerRow.innerHTML = `
             <div style="text-align: left;">Результаты прогноза</div>
             <div style="text-align: right;">Кол-во</div>
@@ -1238,22 +1257,16 @@ function showContextMenu(event, participantName, targetElement) {
             const percent = maxCount > 0 ? (count / maxCount) * 100 : 0;
             
             const row = document.createElement('div');
-            row.style.cssText = `
-                display: grid;
-                grid-template-columns: 1fr 40px;
-                gap: 2px 8px;
-                align-items: center;
-                padding: 1px 0;
-            `;
+            row.className = 'context-menu-stats-row';
             
             // Левая часть: значение + полоса
             const leftCell = document.createElement('div');
-            leftCell.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+            leftCell.className = 'context-menu-stats-left';
             
             // Значение (прижато влево)
             const val = document.createElement('div');
             val.textContent = key;
-            val.style.cssText = 'font-weight: bold; text-align: center; min-width: 18px; font-size: 0.7rem;';
+            val.className = 'context-menu-stats-val';
 	    if (keyNum === -2) val.style.color = '#2e7d32';
 	    else val.style.color = '#c62828';
             
@@ -1266,9 +1279,11 @@ function showContextMenu(event, participantName, targetElement) {
 	    }            
 
             const barContainer = document.createElement('div');
-            barContainer.style.cssText = 'flex: 1; background: #e9e6cf; border-radius: 8px; height: 10px; overflow: hidden;';
+            barContainer.className = 'context-menu-stats-bar-bg';
             const bar = document.createElement('div');
-            bar.style.cssText = `width: ${percent}%; height: 100%; background: ${color}; border-radius: 8px; opacity: 0.8;`;
+            bar.className = 'context-menu-stats-bar-fill';
+	    bar.style.width = `${percent}%`;
+	    bar.style.background = color;
             
 	    // Если это максимальное количество — выделяем тёмно-серым (кроме -2)
 	    if (count === maxCount && count > 0 && keyNum !== -2) {
@@ -1290,7 +1305,7 @@ function showContextMenu(event, participantName, targetElement) {
             // Правая часть: количество
 	    const countDiv = document.createElement('div');
 	    countDiv.textContent = count === 0 ? '-' : count;
-	    countDiv.style.cssText = 'text-align: center; font-weight: bold; font-size: 0.7rem;';
+	   countDiv.className = 'context-menu-stats-count';
 	    if (keyNum === -2 && count > 0) {
 	        countDiv.style.color = '#2e7d32';
 	    }
@@ -1304,11 +1319,11 @@ function showContextMenu(event, participantName, targetElement) {
     }
     
     const sep = document.createElement('hr');
-    sep.style.cssText = 'border: none; border-top: 1px solid #dde8c0; margin: 6px 0;';
+    sep.className = 'context-menu-sep';
     menu.appendChild(sep);
     
     const avgDiv = document.createElement('div');
-    avgDiv.style.cssText = 'text-align: center; font-size: 0.7rem; color: #1e4620; padding: 2px 0;';
+    avgDiv.className = 'context-menu-avg';
     avgDiv.innerHTML = `Средний результат: <strong>${averageFormatted}</strong>`;
     menu.appendChild(avgDiv);
     
@@ -1354,21 +1369,31 @@ function showContextMenu(event, participantName, targetElement) {
     selectParticipant(participantName);
 }
 
+// ####################################################################################################################
+// ########## ВЫДЕЛЕНИЕ КОЛОНКИ УЧАСТНИКА ##########
+// ####################################################################################################################
 function selectParticipant(participantName) {
     if (selectedUserName === participantName) return;
     
+    // Снимаем выделение с предыдущей колонки
     if (selectedUserName) {
         document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
             el.classList.remove('selected-col');
         });
     }
+    
     selectedUserName = participantName;
     localStorage.setItem('selectedUserName', selectedUserName);
+    
+    // Добавляем выделение новой колонке через outline
     document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
         el.classList.add('selected-col');
     });
 }
 
+// ####################################################################################################################
+// ########## ЗАКРЫТИЕ КОНТЕКСТНОГО МЕНЮ ##########
+// ####################################################################################################################
 function closeContextMenu() {
     const menu = document.getElementById('participantContextMenu');
     if (menu) menu.remove();
@@ -1391,6 +1416,13 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// ####################################################################################################################
+// ####################################################################################################################
+// ####################################################################################################################
+// ########## ОТРИСОВКА ТАБЛИЦЫ РЕЗУЛЬТАТОВ ##########
+// ####################################################################################################################
+// ####################################################################################################################
+// ####################################################################################################################
 function renderTable() {
     const wrapper = document.getElementById('table-wrapper');
     if (!wrapper) return;
@@ -1406,6 +1438,10 @@ function renderTable() {
     const { ranks, totalScores } = calculateRanks(participants, results);
 
     const table = document.createElement('table');
+    if (fantasyModeEnabled) {
+        table.classList.add('fantasy-mode');
+    }
+
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
@@ -1450,12 +1486,14 @@ function renderTable() {
 
         resultHeaderCell.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:2px;">
-                <div style="font-size:0.6rem;color:#d4af37;text-align:right;">Место</div>
+                <div style="font-size:0.6rem;color:#d4af37;text-align:right; padding-right:4px;">Место➡</div>
                 <div>Счет\\Участник</div>
-                <div style="font-size:0.6rem;color:#888;text-align:right;">Сумма ошибок</div>
+                <div style="font-size:0.6rem;color:#888;text-align:right; padding-right:4px;">Сумма ошибок➡</div>
             </div>
         `;
     }
+
+    resultHeaderCell.classList.add('result-header-cell');
     
     for (let idx = 0; idx < participants.length; idx++) {
         const p = participants[idx];
@@ -1474,7 +1512,7 @@ function renderTable() {
         }
     
         th.style.cursor = 'pointer';
-        th.title = 'Нажмите для статистики';
+        th.title = 'Нажмите для статистики и выделения колонки';
     
         // Обработчик клика по заголовку (ТОЛЬКО ЗДЕСЬ!)
         th.addEventListener('click', (e) => {
@@ -1489,26 +1527,26 @@ function renderTable() {
     table.appendChild(thead);
     
     const tbody = document.createElement('tbody');
-    let lastBg = 'transparent';
+    // let lastBg = 'transparent';
+    let dayType = 'light'; // начинаем со светлого фона в первой строке таблицы
     
+    // Бежим по всем строкам (матчам)
     for (let i = 0; i < matches.length; i++) {
         const m = matches[i];
         const tr = document.createElement('tr');
         tr.setAttribute('data-match-id', m.id);
-        
-        let bg = 'transparent';
-        if (i > 0 && m.date !== matches[i-1].date) {
-            bg = lastBg === 'transparent' ? '#f0f0e8' : 'transparent';
-            lastBg = bg;
-        } else {
-            bg = lastBg;
-        }
-        tr.style.backgroundColor = bg;
-        
+	
+	// Проверяем - не сменить ли цвет фона строки на светлый/темный (если сменилась дата)        
+	if (i > 0 && m.date !== matches[i-1].date) {
+            dayType = dayType === 'light' ? 'dark' : 'light';
+    	}
+    	tr.classList.add(dayType === 'light' ? 'row-light' : 'row-dark');
+
 	// Ячейка "№"
 	const idCell = createCell(m.id);
 	idCell.style.cursor = 'pointer';
 	idCell.title = 'Нажмите чтобы выделить строку';
+	idCell.classList.add('match-id-cell');
 	idCell.onclick = (function(matchId, rowElement) {
 	    return function() { toggleRowSelection(matchId, rowElement); };
 	})(m.id, tr);
@@ -1563,6 +1601,7 @@ function renderTable() {
 	const awayCell = createCell(formatTeamWithFlag(m.team2, 'away'), true, 'team-name');
 	awayCell.style.cursor = 'pointer';
 	awayCell.title = 'Нажмите чтобы выделить строку';
+	awayCell.classList.add('guest-team-cell');
 	awayCell.onclick = (function(matchId, rowElement) {
 	    return function() { toggleRowSelection(matchId, rowElement); };
 	})(m.id, tr);
@@ -1570,17 +1609,22 @@ function renderTable() {
         
 	const resultCell = createCell(m.result, false, 'result-cell');
 
-	if (fantasyModeEnabled) {
-	    resultCell.style.cursor = 'pointer';
-	    resultCell.title = 'Нажмите чтобы изменить счёт матча (режим "А если...")';
-	} else {
-	    resultCell.style.cursor = adminModeEnabled ? 'pointer' : 'default';
-	    resultCell.title = 'Нажмите чтобы изменить счёт (админ-режим)';
-	}
+	// Если включен режим ФАНТАЗИИ
+        if (fantasyModeEnabled) {
+            resultCell.style.cursor = 'pointer';
+            resultCell.title = 'Нажмите чтобы изменить счёт матча (режим "А если...")';
+        } else if (adminModeEnabled) {
+            resultCell.style.cursor = 'pointer';
+            resultCell.title = 'Нажмите чтобы изменить счёт (админ-режим)';
+        } else {
+            resultCell.style.cursor = 'pointer';
+            resultCell.title = 'Нажмите чтобы выделить строку';
+        }
 	
+	// Вешаем обработчик нажатия на ячейку результата матча
 	resultCell.onclick = (function(matchId, rowElement, matchIndex) {
 	    return function() {
-        	// === РЕЖИМ ФАНТАЗИИ: изменяем счёт матча ===
+        	// Если включен режим ФАНТАЗИИ - изменяем счёт матча
 	        if (fantasyModeEnabled) {
         	    openFantasyScoreInput(matchIndex);
 	            return;
@@ -1588,13 +1632,14 @@ function renderTable() {
         
 	        const isAvailable = getAvailableMatches().includes(matchIndex);
         
-	        // Если админ-режим включен и ячейка доступна (матч начался, счета нет)
+	        // Если включен АДМИН-режим и ячейка доступна (матч начался, счета нет) - ставим счет матча
         	if (adminModeEnabled && isAvailable) {
 	            openScoreInput(matchIndex);
         	    return;
 	        }
         
-	        // Если ничего не подошло — ничего не делаем (выделение строки теперь на других ячейках)
+	        // Если ничего не подошло — выделяем строку
+		toggleRowSelection(matchId, rowElement);
 	    };
 	})(m.id, tr, i);
 
@@ -1626,31 +1671,42 @@ function renderTable() {
         }
 
         if (m.result && m.result !== '—') {
-            const isLightDay = bg === 'transparent';
-            resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
+            const isLightDay = dayType === 'light';
+            resultCell.style.backgroundColor = isLightDay ? '#FFF2B0' : '#FAEBA0';
         } else {
             if (matchStarted) {
 	        // Матч начался, но счёта нет — пульсация с фоном в зависимости от дня
         	resultCell.classList.add('pulse-result-missed');
 	        // Устанавливаем правильный фон в зависимости от дня
-        	const isLightDay = bg === 'transparent';
-	        resultCell.style.backgroundColor = isLightDay ? '#B7E2FA' : '#93D4F0';
+        	const isLightDay = dayType === 'light';
+	        resultCell.style.backgroundColor = isLightDay ? '#FFF2B0' : '#FAEBA0';
             } else {
-                resultCell.style.backgroundColor = bg;
             }
         }
         if (m.result && m.result !== '—') resultCell.style.fontWeight = 'bold';
 
 	if (fantasyModeEnabled) {
-	    resultCell.style.backgroundColor = '#ffe0e6';
 	    const originalMatch = matchesData[i];
-	    if (originalMatch && originalMatch.result !== m.result) {
-        	resultCell.style.backgroundColor = '#ff6b6b';
+	    const isChanged = originalMatch && originalMatch.result !== m.result;
+    
+	    if (isChanged) {
+	        const isLightDay = dayType === 'light';
+        	const bgColor = isLightDay ? '#FFF2B0' : '#FAEBA0';
+
+	        resultCell.classList.add('fantasy-changed-score');
+	        resultCell.classList.add('fantasy-changed-border');
+	        resultCell.style.background = `radial-gradient(circle at center, ${bgColor} 0%, ${bgColor} 45%, rgba(255,0,0,0.4) 60%, rgba(255,0,0,0.8) 85%, #ff0000 100%)`;
+	        resultCell.style.borderRadius = '8px';
+        	resultCell.style.color = '#CF333F';
+	    } else {
+	        resultCell.classList.add('fantasy-default-score');
+	        resultCell.classList.remove('fantasy-changed-border');
 	    }
 	}
 
-        tr.appendChild(resultCell);
+        tr.appendChild(resultCell); // ===== вставляем ячейку счета матча
         
+	// Создаем ячейки для всех прогнозов
         for (let idx = 0; idx < participants.length; idx++) {
             const p = participants[idx];
             const raw = p.predictions[i] || '—';
@@ -1661,14 +1717,14 @@ function renderTable() {
             }
             const cell = document.createElement('td');
             cell.setAttribute('data-participant', p.name);
-
-	    cell.style.cursor = 'pointer';
 	    if (fantasyModeEnabled) {
 	        cell.title = 'Нажмите чтобы изменить прогноз (режим "А если...")';
+	        cell.style.cursor = 'pointer';
 	    } else {
 	        cell.title = ''; // или убрать title, или оставить пустым
+	        cell.style.cursor = 'default';
 	    }
-
+	    // Вешаем обработчик нажатия на ячейку
 	    cell.onclick = (function(participantIdx, matchIdx) {
 	        return function() {
 	            if (fantasyModeEnabled) {
@@ -1680,27 +1736,44 @@ function renderTable() {
             cell.style.textAlign = 'center';
             cell.innerHTML = total !== null ? `${disp}<sup style="font-size:0.65rem;color:#888;">${total}</sup>` : disp;
 
-	    if (fantasyModeEnabled) {
-	        cell.style.backgroundColor = '#ffe0e6';
-	        const originalParticipant = participantsData[idx];
-	        if (originalParticipant && originalParticipant.predictions[i] !== raw) {
-	            cell.style.backgroundColor = '#ff6b6b';
-	        }
-	    }
 
-	    if (total === -2) {
-	        if (fantasyModeEnabled) {
-	            // Проверяем, изменена ли ячейка
-	            const originalParticipant = participantsData[idx];
-	            const isChanged = originalParticipant && originalParticipant.predictions[i] !== raw;
-	            if (isChanged) {
-	                cell.classList.add('pulse-bullseye-fantasy');
-	            } else {
-	                cell.classList.add('pulse-bullseye-index');
-	            }
-	        } else {
-	            cell.classList.add('pulse-bullseye-index');
-	        }
+
+	    // ===== Если это ОБЫЧНЫЙ режим ===== 
+            if (!fantasyModeEnabled) {
+
+		// Если прогноз угадан
+                if (total === -2) {
+                    // Ставим зелёный фон для всех угаданных прогнозов
+                    cell.classList.add('bullseye-static');
+                }
+
+	    }  else {    // ===== Если это режим ФЭНТЕЗИ =====
+
+                const originalParticipant = participantsData[idx];
+                const isChanged = originalParticipant && originalParticipant.predictions[i] !== raw;
+
+		// Если прогноз угадан
+                if (total === -2) {
+                    // Ставим зелёный фон для всех угаданных прогнозов (он в классе указан с !important)
+                    cell.classList.add('bullseye-static');
+		}
+
+                // Для изменённых 
+		if (isChanged) {
+		    // const bgColor = window.getComputedStyle(cell).backgroundColor;
+	            const isLightDay = dayType === 'light';
+        	    let bgColor = isLightDay ? '#ffffff' : '#f0f0e8';
+
+    		     // Если прогноз угадан - используем зеленый фон
+		    if (total === -2) {
+		        bgColor = '#c8e6c9';
+		    }
+
+		    cell.style.background = `radial-gradient(circle at center, ${bgColor} 0%, ${bgColor} 45%, rgba(255,0,0,0.4) 60%, rgba(255,0,0,0.8) 85%, #ff0000 100%)`;
+
+		    cell.style.position = 'relative';
+		    cell.style.color = '#CF333F';
+		}
 	    }
 
             if (selectedUserName === p.name) {
@@ -1708,18 +1781,23 @@ function renderTable() {
             }
 
             if (disp !== raw && !isRevealed()) {
-                cell.style.filter = 'blur(1px)';
+                // cell.style.filter = 'blur(1px)';
+		cell.classList.add('prediction-hidden');
                 cell.title = REVEAL_DATE ? `Откроется ${formatDateTime(REVEAL_DATE)}` : '';
             }
-            
-	    // Обработчик клика для изменения прогноза в режиме "А если..."            
             
 	    tr.appendChild(cell);
         }
 
-        if (selectedMatchId === m.id) {
-            tr.classList.add('selected-match-row');
-        }
+	if (selectedMatchId === m.id) {
+	    const cells = tr.querySelectorAll('td');
+	    cells.forEach(cell => {
+        	if (!cell.classList.contains('fantasy-changed-border')) {
+	            cell.classList.add('selected-match-cell');
+        	}
+	    });
+	}
+
         tbody.appendChild(tr);
     }
     
@@ -1727,26 +1805,49 @@ function renderTable() {
     wrapper.innerHTML = '';
     wrapper.appendChild(table);
     
+    // После wrapper.appendChild(table);
+    if (selectedUserName) {
+        document.querySelectorAll(`th[data-participant="${selectedUserName}"], td[data-participant="${selectedUserName}"]`).forEach(el => {
+            el.classList.add('selected-col');
+        });
+    }
+
     activateButtons();
 }
 
+// ####################################################################################################################
+// ########## ВЫДЕЛЕНИЕ / СНЯТИЕ ВЫДЕЛЕНИЯ СТРОКИ МАТЧА ##########
+// ####################################################################################################################
 function toggleRowSelection(matchId, rowElement) {
+    const cells = rowElement.querySelectorAll('td');
     if (selectedMatchId === matchId) {
         selectedMatchId = null;
         localStorage.removeItem('selectedMatchId');
-        rowElement.classList.remove('selected-match-row');
+        cells.forEach(cell => cell.classList.remove('selected-match-cell'));
+        // НЕ ТРОГАЕМ td
     } else {
         if (selectedMatchId !== null) {
             const prevRow = document.querySelector(`tr[data-match-id="${selectedMatchId}"]`);
-            if (prevRow) prevRow.classList.remove('selected-match-row');
+            if (prevRow) {
+		prevRow.querySelectorAll('td').forEach(cell => cell.classList.remove('selected-match-cell'));
+	    }
         }
         selectedMatchId = matchId;
         localStorage.setItem('selectedMatchId', selectedMatchId);
-        rowElement.classList.add('selected-match-row');
+        cells.forEach(cell => {
+            // НЕ добавляем выделение, если ячейка изменена в фэнтези
+            if (!cell.classList.contains('fantasy-changed-border')) {
+                cell.classList.add('selected-match-cell');
+            }
+        });
+
+        // НЕ ТРОГАЕМ td
     }
 }
 
-// ========== ПРОКРУТКА К ВЫДЕЛЕННОЙ СТРОКЕ ПРИ ЗАГРУЗКЕ ==========
+// ####################################################################################################################
+// ########## ПРОКРУТКА К ВЫДЕЛЕННОЙ СТРОКЕ ПРИ ЗАГРУЗКЕ ##########
+// ####################################################################################################################
 function scrollToSelectedMatchOnLoad() {
     if (selectedMatchId === null) return;
     
@@ -1771,7 +1872,9 @@ function scrollToSelectedMatchOnLoad() {
     }, 300);
 }
 
-// ========== ФУНКЦИИ ДЛЯ ФАНТАЗИ РЕЖИМА ==========
+// ####################################################################################################################
+// ########## ФУНКЦИИ ДЛЯ ФАНТАЗИ РЕЖИМА ##########
+// ####################################################################################################################
 function getCurrentData() {
     if (fantasyModeEnabled && fantasyData) {
         return {
@@ -1785,6 +1888,9 @@ function getCurrentData() {
     };
 }
 
+// ####################################################################################################################
+// ########## ВКЛЮЧЕНИЕ / ВЫКЛЮЧЕНИЕ РЕЖИМА ФЭНТЕЗИ ##########
+// ####################################################################################################################
 function toggleFantasyMode() {
     const btn = document.getElementById('fantasyBtn');
     if (!btn) return;
@@ -1795,11 +1901,15 @@ function toggleFantasyMode() {
         fantasyData = null;
     
         // Сбрасываем визуальное состояние кнопки
-        const btn = document.getElementById('fantasyBtn');
-        if (btn) {
-            btn.style.background = '#ffb6c1'; // исходный розовый
-        }
-    
+        // btn.style.background = '#ffb6c1'; // исходный розовый
+	btn.classList.remove('fantasy-active');
+	btn.classList.add('fantasy-inactive');
+
+	// document.querySelector('.container').classList.remove('fantasy-mode-container');
+        // Убираем эффект сканирования
+        const wrapper = document.getElementById('table-wrapper');
+        if (wrapper) wrapper.classList.remove('fantasy-scan');
+
         // Перерисовываем таблицу из исходных данных
         renderTable();
         return;
@@ -1813,11 +1923,16 @@ function toggleFantasyMode() {
     };
     
     fantasyModeEnabled = true;
+    
+    // document.querySelector('.container').classList.add('fantasy-mode-container');
 
     // Меняем вид кнопки — показываем, что режим активен
-    if (btn) {
-        btn.style.background = '#ff8a9e'; // более насыщенный розовый
-    }
+    btn.classList.remove('fantasy-inactive');
+    btn.classList.add('fantasy-active');
+
+    // Включаем эффект сканирования
+    const wrapper = document.getElementById('table-wrapper');
+    if (wrapper) wrapper.classList.add('fantasy-scan');
 
     // 2. Перерисовываем таблицу (функция renderTable должна использовать fantasyData, если режим включён)
     renderTable();
@@ -1826,25 +1941,24 @@ function toggleFantasyMode() {
     showFantasyModal();
 }
 
+// ####################################################################################################################
+// ########## ПЕРЕСЧЕТ СТАТИСТИКИ В РЕЖИМЕ ФЭНТЕЗИ ##########
+// ####################################################################################################################
 function recalculateFantasyStats() {
     if (!fantasyModeEnabled || !fantasyData) return;
     // Ничего дополнительного не нужно — renderTable() перерисует всё на основе fantasyData
     // Все расчёты происходят внутри renderTable() через getCurrentData()
 }
 
+// ####################################################################################################################
+// ########## ПОКАЗ МОДАЛЬНОГО ОКНА С ОПИСАНИЕМ РЕЖИМА ФЭНТЕЗИ ##########
+// ####################################################################################################################
 function showFantasyModal() {
     const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
+    overlay.id = 'fantasyModalOverlay';
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #ffe0e6; border-radius: 12px; padding: 16px 16px; max-width: 340px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
+    modal.className = 'modal-content';
     
     modal.innerHTML = `
         <h4 style="margin-top:0; color:#1e4620;">✨ Вы включили режим «А если...»</h4>
@@ -1857,10 +1971,7 @@ function showFantasyModal() {
             Чтобы выйти из режима - нажмите кнопку <br>
 	    «А если...» ещё раз или обновите страницу.
         </p>
-        <button id="fantasyModalCloseBtn" style="
-            background: #2c7840; color: white; border: none; border-radius: 20px;
-            padding: 6px 20px; font-size: 0.9rem; cursor: pointer; display: block; margin: 12px auto 0;
-        ">Понятно</button>
+        <button id="fantasyModalCloseBtn">Понятно</button>
     `;
     
     overlay.appendChild(modal);
@@ -1875,6 +1986,9 @@ function showFantasyModal() {
     };
 }
 
+// ####################################################################################################################
+// ########## ИЗМЕНЕНИЕ ПРОГНОЗА УЧАСТНИКА В РЕЖИМЕ ФЭНТЕЗИ ##########
+// ####################################################################################################################
 function openFantasyPredictionInput(participantIdx, matchIdx) {
     if (!fantasyModeEnabled || !fantasyData) return;
     
@@ -1885,33 +1999,24 @@ function openFantasyPredictionInput(participantIdx, matchIdx) {
     
     // Создаём overlay
     const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
+    overlay.id = 'fantasyPredictionOverlay';
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #fef9e8; border-radius: 12px; padding: 12px 16px; max-width: 260px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
+    modal.className = 'modal-content';
     
     modal.innerHTML = `
-        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Изменить прогноз</h3>
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem; text-align:center;">Изменить прогноз</h3>
         <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;">
             <strong>${participant.name}</strong><br>
             ${match.team1} – ${match.team2}
         </p>
-        <div style="display:flex; align-items:center; gap:0; justify-content:center;">
-            <input type="text" id="fantasyPredictionInput" placeholder="х:х" style="
-                padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
-                border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
-            " value="${currentPrediction !== '—' ? currentPrediction : ''}">
-        </div>
+	<div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+	    <input type="text" id="fantasyPredictionInput" placeholder="х:х" value="${currentPrediction !== '—' ? currentPrediction : ''}">
+	    <button id="fantasyPredictionResetBtn" style="background: none; border: 1px solid #cddba8; border-radius: 8px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer;">Исходный</button>
+	</div>
         <div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
-            <button id="fantasyPredictionSendBtn" style="background: #2c7840; color: white; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Сохранить</button>
-            <button id="fantasyPredictionCancelBtn" style="background: #ccc; color: #333; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Отмена</button>
+            <button id="fantasyPredictionSendBtn">Сохранить</button>
+            <button id="fantasyPredictionCancelBtn">Отмена</button>
         </div>
     `;
     
@@ -1921,6 +2026,18 @@ function openFantasyPredictionInput(participantIdx, matchIdx) {
     const input = modal.querySelector('#fantasyPredictionInput');
     input.focus();
     input.select();
+
+    const resetBtn = modal.querySelector('#fantasyPredictionResetBtn');
+    if (resetBtn) {
+        resetBtn.onclick = function() {
+            const originalParticipant = participantsData[participantIdx];
+            if (originalParticipant && originalParticipant.predictions[matchIdx] && originalParticipant.predictions[matchIdx] !== '—') {
+                input.value = originalParticipant.predictions[matchIdx];
+            } else {
+                input.value = '';
+            }
+        };
+    }
     
     modal.querySelector('#fantasyPredictionSendBtn').onclick = function() {
         const score = input.value.trim();
@@ -1973,6 +2090,9 @@ function openFantasyPredictionInput(participantIdx, matchIdx) {
     };
 }
 
+// ####################################################################################################################
+// ########## ИЗМЕНЕНИЕ СЧЕТА МАТЧА В РЕЖИМЕ ФЭНТЕЗИ ##########
+// ####################################################################################################################
 function openFantasyScoreInput(matchIndex) {
     if (!fantasyModeEnabled || !fantasyData) return;
     
@@ -1984,30 +2104,21 @@ function openFantasyScoreInput(matchIndex) {
     const currentScore = (match.result && match.result !== '—') ? match.result : '';
     
     const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    `;
+    overlay.id = 'fantasyScoreOverlay';
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #ffe0e6; border-radius: 12px; padding: 12px 16px; max-width: 260px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%;
-    `;
+    modal.className = 'modal-content';
     
     modal.innerHTML = `
-        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem;">Изменить счёт матча</h3>
+        <h3 style="margin-top:0; margin-bottom:8px; color:#1e4620; font-size:1rem; text-align:center;">Изменить счёт матча</h3>
         <p style="margin:0 0 8px 0; font-size:0.85rem; text-align: center;"><strong>${match.team1} – ${match.team2}</strong></p>
-        <div style="display:flex; align-items:center; gap:0; justify-content:center;">
-            <input type="text" id="fantasyScoreInput" placeholder="х:х" style="
-                padding: 2px 4px; font-size: 0.85rem; border: 2px solid #cddba8;
-                border-radius: 8px; text-align: center; font-family: monospace; width: 80px;
-            " value="${currentScore}">
-        </div>
+	<div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+	    <input type="text" id="fantasyScoreInput" placeholder="х:х" value="${currentScore}">
+	    <button id="fantasyScoreResetBtn" style="background: none; border: 1px solid #cddba8; border-radius: 8px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer;">Исходный</button>
+	</div>
         <div style="display:flex; gap:8px; margin-top:12px; justify-content:center;">
-            <button id="fantasyScoreSendBtn" style="background: #2c7840; color: white; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Сохранить</button>
-            <button id="fantasyScoreCancelBtn" style="background: #ccc; color: #333; border: none; border-radius: 20px; padding: 4px 16px; font-size: 0.8rem; cursor: pointer;">Отмена</button>
+            <button id="fantasyScoreSendBtn">Сохранить</button>
+            <button id="fantasyScoreCancelBtn">Отмена</button>
         </div>
     `;
     
@@ -2017,6 +2128,18 @@ function openFantasyScoreInput(matchIndex) {
     const input = modal.querySelector('#fantasyScoreInput');
     input.focus();
     input.select();
+
+    const resetBtn = modal.querySelector('#fantasyScoreResetBtn');
+    if (resetBtn) {
+        resetBtn.onclick = function() {
+            const originalMatch = matchesData[matchIndex];
+            if (originalMatch && originalMatch.result && originalMatch.result !== '—') {
+                input.value = originalMatch.result;
+            } else {
+                input.value = '';
+            }
+        };
+    }
     
     modal.querySelector('#fantasyScoreSendBtn').onclick = function() {
         const score = input.value.trim();
@@ -2072,7 +2195,9 @@ function openFantasyScoreInput(matchIndex) {
     };
 }
 
-// ========== init() ==========
+// ####################################################################################################################
+// ########## ЗАГРУЗКА/ОБНОВЛЕНИЕ СТРАНИЦЫ ##########
+// ####################################################################################################################
 async function init() {
     // Загружаем ВСЁ за один запрос
     const success = await loadAllData();
@@ -2090,6 +2215,7 @@ async function init() {
     if (fantasyBtn) {
         fantasyBtn.style.display = participantsData.length > 0 ? 'inline-block' : 'none';
         fantasyBtn.onclick = toggleFantasyMode;
+	fantasyBtn.classList.add('fantasy-inactive');
     }
     
     // Определяем дедлайн (из уже загруженных tournamentParams)
@@ -2112,4 +2238,7 @@ async function init() {
     scrollToSelectedMatchOnLoad();
 }
 
+// ####################################################################################################################
+// ########## ЗАПУСК ГЛАВНОЙ ФУНКЦИИ ##########
+// ####################################################################################################################
 init();
