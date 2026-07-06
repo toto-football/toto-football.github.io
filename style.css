@@ -1349,6 +1349,17 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
         width: 100%;
     }
 
+    /* ===== INDEX: БОРЬБА С ОШИБКОЙ АНИМАЦИИ В РЕЖИМЕ ФЭНТЕЗИ ===== */
+    .fantasy-scan .row-light,
+    .fantasy-scan .row-dark {
+        animation: fantasyPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes fantasyPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.9; }
+    }
+
     /* ===== BATTLE: НАСТРОЙКИ ЭЛЕМЕНТОВ СТРАНИЦЫ ===== */
     .btn-back {
         padding: 4px 10px !important;
