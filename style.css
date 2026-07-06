@@ -1350,14 +1350,19 @@ th:nth-child(8), td:nth-child(8) { width: 70px; }
     }
 
     /* ===== INDEX: БОРЬБА С ОШИБКОЙ АНИМАЦИИ В РЕЖИМЕ ФЭНТЕЗИ ===== */
-    .fantasy-scan .row-light,
-    .fantasy-scan .row-dark {
-        animation: fantasyPulse 2s ease-in-out infinite;
+    /* Полностью убираем псевдоэлементы */
+    .fantasy-scan .row-light::after,
+    .fantasy-scan .row-dark::after {
+        display: none !important;
     }
     
-    @keyframes fantasyPulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.9; }
+    /* Меняем фон строк для индикации режима */
+    .fantasy-scan .row-light td {
+        background-color: #fff0f0 !important;
+    }
+    
+    .fantasy-scan .row-dark td {
+        background-color: #f5e0e0 !important;
     }
 
     /* ===== BATTLE: НАСТРОЙКИ ЭЛЕМЕНТОВ СТРАНИЦЫ ===== */
