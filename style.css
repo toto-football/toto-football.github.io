@@ -591,6 +591,13 @@ th:nth-child(7), td:nth-child(7) { width: 70px; }
     border-radius: 12px;
 }
 
+/* Розовый фон у обертки */
+.fantasy-scan {
+    background-color: #ffe0e6 !important;
+    outline: 3px solid #ff8a9e !important;
+    border-radius: 12px !important;
+}
+
 /* ===== 3D-ЭФФЕКТ ДЛЯ ЯЧЕЕК "РЕЗУЛЬТАТ" НА INDEX ===== */
 .result-cell {
     box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), inset 2px 2px 5px rgba(255,255,255,0.7), 2px 2px 4px rgba(0,0,0,0.1);
@@ -1353,7 +1360,7 @@ th:nth-child(7), td:nth-child(7) { width: 70px; }
     /* Розовый фон у обертки */
     .fantasy-scan {
         background-color: #ffe0e6 !important;
-        border: 3px solid #ff8a9e !important;
+        outline: 3px solid #ff8a9e !important;
         border-radius: 12px !important;
     }
 
